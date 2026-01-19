@@ -759,31 +759,53 @@ def show_enablers():
 
 
 def show_execution_section():
-    """Show Execution section (Iconic Commitments, Objectives)."""
+    """Show Execution section (Iconic Commitments, Team Objectives, Individual Objectives)."""
 
-    st.markdown("## Section 3: Execution")
-    st.markdown("*Tangible, time-bound milestones*")
+    st.markdown("## Section 3: Execution (The What)")
+    st.markdown("*Tangible, time-bound milestones and personal contributions*")
+
+    st.info("""
+    **Guidance:** Execution brings your strategy to life through:
+    - **Iconic Commitments:** Big, tangible milestones that prove strategy is happening
+    - **Team Objectives:** Department goals that support commitments OR strategic intents
+    - **Individual Objectives:** Personal contributions that feed team objectives
+    """)
 
     exec_tabs = st.tabs([
         "Tier 7: Iconic Commitments",
-        "Tier 8: Team Objectives"
+        "Tier 8: Team Objectives",
+        "Tier 9: Individual Objectives"
     ])
 
     with exec_tabs[0]:
         show_commitments()
 
     with exec_tabs[1]:
-        show_objectives()
+        show_team_objectives()
+
+    with exec_tabs[2]:
+        show_individual_objectives()
 
 
 def show_commitments():
-    """Show iconic commitments section."""
+    """Show iconic commitments section with edit capabilities."""
 
     builder = st.session_state.builder
     pyramid = st.session_state.pyramid
 
-    st.markdown("### Proof Points That Strategy Is Happening")
-    st.markdown("**MUST** declare ONE primary driver, CAN have secondary contributions")
+    st.markdown("### Tier 7: Iconic Commitments")
+    st.markdown("**Proof points that strategy is happening** - tangible, time-bound milestones")
+
+    st.info("""
+    **Guidance:** Iconic Commitments are your big, memorable milestones. They should be:
+    - **Tangible:** You can touch/see the output (not "improve culture")
+    - **Time-Bound:** Has a clear deadline (H1/H2/H3)
+    - **Measurable:** You know when it's done
+    - **Memorable:** People can quote it
+    - **Primary Aligned:** MUST declare ONE primary Strategic Driver
+
+    **Examples:** "Deploy Workday globally by Q2 2026" | "Launch Employee Mobile App by H1"
+    """)
 
     if not pyramid.strategic_drivers:
         st.warning("⚠️ Please add Strategic Drivers first (Tier 5)")
@@ -791,7 +813,7 @@ def show_commitments():
 
     # Show existing by horizon
     if pyramid.iconic_commitments:
-        st.markdown("#### Current Iconic Commitments")
+        st.markdown(f"#### Your Iconic Commitments ({len(pyramid.iconic_commitments)})")
 
         for horizon in ["H1", "H2", "H3"]:
             commitments = [c for c in pyramid.iconic_commitments if c.horizon.value == horizon]
@@ -808,21 +830,101 @@ def show_commitments():
                     driver_name = driver.name if driver else "Unknown"
                     target = f" - {commitment.target_date}" if commitment.target_date else ""
 
-                    st.markdown(f"- **{commitment.name}**{target}")
-                    st.markdown(f"  *Primary: {driver_name}*")
+                    with st.expander(f"**{commitment.name}**{target}"):
+                        st.markdown(f"*Description:* {commitment.description}")
+                        st.markdown(f"*Primary Driver:* {driver_name}")
+                        st.markdown(f"*Horizon:* {horizon_name}")
+                        if commitment.target_date:
+                            st.markdown(f"*Target Date:* {commitment.target_date}")
+                        if commitment.owner:
+                            st.markdown(f"*Owner:* {commitment.owner}")
+
+                        # Edit form
+                        with st.form(f"edit_commitment_{commitment.id}"):
+                            new_name = st.text_input(
+                                "Commitment Name",
+                                value=commitment.name,
+                                help="Clear, memorable name"
+                            )
+
+                            new_description = st.text_area(
+                                "Description",
+                                value=commitment.description,
+                                help="What will be delivered",
+                                height=100
+                            )
+
+                            col1, col2 = st.columns(2)
+
+                            with col1:
+                                driver_names = [d.name for d in pyramid.strategic_drivers]
+                                current_driver_index = next((i for i, d in enumerate(pyramid.strategic_drivers) if d.id == commitment.primary_driver_id), 0)
+                                new_primary_driver = st.selectbox(
+                                    "Primary Driver (REQUIRED)",
+                                    driver_names,
+                                    index=current_driver_index,
+                                    help="Which driver does this PRIMARILY support?"
+                                )
+
+                                new_horizon = st.selectbox(
+                                    "Horizon",
+                                    ["H1", "H2", "H3"],
+                                    index=["H1", "H2", "H3"].index(commitment.horizon.value),
+                                    help="H1: 0-12 months, H2: 12-24 months, H3: 24-36 months"
+                                )
+
+                            with col2:
+                                new_target_date = st.text_input(
+                                    "Target Date",
+                                    value=commitment.target_date or "",
+                                    placeholder="e.g., Q2 2026",
+                                    help="When will this be completed?"
+                                )
+
+                                new_owner = st.text_input(
+                                    "Owner",
+                                    value=commitment.owner or "",
+                                    placeholder="Who is accountable?",
+                                    help="Optional but recommended"
+                                )
+
+                            col_a, col_b = st.columns(2)
+
+                            with col_a:
+                                if st.form_submit_button("💾 Update", use_container_width=True):
+                                    new_driver = next(d for d in pyramid.strategic_drivers if d.name == new_primary_driver)
+                                    builder.manager.update_iconic_commitment(
+                                        commitment.id,
+                                        name=new_name.strip(),
+                                        description=new_description.strip(),
+                                        horizon=Horizon(new_horizon),
+                                        target_date=new_target_date.strip() if new_target_date.strip() else None,
+                                        primary_driver_id=new_driver.id,
+                                        owner=new_owner.strip() if new_owner.strip() else None
+                                    )
+                                    st.success("✓ Updated!")
+                                    st.rerun()
+
+                            with col_b:
+                                if st.form_submit_button("🗑️ Remove", use_container_width=True):
+                                    pyramid.iconic_commitments = [ic for ic in pyramid.iconic_commitments if ic.id != commitment.id]
+                                    st.success("Removed commitment")
+                                    st.rerun()
 
     # Add new
     st.markdown("#### Add New Iconic Commitment")
     with st.form("add_commitment_form"):
         commitment_name = st.text_input(
             "Commitment Name",
-            placeholder="e.g., Deploy Workday globally"
+            placeholder="e.g., Deploy Workday globally, Launch Employee Mobile App",
+            help="Clear, memorable name for this milestone"
         )
 
         commitment_description = st.text_area(
             "Description",
-            placeholder="What will be delivered",
-            height=80
+            placeholder="What will be delivered and what impact it will have...",
+            help="Detailed description of what this commitment entails",
+            height=100
         )
 
         col1, col2 = st.columns(2)
@@ -854,7 +956,7 @@ def show_commitments():
                 help="Optional but recommended"
             )
 
-        if st.form_submit_button("➕ Add Iconic Commitment"):
+        if st.form_submit_button("➕ Add Iconic Commitment", use_container_width=True):
             if commitment_name.strip() and commitment_description.strip():
                 builder.quick_add_commitment(
                     name=commitment_name.strip(),
@@ -869,54 +971,363 @@ def show_commitments():
             else:
                 st.error("Name and description are required")
 
-    st.markdown("---")
-    st.markdown("""
-    **💡 Good iconic commitments are:**
-    - Tangible (you can touch/see it)
-    - Time-bound (has a deadline)
-    - Measurable (you can celebrate completion)
-    - Memorable (people can quote it)
-    """)
+    # Coaching feedback
+    if len(pyramid.iconic_commitments) == 0:
+        st.warning("⚠️ Add iconic commitments to show tangible proof your strategy is happening")
+    elif len(pyramid.iconic_commitments) < 5:
+        st.info(f"💡 You have {len(pyramid.iconic_commitments)} commitment(s). Consider adding more across different horizons")
+    else:
+        st.success(f"✅ Great! You have {len(pyramid.iconic_commitments)} commitments defined")
 
 
-def show_objectives():
-    """Show team objectives section."""
-
-    st.markdown("### Team/Functional Objectives")
-    st.markdown("More granular goals that support iconic commitments")
+def show_team_objectives():
+    """Show team objectives section with NEW relationship options."""
 
     builder = st.session_state.builder
     pyramid = st.session_state.pyramid
 
+    st.markdown("### Tier 8: Team Objectives")
+    st.markdown("**Departmental goals that feed into your strategy** - can link to Commitments OR Intents")
+
+    st.info("""
+    **Guidance:** Team Objectives are departmental goals that must link to EITHER:
+    - **Iconic Commitments (Tier 7):** For tactical teams delivering on commitments
+    - **Strategic Intents (Tier 4):** For strategic teams working directly on aspirations
+
+    This flexibility allows different teams to contribute appropriately. Each objective must link to at least ONE commitment or intent.
+    """)
+
+    has_commitments = len(pyramid.iconic_commitments) > 0
+    has_intents = len(pyramid.strategic_intents) > 0
+
+    if not has_commitments and not has_intents:
+        st.warning("⚠️ Please add Iconic Commitments (Tier 7) or Strategic Intents (Tier 4) first")
+        return
+
     # Show existing
     if pyramid.team_objectives:
-        st.markdown("#### Current Team Objectives")
-        for obj in pyramid.team_objectives:
-            st.markdown(f"**{obj.team_name}:** {obj.name}")
-            st.markdown(f"*{obj.description}*")
-            if obj.metrics:
-                st.markdown(f"*Metrics: {', '.join(obj.metrics)}*")
-            st.markdown("")
+        st.markdown(f"#### Your Team Objectives ({len(pyramid.team_objectives)})")
+
+        for i, obj in enumerate(pyramid.team_objectives):
+            # Determine what it's linked to
+            linked_to = []
+            if obj.primary_commitment_id:
+                commitment = pyramid.get_commitment_by_id(obj.primary_commitment_id)
+                if commitment:
+                    linked_to.append(f"Commitment: {commitment.name}")
+            if obj.primary_intent_id:
+                intent = pyramid.get_intent_by_id(obj.primary_intent_id)
+                if intent:
+                    linked_to.append(f"Intent: {intent.statement[:40]}...")
+
+            link_text = " | ".join(linked_to) if linked_to else "⚠️ Not linked"
+
+            with st.expander(f"**{obj.team_name}:** {obj.name}"):
+                st.markdown(f"*Description:* {obj.description}")
+                st.markdown(f"*Links to:* {link_text}")
+                if obj.metrics:
+                    st.markdown(f"*Metrics:* {', '.join(obj.metrics)}")
+                if obj.owner:
+                    st.markdown(f"*Owner:* {obj.owner}")
+
+                # Edit form
+                with st.form(f"edit_team_obj_{i}"):
+                    new_name = st.text_input("Objective Name", value=obj.name)
+                    new_team_name = st.text_input("Team Name", value=obj.team_name)
+                    new_description = st.text_area("Description", value=obj.description, height=100)
+                    new_owner = st.text_input("Owner (optional)", value=obj.owner or "")
+
+                    # Relationship selection
+                    st.markdown("**Relationship (Select at least one):**")
+
+                    col1, col2 = st.columns(2)
+
+                    with col1:
+                        if has_commitments:
+                            commitment_options = {"None": None}
+                            commitment_options.update({c.name: c.id for c in pyramid.iconic_commitments})
+
+                            current_commitment = "None"
+                            if obj.primary_commitment_id:
+                                commitment = pyramid.get_commitment_by_id(obj.primary_commitment_id)
+                                if commitment:
+                                    current_commitment = commitment.name
+
+                            new_commitment_name = st.selectbox(
+                                "Link to Iconic Commitment",
+                                list(commitment_options.keys()),
+                                index=list(commitment_options.keys()).index(current_commitment) if current_commitment in commitment_options else 0,
+                                help="Select if this team objective supports a specific commitment"
+                            )
+                            new_commitment_id = commitment_options[new_commitment_name]
+                        else:
+                            new_commitment_id = None
+
+                    with col2:
+                        if has_intents:
+                            intent_options = {"None": None}
+                            intent_options.update({f"{i.statement[:40]}...": i.id for i in pyramid.strategic_intents})
+
+                            current_intent = "None"
+                            if obj.primary_intent_id:
+                                intent = pyramid.get_intent_by_id(obj.primary_intent_id)
+                                if intent:
+                                    current_intent = f"{intent.statement[:40]}..."
+
+                            new_intent_name = st.selectbox(
+                                "Link to Strategic Intent",
+                                list(intent_options.keys()),
+                                index=list(intent_options.keys()).index(current_intent) if current_intent in intent_options else 0,
+                                help="Select if this team objective supports a strategic intent"
+                            )
+                            new_intent_id = intent_options[new_intent_name]
+                        else:
+                            new_intent_id = None
+
+                    new_metrics = st.text_input(
+                        "Success Metrics (comma-separated)",
+                        value=", ".join(obj.metrics) if obj.metrics else "",
+                        placeholder="e.g., Ticket volume, Resolution time"
+                    )
+
+                    col_a, col_b = st.columns(2)
+
+                    with col_a:
+                        if st.form_submit_button("💾 Update", use_container_width=True):
+                            # Validate at least one link
+                            if not new_commitment_id and not new_intent_id:
+                                st.error("Must link to at least one Commitment OR Intent")
+                            else:
+                                metrics_list = [m.strip() for m in new_metrics.split(",")] if new_metrics else []
+                                builder.manager.update_team_objective(
+                                    obj.id,
+                                    name=new_name.strip(),
+                                    description=new_description.strip(),
+                                    team_name=new_team_name.strip(),
+                                    primary_commitment_id=new_commitment_id,
+                                    primary_intent_id=new_intent_id,
+                                    metrics=metrics_list,
+                                    owner=new_owner.strip() if new_owner.strip() else None
+                                )
+                                st.success("✓ Updated!")
+                                st.rerun()
+
+                    with col_b:
+                        if st.form_submit_button("🗑️ Remove", use_container_width=True):
+                            pyramid.team_objectives = [to for to in pyramid.team_objectives if to.id != obj.id]
+                            st.success("Removed team objective")
+                            st.rerun()
 
     # Add new
     st.markdown("#### Add New Team Objective")
-    with st.form("add_objective_form"):
-        obj_name = st.text_input("Objective Name")
-        team_name = st.text_input("Team Name")
-        obj_description = st.text_area("Description", height=80)
+    with st.form("add_team_objective_form"):
+        obj_name = st.text_input("Objective Name", placeholder="e.g., Reduce ticket resolution time")
+        team_name = st.text_input("Team Name", placeholder="e.g., HR Operations")
+        obj_description = st.text_area("Description", placeholder="What will be achieved...", height=100)
+        owner = st.text_input("Owner (optional)", placeholder="Who is accountable?")
+
+        # Relationship selection
+        st.markdown("**Relationship (Select at least one):**")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            if has_commitments:
+                commitment_options = {"None": None}
+                commitment_options.update({c.name: c.id for c in pyramid.iconic_commitments})
+                selected_commitment = st.selectbox(
+                    "Link to Iconic Commitment",
+                    list(commitment_options.keys()),
+                    help="Select if this supports a specific commitment"
+                )
+                commitment_id = commitment_options[selected_commitment]
+            else:
+                commitment_id = None
+                st.info("No commitments available")
+
+        with col2:
+            if has_intents:
+                intent_options = {"None": None}
+                intent_options.update({f"{i.statement[:40]}...": i.id for i in pyramid.strategic_intents})
+                selected_intent = st.selectbox(
+                    "Link to Strategic Intent",
+                    list(intent_options.keys()),
+                    help="Select if this supports a strategic intent"
+                )
+                intent_id = intent_options[selected_intent]
+            else:
+                intent_id = None
+                st.info("No intents available")
+
         metrics = st.text_input("Success Metrics (comma-separated)", placeholder="e.g., Ticket volume, Resolution time")
 
-        if st.form_submit_button("➕ Add Team Objective"):
+        if st.form_submit_button("➕ Add Team Objective", use_container_width=True):
             if obj_name.strip() and team_name.strip() and obj_description.strip():
-                metrics_list = [m.strip() for m in metrics.split(",")] if metrics else []
-                builder.manager.add_team_objective(
-                    name=obj_name.strip(),
-                    team_name=team_name.strip(),
-                    description=obj_description.strip(),
-                    metrics=metrics_list
-                )
-                st.success("✓ Team objective added")
-                st.rerun()
+                if not commitment_id and not intent_id:
+                    st.error("Must link to at least one Iconic Commitment OR Strategic Intent")
+                else:
+                    metrics_list = [m.strip() for m in metrics.split(",")] if metrics else []
+                    builder.manager.add_team_objective(
+                        name=obj_name.strip(),
+                        team_name=team_name.strip(),
+                        description=obj_description.strip(),
+                        primary_commitment_id=commitment_id,
+                        metrics=metrics_list,
+                        owner=owner.strip() if owner.strip() else None
+                    )
+                    # Manually set primary_intent_id since add_team_objective doesn't support it yet
+                    if intent_id:
+                        pyramid.team_objectives[-1].primary_intent_id = intent_id
+
+                    st.success("✓ Team objective added")
+                    st.rerun()
+            else:
+                st.error("Name, team name, and description are required")
+
+    # Coaching feedback
+    if len(pyramid.team_objectives) == 0:
+        st.warning("⚠️ Add team objectives to show how departments contribute to strategy")
+    else:
+        st.success(f"✅ You have {len(pyramid.team_objectives)} team objective(s) defined")
+
+
+def show_individual_objectives():
+    """Show individual objectives section with REQUIRED team objective links."""
+
+    builder = st.session_state.builder
+    pyramid = st.session_state.pyramid
+
+    st.markdown("### Tier 9: Individual Objectives")
+    st.markdown("**Personal contributions** - MUST link to at least one Team Objective")
+
+    st.info("""
+    **Guidance:** Individual Objectives show personal contributions to team goals. They:
+    - **MUST link to Team Objectives:** Every individual objective must support at least one team objective
+    - **Show Line of Sight:** Help individuals see how their work connects to strategy
+    - **Enable Accountability:** Clear owners and success criteria
+
+    This is the final tier that cascades strategy down to every person.
+    """)
+
+    if len(pyramid.team_objectives) == 0:
+        st.warning("⚠️ Please add Team Objectives (Tier 8) first")
+        return
+
+    # Show existing
+    if pyramid.individual_objectives:
+        st.markdown(f"#### Your Individual Objectives ({len(pyramid.individual_objectives)})")
+
+        for i, obj in enumerate(pyramid.individual_objectives):
+            # Get linked team objectives
+            linked_teams = []
+            for team_id in obj.team_objective_ids:
+                team_obj = next((to for to in pyramid.team_objectives if to.id == team_id), None)
+                if team_obj:
+                    linked_teams.append(f"{team_obj.team_name}: {team_obj.name}")
+
+            link_text = " | ".join(linked_teams) if linked_teams else "⚠️ Not linked"
+
+            with st.expander(f"**{obj.individual_name}:** {obj.name}"):
+                st.markdown(f"*Description:* {obj.description}")
+                st.markdown(f"*Supports Team Objectives:* {link_text}")
+                if obj.success_criteria:
+                    st.markdown(f"*Success Criteria:* {', '.join(obj.success_criteria)}")
+
+                # Edit form
+                with st.form(f"edit_ind_obj_{i}"):
+                    new_name = st.text_input("Objective Name", value=obj.name)
+                    new_individual_name = st.text_input("Individual Name", value=obj.individual_name)
+                    new_description = st.text_area("Description", value=obj.description, height=100)
+
+                    # Team objective selection (REQUIRED)
+                    team_obj_options = {f"{to.team_name}: {to.name}": to.id for to in pyramid.team_objectives}
+                    current_selections = [f"{to.team_name}: {to.name}" for to in pyramid.team_objectives if to.id in obj.team_objective_ids]
+
+                    new_team_objectives = st.multiselect(
+                        "Supports Team Objectives (REQUIRED - select at least one)",
+                        list(team_obj_options.keys()),
+                        default=current_selections,
+                        help="Select which team objectives this individual objective supports"
+                    )
+
+                    new_success_criteria = st.text_input(
+                        "Success Criteria (comma-separated)",
+                        value=", ".join(obj.success_criteria) if obj.success_criteria else "",
+                        placeholder="e.g., Complete 10 reviews, Achieve 95% satisfaction"
+                    )
+
+                    col_a, col_b = st.columns(2)
+
+                    with col_a:
+                        if st.form_submit_button("💾 Update", use_container_width=True):
+                            if not new_team_objectives:
+                                st.error("Must link to at least one Team Objective")
+                            else:
+                                team_ids = [team_obj_options[name] for name in new_team_objectives]
+                                criteria_list = [c.strip() for c in new_success_criteria.split(",")] if new_success_criteria else []
+
+                                builder.manager.update_individual_objective(
+                                    obj.id,
+                                    name=new_name.strip(),
+                                    description=new_description.strip(),
+                                    individual_name=new_individual_name.strip(),
+                                    team_objective_ids=team_ids,
+                                    success_criteria=criteria_list
+                                )
+                                st.success("✓ Updated!")
+                                st.rerun()
+
+                    with col_b:
+                        if st.form_submit_button("🗑️ Remove", use_container_width=True):
+                            pyramid.individual_objectives = [io for io in pyramid.individual_objectives if io.id != obj.id]
+                            st.success("Removed individual objective")
+                            st.rerun()
+
+    # Add new
+    st.markdown("#### Add New Individual Objective")
+    with st.form("add_individual_objective_form"):
+        ind_name = st.text_input("Objective Name", placeholder="e.g., Complete certification program")
+        individual_name = st.text_input("Individual Name", placeholder="e.g., Jane Smith")
+        ind_description = st.text_area("Description", placeholder="What will be achieved...", height=100)
+
+        # Team objective selection (REQUIRED)
+        team_obj_options = {f"{to.team_name}: {to.name}": to.id for to in pyramid.team_objectives}
+        selected_team_objectives = st.multiselect(
+            "Supports Team Objectives (REQUIRED - select at least one)",
+            list(team_obj_options.keys()),
+            help="Select which team objectives this individual objective supports"
+        )
+
+        success_criteria = st.text_input(
+            "Success Criteria (comma-separated)",
+            placeholder="e.g., Complete 10 reviews, Achieve 95% satisfaction"
+        )
+
+        if st.form_submit_button("➕ Add Individual Objective", use_container_width=True):
+            if ind_name.strip() and individual_name.strip() and ind_description.strip():
+                if not selected_team_objectives:
+                    st.error("Must link to at least one Team Objective")
+                else:
+                    team_ids = [team_obj_options[name] for name in selected_team_objectives]
+                    criteria_list = [c.strip() for c in success_criteria.split(",")] if success_criteria else []
+
+                    builder.manager.add_individual_objective(
+                        name=ind_name.strip(),
+                        individual_name=individual_name.strip(),
+                        description=ind_description.strip(),
+                        team_objective_ids=team_ids,
+                        success_criteria=criteria_list
+                    )
+                    st.success("✓ Individual objective added")
+                    st.rerun()
+            else:
+                st.error("Name, individual name, and description are required")
+
+    # Coaching feedback
+    if len(pyramid.individual_objectives) == 0:
+        st.info("💡 Add individual objectives to show personal contributions to team goals")
+    else:
+        st.success(f"✅ You have {len(pyramid.individual_objectives)} individual objective(s) defined")
 
 
 def show_summary():
@@ -933,7 +1344,8 @@ def show_summary():
 
     with col1:
         st.markdown("#### Purpose")
-        st.metric("Vision", "✓" if summary['has_vision'] else "✗")
+        vision_count = summary.get('vision_statement_count', 0)
+        st.metric("Vision Statements", vision_count)
         st.metric("Values", f"{counts['values']}/3-5")
 
     with col2:
