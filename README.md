@@ -1,9 +1,11 @@
 # Strategic Pyramid Builder
 
-**Version:** 0.1.0
+**Version:** 0.2.0
 **Language:** British English
 
 An interactive tool for building clear, coherent strategy pyramids that cascade from purpose through to individual objectives. Transform bespoke facilitation expertise into scalable, repeatable methodology.
+
+**✨ NEW: Consumer-grade web interface!** Simple, visual, guided workflow - no command line needed.
 
 ## Overview
 
@@ -17,12 +19,14 @@ The Strategic Pyramid Builder helps HR leadership teams (and other functions) cr
 
 ## Key Features
 
+✓ **Consumer-Grade Web UI** - Simple, visual interface - no technical skills required
 ✓ **9-Tier Strategic Pyramid** - From Vision to Individual Objectives
 ✓ **Primary + Secondary Architecture** - Forces strategic choices while acknowledging cross-cutting initiatives
 ✓ **Validation Engine** - Checks for orphaned items, balance, language quality, and structural integrity
-✓ **Multiple Export Formats** - JSON, Markdown (Word/PowerPoint coming soon)
+✓ **Visual Analytics** - Interactive charts showing distribution and balance
+✓ **Multiple Export Formats** - JSON, Markdown with preview (Word/PowerPoint coming soon)
 ✓ **Audience-Specific Views** - Executive summary, leadership document, detailed strategy, team cascade
-✓ **CLI First** - Command-line interface for rapid building (GUI coming later)
+✓ **CLI & Python API** - Command-line interface and programmatic access for power users
 
 ## The 9-Tier Architecture
 
@@ -67,27 +71,50 @@ Personal goals contributing to team objectives
 - Python 3.9 or higher
 - pip (Python package installer)
 
-### Install from source
+### Install Dependencies
 
 ```bash
 # Clone the repository
 git clone <repository-url>
 cd Strategy
 
-# Install in development mode
-pip install -e .
-
-# Or install with dev dependencies
-pip install -e ".[dev]"
+# Install dependencies
+pip install -r requirements.txt
 ```
 
-### Verify installation
+## 🌐 Quick Start - Web UI (Recommended)
+
+**The easiest way to get started!**
+
+### 1. Launch the Web App
 
 ```bash
-pyramid-builder --version
+./run_web_app.sh
 ```
 
-## Quick Start
+Or manually:
+
+```bash
+export PYTHONPATH="${PYTHONPATH}:$(pwd)/src"
+streamlit run streamlit_app.py
+```
+
+### 2. Open Your Browser
+
+The app opens automatically at **http://localhost:8501**
+
+### 3. Start Building
+
+- **Create new pyramid** or **load example**
+- Follow the guided wizard through all 9 tiers
+- Validate your pyramid with visual feedback
+- Export to Markdown with preview
+
+**📚 Full Web UI Guide:** See [WEB_UI_GUIDE.md](WEB_UI_GUIDE.md) for detailed instructions
+
+---
+
+## 💻 Quick Start - CLI (Power Users)
 
 ### 1. Create a new pyramid
 

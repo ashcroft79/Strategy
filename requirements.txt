@@ -19,6 +19,9 @@ click>=8.1.7            # Command-line interface creation
 rich>=13.7.0            # Rich terminal output with colors
 questionary>=2.0.1      # Interactive prompts
 
+# Web UI
+streamlit>=1.28.0       # Web-based user interface
+
 # Testing (optional but recommended)
 pytest>=7.4.3           # Testing framework
 pytest-cov>=4.1.0       # Coverage reporting
