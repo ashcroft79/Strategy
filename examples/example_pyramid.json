@@ -1,0 +1,430 @@
+{
+  "metadata": {
+    "project_name": "People Function Transformation 2026",
+    "organization": "Global Pharma Corp - People Team",
+    "created_by": "Rob Smith (External Facilitator)",
+    "created_at": "2026-01-19T16:40:35.809547",
+    "last_modified": "2026-01-19T16:40:35.810895",
+    "version": "1.0",
+    "description": "Three-year transformation strategy for the People function",
+    "tags": []
+  },
+  "vision": {
+    "id": "7bbced44-b775-4d54-a5da-93d3fdb11dab",
+    "created_at": "2026-01-19T16:40:35.809665",
+    "updated_at": "2026-01-19T16:40:35.809666",
+    "created_by": null,
+    "notes": null,
+    "statement": "Our mission is to partner with, and empower our global workforce with innovative, data-driven and transparent people strategies"
+  },
+  "values": [
+    {
+      "id": "8e12654d-f8ba-4c71-8c11-2891d539a5a7",
+      "created_at": "2026-01-19T16:40:35.809720",
+      "updated_at": "2026-01-19T16:40:35.809720",
+      "created_by": null,
+      "notes": null,
+      "name": "Trust",
+      "description": "We build confidence through transparency and integrity"
+    },
+    {
+      "id": "d5d79e48-0689-4381-8241-4f2e26cac9ae",
+      "created_at": "2026-01-19T16:40:35.809733",
+      "updated_at": "2026-01-19T16:40:35.809733",
+      "created_by": null,
+      "notes": null,
+      "name": "Connected",
+      "description": "We collaborate across boundaries and geographies"
+    },
+    {
+      "id": "268bdf4b-e04c-4c9a-98d9-0094d694582a",
+      "created_at": "2026-01-19T16:40:35.809748",
+      "updated_at": "2026-01-19T16:40:35.809748",
+      "created_by": null,
+      "notes": null,
+      "name": "Bold",
+      "description": "We take smart risks to deliver transformational change"
+    },
+    {
+      "id": "8361a225-a836-472c-8b5b-c371dfee56f4",
+      "created_at": "2026-01-19T16:40:35.809757",
+      "updated_at": "2026-01-19T16:40:35.809757",
+      "created_by": null,
+      "notes": null,
+      "name": "Data-Driven",
+      "description": "We make decisions based on evidence, not assumptions"
+    }
+  ],
+  "behaviours": [
+    {
+      "id": "9a6800f7-b078-48a5-83d7-643e1933de3f",
+      "created_at": "2026-01-19T16:40:35.809800",
+      "updated_at": "2026-01-19T16:40:35.809801",
+      "created_by": null,
+      "notes": null,
+      "statement": "We speak the language of the business, not HR jargon",
+      "value_ids": []
+    },
+    {
+      "id": "074cf7b1-f342-404a-9d0a-f9317a6e7dd3",
+      "created_at": "2026-01-19T16:40:35.809827",
+      "updated_at": "2026-01-19T16:40:35.809828",
+      "created_by": null,
+      "notes": null,
+      "statement": "We challenge ideas respectfully and welcome being challenged",
+      "value_ids": []
+    },
+    {
+      "id": "4b4c241f-c2a8-46dd-be36-6495cde94d2c",
+      "created_at": "2026-01-19T16:40:35.809840",
+      "updated_at": "2026-01-19T16:40:35.809840",
+      "created_by": null,
+      "notes": null,
+      "statement": "We share data openly and explain our decisions clearly",
+      "value_ids": []
+    },
+    {
+      "id": "513caa77-6b12-4ae0-9659-39944f4340ce",
+      "created_at": "2026-01-19T16:40:35.809857",
+      "updated_at": "2026-01-19T16:40:35.809858",
+      "created_by": null,
+      "notes": null,
+      "statement": "We experiment, learn fast, and pivot when needed",
+      "value_ids": []
+    },
+    {
+      "id": "cddb6082-ee24-44f0-b090-cb00a4bea37a",
+      "created_at": "2026-01-19T16:40:35.809872",
+      "updated_at": "2026-01-19T16:40:35.809872",
+      "created_by": null,
+      "notes": null,
+      "statement": "We celebrate success loudly and learn from failure openly",
+      "value_ids": []
+    }
+  ],
+  "strategic_drivers": [
+    {
+      "id": "6d34d427-1fea-4530-8496-f4efdd02757f",
+      "created_at": "2026-01-19T16:40:35.809929",
+      "updated_at": "2026-01-19T16:40:35.809929",
+      "created_by": null,
+      "notes": null,
+      "name": "Experience",
+      "description": "Deliver exceptional employee experiences that drive engagement and performance",
+      "rationale": "Employee experience directly impacts retention and productivity"
+    },
+    {
+      "id": "2328bfde-a0da-43f5-ab24-071d37b3d1a6",
+      "created_at": "2026-01-19T16:40:35.809941",
+      "updated_at": "2026-01-19T16:40:35.809941",
+      "created_by": null,
+      "notes": null,
+      "name": "Partnership",
+      "description": "Be trusted business partners who solve complex problems, not order-takers",
+      "rationale": "We need to shift from transactional service provider to strategic advisor"
+    },
+    {
+      "id": "8486b7a3-9653-4ac9-a62d-d3ee4687812c",
+      "created_at": "2026-01-19T16:40:35.809950",
+      "updated_at": "2026-01-19T16:40:35.809950",
+      "created_by": null,
+      "notes": null,
+      "name": "Simple",
+      "description": "Simplify processes and remove friction from everything we do",
+      "rationale": "Complexity costs time, money, and credibility"
+    }
+  ],
+  "strategic_intents": [
+    {
+      "id": "ab7d8eb9-d117-4350-9876-e7dd7a7f553b",
+      "created_at": "2026-01-19T16:40:35.810016",
+      "updated_at": "2026-01-19T16:40:35.810016",
+      "created_by": null,
+      "notes": null,
+      "statement": "Employees say our systems are easier to use than their personal apps",
+      "driver_id": "6d34d427-1fea-4530-8496-f4efdd02757f",
+      "is_stakeholder_voice": true,
+      "boldness_score": null
+    },
+    {
+      "id": "54988ac9-27a8-44a7-949a-6e566ee0e81f",
+      "created_at": "2026-01-19T16:40:35.810044",
+      "updated_at": "2026-01-19T16:40:35.810045",
+      "created_by": null,
+      "notes": null,
+      "statement": "New joiners tell friends they've never had a better onboarding experience",
+      "driver_id": "6d34d427-1fea-4530-8496-f4efdd02757f",
+      "is_stakeholder_voice": true,
+      "boldness_score": null
+    },
+    {
+      "id": "e6f0c601-379e-402f-be45-fe669ddcd8b0",
+      "created_at": "2026-01-19T16:40:35.810058",
+      "updated_at": "2026-01-19T16:40:35.810058",
+      "created_by": null,
+      "notes": null,
+      "statement": "Business leaders come to us first with their biggest problems \u2013 because they trust we'll solve what others can't",
+      "driver_id": "2328bfde-a0da-43f5-ab24-071d37b3d1a6",
+      "is_stakeholder_voice": true,
+      "boldness_score": null
+    },
+    {
+      "id": "4bfeef2d-0497-44d9-a8f9-6d5e40755b64",
+      "created_at": "2026-01-19T16:40:35.810075",
+      "updated_at": "2026-01-19T16:40:35.810076",
+      "created_by": null,
+      "notes": null,
+      "statement": "Regional MDs say we understand their local challenges better than anyone",
+      "driver_id": "2328bfde-a0da-43f5-ab24-071d37b3d1a6",
+      "is_stakeholder_voice": true,
+      "boldness_score": null
+    },
+    {
+      "id": "933bf88a-e20d-488e-9322-f9af83c0649d",
+      "created_at": "2026-01-19T16:40:35.810090",
+      "updated_at": "2026-01-19T16:40:35.810091",
+      "created_by": null,
+      "notes": null,
+      "statement": "Line managers say they spend 50% less time on admin than a year ago",
+      "driver_id": "8486b7a3-9653-4ac9-a62d-d3ee4687812c",
+      "is_stakeholder_voice": true,
+      "boldness_score": null
+    },
+    {
+      "id": "d43eba32-38e8-4ce3-9e2c-eed59e390a8a",
+      "created_at": "2026-01-19T16:40:35.810103",
+      "updated_at": "2026-01-19T16:40:35.810103",
+      "created_by": null,
+      "notes": null,
+      "statement": "Employees can complete any HR task in under 3 minutes",
+      "driver_id": "8486b7a3-9653-4ac9-a62d-d3ee4687812c",
+      "is_stakeholder_voice": true,
+      "boldness_score": null
+    }
+  ],
+  "enablers": [
+    {
+      "id": "8e849176-c83a-41f0-adba-a11752f16edf",
+      "created_at": "2026-01-19T16:40:35.810155",
+      "updated_at": "2026-01-19T16:40:35.810156",
+      "created_by": null,
+      "notes": null,
+      "name": "Workday HRIS Platform",
+      "description": "Modern, cloud-based HR system replacing legacy tools",
+      "driver_ids": [
+        "6d34d427-1fea-4530-8496-f4efdd02757f",
+        "8486b7a3-9653-4ac9-a62d-d3ee4687812c"
+      ],
+      "enabler_type": "System"
+    },
+    {
+      "id": "31ab541f-c5e6-4f6a-acac-0373ea231bf4",
+      "created_at": "2026-01-19T16:40:35.810167",
+      "updated_at": "2026-01-19T16:40:35.810167",
+      "created_by": null,
+      "notes": null,
+      "name": "People Analytics Capability",
+      "description": "Dedicated team and tools for data-driven insights",
+      "driver_ids": [
+        "2328bfde-a0da-43f5-ab24-071d37b3d1a6"
+      ],
+      "enabler_type": "Capability"
+    },
+    {
+      "id": "9817fac0-fb96-4f58-80cd-0c8a8910a524",
+      "created_at": "2026-01-19T16:40:35.810177",
+      "updated_at": "2026-01-19T16:40:35.810178",
+      "created_by": null,
+      "notes": null,
+      "name": "Agile Operating Model",
+      "description": "Cross-functional squads with empowered decision-making",
+      "driver_ids": [
+        "2328bfde-a0da-43f5-ab24-071d37b3d1a6",
+        "8486b7a3-9653-4ac9-a62d-d3ee4687812c"
+      ],
+      "enabler_type": "Process"
+    }
+  ],
+  "iconic_commitments": [
+    {
+      "id": "de596549-a0d8-4bfd-9b9d-16b3e7bae721",
+      "created_at": "2026-01-19T16:40:35.810236",
+      "updated_at": "2026-01-19T16:40:35.810413",
+      "created_by": "Rob Smith",
+      "notes": null,
+      "name": "Deploy Workday globally",
+      "description": "Complete Workday implementation across all 23 countries, replacing 7 legacy HRIS systems",
+      "horizon": "H1",
+      "target_date": "Q2 2026",
+      "primary_driver_id": "8486b7a3-9653-4ac9-a62d-d3ee4687812c",
+      "primary_intent_ids": [
+        "933bf88a-e20d-488e-9322-f9af83c0649d",
+        "d43eba32-38e8-4ce3-9e2c-eed59e390a8a"
+      ],
+      "secondary_alignments": [
+        {
+          "target_id": "6d34d427-1fea-4530-8496-f4efdd02757f",
+          "is_primary": false,
+          "weighting": 0.3,
+          "rationale": "Better employee experience through modern interface"
+        }
+      ],
+      "is_time_bound": false,
+      "is_tangible": false,
+      "is_measurable": false,
+      "owner": "HRIS Programme Director"
+    },
+    {
+      "id": "2d3f514f-da80-4e43-b6c1-1aba013d7a38",
+      "created_at": "2026-01-19T16:40:35.810278",
+      "updated_at": "2026-01-19T16:40:35.810278",
+      "created_by": "Rob Smith",
+      "notes": null,
+      "name": "Launch Employee Experience Index",
+      "description": "Real-time dashboard tracking 10 key experience metrics, available to all employees",
+      "horizon": "H1",
+      "target_date": "Q1 2026",
+      "primary_driver_id": "6d34d427-1fea-4530-8496-f4efdd02757f",
+      "primary_intent_ids": [
+        "ab7d8eb9-d117-4350-9876-e7dd7a7f553b",
+        "54988ac9-27a8-44a7-949a-6e566ee0e81f"
+      ],
+      "secondary_alignments": [],
+      "is_time_bound": false,
+      "is_tangible": false,
+      "is_measurable": false,
+      "owner": "People Analytics Lead"
+    },
+    {
+      "id": "8466e2f9-4c4f-49ce-8619-e4f9d10e533b",
+      "created_at": "2026-01-19T16:40:35.810297",
+      "updated_at": "2026-01-19T16:40:35.810428",
+      "created_by": "Rob Smith",
+      "notes": null,
+      "name": "Establish Business Partner CoE",
+      "description": "Create Centre of Excellence with 5 senior business partners embedded in each region",
+      "horizon": "H1",
+      "target_date": "Q3 2026",
+      "primary_driver_id": "2328bfde-a0da-43f5-ab24-071d37b3d1a6",
+      "primary_intent_ids": [
+        "e6f0c601-379e-402f-be45-fe669ddcd8b0",
+        "4bfeef2d-0497-44d9-a8f9-6d5e40755b64"
+      ],
+      "secondary_alignments": [
+        {
+          "target_id": "6d34d427-1fea-4530-8496-f4efdd02757f",
+          "is_primary": false,
+          "weighting": 0.2,
+          "rationale": "Better manager experience through dedicated support"
+        }
+      ],
+      "is_time_bound": false,
+      "is_tangible": false,
+      "is_measurable": false,
+      "owner": "Head of Business Partnering"
+    },
+    {
+      "id": "cbb455ad-c54f-43e6-ac12-e0848031fe41",
+      "created_at": "2026-01-19T16:40:35.810326",
+      "updated_at": "2026-01-19T16:40:35.810326",
+      "created_by": "Rob Smith",
+      "notes": null,
+      "name": "Achieve <3min time-to-task",
+      "description": "Reduce average time for employees to complete any HR task to under 3 minutes",
+      "horizon": "H2",
+      "target_date": "Q4 2026",
+      "primary_driver_id": "8486b7a3-9653-4ac9-a62d-d3ee4687812c",
+      "primary_intent_ids": [
+        "933bf88a-e20d-488e-9322-f9af83c0649d",
+        "d43eba32-38e8-4ce3-9e2c-eed59e390a8a"
+      ],
+      "secondary_alignments": [],
+      "is_time_bound": false,
+      "is_tangible": false,
+      "is_measurable": false,
+      "owner": "Employee Services Director"
+    },
+    {
+      "id": "42783472-56d3-4803-8c43-6ab3f33a261b",
+      "created_at": "2026-01-19T16:40:35.810341",
+      "updated_at": "2026-01-19T16:40:35.810341",
+      "created_by": "Rob Smith",
+      "notes": null,
+      "name": "Win 'Best Place to Work' award",
+      "description": "Achieve top 10 ranking in Great Place to Work survey for our industry",
+      "horizon": "H2",
+      "target_date": "Q2 2027",
+      "primary_driver_id": "6d34d427-1fea-4530-8496-f4efdd02757f",
+      "primary_intent_ids": [
+        "ab7d8eb9-d117-4350-9876-e7dd7a7f553b",
+        "54988ac9-27a8-44a7-949a-6e566ee0e81f"
+      ],
+      "secondary_alignments": [],
+      "is_time_bound": false,
+      "is_tangible": false,
+      "is_measurable": false,
+      "owner": "Chief People Officer"
+    },
+    {
+      "id": "856a795a-3a3d-450f-8eb1-6828247728a8",
+      "created_at": "2026-01-19T16:40:35.810357",
+      "updated_at": "2026-01-19T16:40:35.810357",
+      "created_by": "Rob Smith",
+      "notes": null,
+      "name": "Become thought leader in People Analytics",
+      "description": "Publish 3 industry whitepapers and speak at 5 major conferences",
+      "horizon": "H3",
+      "target_date": "Q4 2027",
+      "primary_driver_id": "2328bfde-a0da-43f5-ab24-071d37b3d1a6",
+      "primary_intent_ids": [
+        "e6f0c601-379e-402f-be45-fe669ddcd8b0",
+        "4bfeef2d-0497-44d9-a8f9-6d5e40755b64"
+      ],
+      "secondary_alignments": [],
+      "is_time_bound": false,
+      "is_tangible": false,
+      "is_measurable": false,
+      "owner": "People Analytics Lead"
+    }
+  ],
+  "team_objectives": [
+    {
+      "id": "4e0143f8-7807-439b-9033-6c35e314bec1",
+      "created_at": "2026-01-19T16:40:35.810475",
+      "updated_at": "2026-01-19T16:40:35.810476",
+      "created_by": null,
+      "notes": null,
+      "name": "Reduce Workday tickets by 60%",
+      "description": "Decrease support tickets through better training and UX improvements",
+      "team_name": "People Operations",
+      "primary_commitment_id": "de596549-a0d8-4bfd-9b9d-16b3e7bae721",
+      "secondary_commitment_ids": [],
+      "metrics": [
+        "Ticket volume",
+        "Resolution time",
+        "User satisfaction"
+      ],
+      "owner": "People Ops Manager"
+    },
+    {
+      "id": "5715a9c9-4cba-45fc-b200-72ecf18dea9e",
+      "created_at": "2026-01-19T16:40:35.810489",
+      "updated_at": "2026-01-19T16:40:35.810489",
+      "created_by": null,
+      "notes": null,
+      "name": "Embed analytics in all business reviews",
+      "description": "Ensure data-driven insights in every quarterly business review",
+      "team_name": "People Analytics",
+      "primary_commitment_id": "2d3f514f-da80-4e43-b6c1-1aba013d7a38",
+      "secondary_commitment_ids": [],
+      "metrics": [
+        "% of reviews with data",
+        "Quality score",
+        "Action rate"
+      ],
+      "owner": "Analytics Team Lead"
+    }
+  ],
+  "individual_objectives": [],
+  "validation_results": null
+}

@@ -1,0 +1,123 @@
+╔══════════════════════════════════════════════════════════════════╗
+║                                                                  ║
+║         STRATEGIC PYRAMID BUILDER - WINDOWS QUICK START         ║
+║                          Version 0.2.0                           ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+
+STEP 1: OPEN COMMAND PROMPT OR POWERSHELL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Press: Windows key + R
+Type: cmd
+Press: Enter
+
+
+STEP 2: GO TO THE STRATEGY FOLDER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Type this (replace with YOUR path):
+
+    cd C:\Users\YourName\Downloads\Strategy
+
+Tip: Drag the Strategy folder into the window to get the path!
+
+
+STEP 3: INSTALL DEPENDENCIES (FIRST TIME ONLY)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Copy and paste this, press Enter:
+
+    pip install streamlit plotly pydantic python-dateutil click rich
+
+Wait 1-2 minutes. You'll see lots of text - that's normal!
+
+
+STEP 4: LAUNCH THE WEB APP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+EASIEST WAY: Double-click this file in File Explorer:
+
+    launch_windows.bat
+
+OR MANUALLY: Copy and paste this into Command Prompt:
+
+    set PYTHONPATH=%PYTHONPATH%;%CD%\src
+    streamlit run streamlit_app.py
+
+
+STEP 5: USE THE WEB INTERFACE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Your browser will open to: http://localhost:8501
+
+Try the example first:
+  1. Click "📖 Load Example Pyramid"
+  2. Click "✓ Validate" in the sidebar
+  3. Click "🔍 Run Validation" button
+  4. Explore the results!
+
+Or create your own:
+  1. Click "Create New Pyramid" section
+  2. Fill in the form
+  3. Click "✨ Create New Pyramid"
+  4. Go to "🔨 Build Pyramid" in sidebar
+  5. Fill in your strategy tier by tier!
+
+
+IMPORTANT: KEEP THE BLACK WINDOW OPEN!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The Command Prompt window MUST stay open while using the app.
+You can minimize it, but don't close it!
+
+
+HOW TO STOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When you're done:
+  1. Go back to Command Prompt window
+  2. Press Ctrl + C
+  3. Type: y
+  4. Press Enter
+
+
+HELP & TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+See: WINDOWS_GUIDE.md for complete help
+
+Common Issues:
+
+  "python is not recognized"
+    → Install Python from python.org
+    → Check "Add Python to PATH" during installation
+
+  "streamlit is not recognized"
+    → Use: python -m streamlit run streamlit_app.py
+
+  Port 8501 already in use
+    → Stop the old app (Ctrl+C)
+    → Or use: streamlit run streamlit_app.py --server.port 8502
+
+  Browser doesn't open
+    → Manually open: http://localhost:8501
+
+
+QUICK REFERENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Start app:          Double-click launch_windows.bat
+Stop app:           Ctrl + C in Command Prompt
+Web address:        http://localhost:8501
+Your files:         C:\Users\YourName\Downloads\
+Saved pyramids:     Strategy\outputs\
+
+
+═══════════════════════════════════════════════════════════════════
+
+Need help? Read WINDOWS_GUIDE.md for detailed instructions!
+
+Good luck building your strategic pyramid! 🏛️
+
+═══════════════════════════════════════════════════════════════════
