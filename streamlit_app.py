@@ -295,11 +295,10 @@ with st.sidebar:
         if st.button("📊 View Summary"):
             st.session_state.show_summary = True
         if st.button("🔄 New Pyramid"):
-            if st.confirm("Start a new pyramid? Current work will be saved first."):
-                st.session_state.step = 'home'
-                st.session_state.pyramid = None
-                st.session_state.builder = None
-                st.rerun()
+            st.session_state.step = 'home'
+            st.session_state.pyramid = None
+            st.session_state.builder = None
+            st.rerun()
 
     st.markdown("---")
     st.caption("**Version 0.4.0** - Enhanced Editing & Relationships")

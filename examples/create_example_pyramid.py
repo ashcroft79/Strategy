@@ -9,6 +9,7 @@ from pyramid_builder.core.builder import PyramidBuilder
 from pyramid_builder.validation.validator import PyramidValidator
 from pyramid_builder.exports.markdown_exporter import MarkdownExporter
 from pyramid_builder.exports.json_exporter import JSONExporter
+from pyramid_builder.models.pyramid import StatementType
 
 
 def main():
@@ -36,12 +37,22 @@ def main():
 
     print("Adding Purpose section...")
 
-    # Vision
-    builder.manager.set_vision(
-        "Our mission is to partner with, and empower our global workforce with "
-        "innovative, data-driven and transparent people strategies"
+    # Vision - Multiple statement types (NEW in v0.4.0)
+    builder.manager.add_vision_statement(
+        statement_type=StatementType.VISION,
+        statement="To be the most trusted and innovative People function in our industry"
     )
-    print("✓ Vision set")
+    builder.manager.add_vision_statement(
+        statement_type=StatementType.MISSION,
+        statement="Our mission is to partner with, and empower our global workforce with "
+                 "innovative, data-driven and transparent people strategies"
+    )
+    builder.manager.add_vision_statement(
+        statement_type=StatementType.PASSION,
+        statement="We're passionate about transforming HR from a compliance function "
+                 "to a strategic growth enabler"
+    )
+    print("✓ Added 3 purpose statements (vision, mission, passion)")
 
     # Values
     values_data = [
@@ -300,33 +311,111 @@ def main():
     print()
 
     # ========================================================================
-    # 8. TEAM OBJECTIVES (Examples)
+    # 8. TEAM OBJECTIVES (NEW dual-path model in v0.4.0)
     # ========================================================================
 
     print("Adding Team Objectives...")
 
-    team_objectives = [
+    # Example 1: Team objective linked to COMMITMENT (tactical)
+    team_obj_1 = builder.manager.add_team_objective(
+        name="Reduce Workday tickets by 60%",
+        description="Decrease support tickets through better training and UX improvements",
+        team_name="People Operations",
+        primary_commitment_id=workday_commitment.id,
+        metrics=["Ticket volume", "Resolution time", "User satisfaction"],
+        owner="People Ops Manager"
+    )
+    print("✓ Added team objective → Commitment link")
+
+    # Example 2: Team objective linked to COMMITMENT (tactical)
+    team_obj_2 = builder.manager.add_team_objective(
+        name="Embed analytics in all business reviews",
+        description="Ensure data-driven insights in every quarterly business review",
+        team_name="People Analytics",
+        primary_commitment_id=next(c.id for c in created_commitments if "Experience Index" in c.name),
+        metrics=["% of reviews with data", "Quality score", "Action rate"],
+        owner="Analytics Team Lead"
+    )
+    print("✓ Added team objective → Commitment link")
+
+    # Example 3: Team objective linked to STRATEGIC INTENT (strategic) - NEW!
+    partnership_intent = next(i for i in created_intents if "Business leaders come to us" in i.statement)
+    team_obj_3 = builder.manager.add_team_objective(
+        name="Build executive coaching capability",
+        description="Train all senior BPs in executive coaching methodologies",
+        team_name="Business Partnering",
+        primary_intent_id=partnership_intent.id,
+        metrics=["Number certified", "Executive satisfaction", "Problem-solving rate"],
+        owner="Head of Business Partnering"
+    )
+    print("✓ Added team objective → Strategic Intent link (NEW in v0.4.0)")
+
+    # Example 4: Team objective linked to STRATEGIC INTENT (strategic) - NEW!
+    experience_intent = next(i for i in created_intents if "systems are easier" in i.statement)
+    team_obj_4 = builder.manager.add_team_objective(
+        name="Launch mobile-first HR services",
+        description="Redesign top 10 HR services for mobile-first experience",
+        team_name="Digital Experience",
+        primary_intent_id=experience_intent.id,
+        metrics=["Mobile usage %", "Task completion time", "User satisfaction"],
+        owner="Digital Experience Manager"
+    )
+    print("✓ Added team objective → Strategic Intent link (NEW in v0.4.0)")
+
+    created_team_objectives = [team_obj_1, team_obj_2, team_obj_3, team_obj_4]
+    print(f"✓ Added {len(created_team_objectives)} team objectives (2 → Commitments, 2 → Intents)")
+    print()
+
+    # ========================================================================
+    # 9. INDIVIDUAL OBJECTIVES (NEW in v0.4.0)
+    # ========================================================================
+
+    print("Adding Individual Objectives...")
+
+    individual_objectives_data = [
         {
-            "name": "Reduce Workday tickets by 60%",
-            "description": "Decrease support tickets through better training and UX improvements",
-            "team_name": "People Operations",
-            "primary_commitment_id": workday_commitment.id,
-            "metrics": ["Ticket volume", "Resolution time", "User satisfaction"],
-            "owner": "People Ops Manager"
+            "name": "Complete Workday admin certification",
+            "description": "Achieve Workday certified administrator status for HCM module",
+            "individual_name": "Sarah Johnson",
+            "team_objective_ids": [team_obj_1.id],
+            "success_criteria": ["Pass certification exam", "Complete 3 real-world projects", "Achieve 95%+ score"]
         },
         {
-            "name": "Embed analytics in all business reviews",
-            "description": "Ensure data-driven insights in every quarterly business review",
-            "team_name": "People Analytics",
-            "primary_commitment_id": next(c.id for c in created_commitments if "Experience Index" in c.name),
-            "metrics": ["% of reviews with data", "Quality score", "Action rate"],
-            "owner": "Analytics Team Lead"
+            "name": "Build executive dashboard prototypes",
+            "description": "Create 5 interactive dashboard prototypes for C-suite reviews",
+            "individual_name": "Michael Chen",
+            "team_objective_ids": [team_obj_2.id],
+            "success_criteria": ["5 prototypes completed", "Executive feedback >4.5/5", "2 adopted for production"]
+        },
+        {
+            "name": "Deliver coaching to 3 executives",
+            "description": "Provide 1-on-1 executive coaching to 3 senior leaders",
+            "individual_name": "Emma Williams",
+            "team_objective_ids": [team_obj_3.id],
+            "success_criteria": ["3 coaching relationships established", "Achieve ICF certification", "Executive NPS >9"]
+        },
+        {
+            "name": "Lead mobile UX research",
+            "description": "Conduct user research with 50+ employees on mobile HR needs",
+            "individual_name": "David Rodriguez",
+            "team_objective_ids": [team_obj_4.id],
+            "success_criteria": ["Interview 50 users", "Deliver insights report", "Present to leadership"]
+        },
+        {
+            "name": "Support analytics AND mobile initiatives",
+            "description": "Provide data insights for mobile service prioritization",
+            "individual_name": "Lisa Anderson",
+            "team_objective_ids": [team_obj_2.id, team_obj_4.id],  # Links to MULTIPLE team objectives
+            "success_criteria": ["Deliver usage analytics", "Support prioritization decisions", "Track mobile adoption"]
         },
     ]
 
-    for obj_data in team_objectives:
-        builder.manager.add_team_objective(**obj_data)
-    print(f"✓ Added {len(team_objectives)} team objectives")
+    for ind_obj_data in individual_objectives_data:
+        builder.manager.add_individual_objective(**ind_obj_data)
+
+    print(f"✓ Added {len(individual_objectives_data)} individual objectives")
+    print("  - All linked to team objectives (required in v0.4.0)")
+    print("  - One individual supports MULTIPLE team objectives")
     print()
 
     # ========================================================================
