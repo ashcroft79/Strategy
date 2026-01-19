@@ -152,12 +152,12 @@ def show():
         """)
 
     with col3:
-        st.markdown("### 🔄 Coming Soon")
+        st.markdown("### ✅ Current (v0.4.0)")
         st.markdown("""
-        - PDF export
-        - Advanced analytics
-        - Collaboration features
-        - Template library
+        - Edit functionality for all elements ✓
+        - Multiple vision statement types ✓
+        - Enhanced coaching guidance ✓
+        - Team → Commitment/Intent relationships ✓
         """)
 
     st.markdown("---")
@@ -188,7 +188,7 @@ def show():
     - [STREAMLIT_CLOUD_DEPLOY.md](STREAMLIT_CLOUD_DEPLOY.md) - Cloud deployment guide
     - [WEB_UI_GUIDE.md](WEB_UI_GUIDE.md) - Web UI user guide
 
-    **Version:** 0.3.0 (Professional Edition)
+    **Version:** 0.4.0 (Enhanced Editing & Relationships)
 
     **License:** MIT License
     """)

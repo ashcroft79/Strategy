@@ -23,6 +23,21 @@ class MarkdownExporter:
         """
         self.pyramid = pyramid
 
+    def _format_vision_statements(self, heading="## Our Purpose"):
+        """Format vision statements (handles new multi-statement structure)."""
+        lines = []
+        if not self.pyramid.vision or not self.pyramid.vision.statements:
+            return lines
+
+        lines.append(heading)
+        lines.append("")
+
+        for stmt in self.pyramid.vision.get_statements_ordered():
+            lines.append(f"**{stmt.statement_type.value.title()}:** {stmt.statement}")
+            lines.append("")
+
+        return lines
+
     def export(
         self,
         filepath: str,
@@ -74,11 +89,8 @@ class MarkdownExporter:
         lines.append("")
 
         # Vision
-        if self.pyramid.vision:
-            lines.append("## Our Purpose")
-            lines.append("")
-            lines.append(f"> {self.pyramid.vision.statement}")
-            lines.append("")
+        # Vision/Mission/Belief statements
+        lines.extend(self._format_vision_statements("## Our Purpose"))
 
         # Strategic Drivers (brief)
         if self.pyramid.strategic_drivers:
@@ -147,11 +159,8 @@ class MarkdownExporter:
         lines.append("*Why we exist and what matters to us*")
         lines.append("")
 
-        if self.pyramid.vision:
-            lines.append("### Vision")
-            lines.append("")
-            lines.append(f"> {self.pyramid.vision.statement}")
-            lines.append("")
+        # Vision/Mission/Belief statements
+        lines.extend(self._format_vision_statements("### Vision"))
 
         if self.pyramid.values:
             lines.append("### Values")
@@ -359,11 +368,8 @@ class MarkdownExporter:
         lines.append("*Line of sight from purpose to team objectives*")
         lines.append("")
 
-        # Vision
-        if self.pyramid.vision:
-            lines.append("### Our Purpose")
-            lines.append(f"> {self.pyramid.vision.statement}")
-            lines.append("")
+        # Vision/Mission/Belief statements
+        lines.extend(self._format_vision_statements("### Our Purpose"))
 
         # For each driver, show the cascade
         for driver in self.pyramid.strategic_drivers:

@@ -302,7 +302,7 @@ with st.sidebar:
                 st.rerun()
 
     st.markdown("---")
-    st.caption("**Version 0.3.0** - Professional Edition")
+    st.caption("**Version 0.4.0** - Enhanced Editing & Relationships")
     st.caption("Built with ❤️ for strategic clarity")
 
 # Route to appropriate page

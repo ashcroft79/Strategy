@@ -46,6 +46,24 @@ class WordExporter:
             # Style might already exist
             pass
 
+    def _add_vision_statements(self, heading_level=2):
+        """Add vision statements to the document (handles new multi-statement structure)."""
+        if not self.pyramid.vision or not self.pyramid.vision.statements:
+            return
+
+        self.doc.add_heading('Our Purpose', level=heading_level)
+
+        for stmt in self.pyramid.vision.get_statements_ordered():
+            # Add statement type as subheading
+            p = self.doc.add_paragraph()
+            run = p.add_run(f"{stmt.statement_type.value.title()}: ")
+            run.bold = True
+            run.font.color.rgb = RGBColor(31, 119, 180)
+
+            # Add statement content
+            run_content = p.add_run(stmt.statement)
+            run_content.italic = True
+
     def export(
         self,
         filepath: str,
@@ -119,10 +137,8 @@ class WordExporter:
         self.doc.add_heading('Executive Summary', level=1)
 
         # Our Purpose
-        if self.pyramid.vision:
-            self.doc.add_heading('Our Purpose', level=2)
-            p = self.doc.add_paragraph()
-            p.add_run(self.pyramid.vision.statement).italic = True
+        # Vision/Mission/Belief statements
+        self._add_vision_statements(heading_level=2)
 
         # Strategic Focus
         if self.pyramid.strategic_drivers:
@@ -157,11 +173,8 @@ class WordExporter:
         self.doc.add_heading('Section 1: Purpose', level=1)
         self.doc.add_paragraph('Why we exist and what matters to us').italic = True
 
-        if self.pyramid.vision:
-            self.doc.add_heading('Vision', level=2)
-            p = self.doc.add_paragraph()
-            p.add_run(self.pyramid.vision.statement).italic = True
-            p.add_run().font.size = Pt(12)
+        # Vision/Mission/Belief statements
+        self._add_vision_statements(heading_level=2)
 
         if self.pyramid.values:
             self.doc.add_heading('Values', level=2)
@@ -328,10 +341,8 @@ class WordExporter:
         self.doc.add_paragraph()
 
         # Vision
-        if self.pyramid.vision:
-            self.doc.add_heading('Our Purpose', level=2)
-            p = self.doc.add_paragraph()
-            p.add_run(self.pyramid.vision.statement).italic = True
+        # Vision/Mission/Belief statements
+        self._add_vision_statements(heading_level=2)
 
         # For each driver, show the cascade
         for driver in self.pyramid.strategic_drivers:

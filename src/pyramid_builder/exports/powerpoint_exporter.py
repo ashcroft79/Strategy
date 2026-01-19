@@ -105,20 +105,41 @@ class PowerPointExporter:
         slide.shapes.title.text = title
         return slide
 
+    def _add_vision_slides(self):
+        """Add slides for vision statements (handles new multi-statement structure)."""
+        if not self.pyramid.vision or not self.pyramid.vision.statements:
+            return
+
+        slide = self._add_content_slide("Our Purpose")
+        text_frame = slide.placeholders[1].text_frame
+        text_frame.clear()
+
+        for i, stmt in enumerate(self.pyramid.vision.get_statements_ordered()):
+            if i > 0:
+                text_frame.add_paragraph()
+
+            p = text_frame.paragraphs[i]
+            # Add statement type as bold prefix
+            run = p.add_run()
+            run.text = f"{stmt.statement_type.value.title()}: "
+            run.font.bold = True
+            run.font.color.rgb = self.primary_color
+            run.font.size = Pt(20)
+
+            # Add statement content
+            run_content = p.add_run()
+            run_content.text = stmt.statement
+            run_content.font.italic = True
+            run_content.font.size = Pt(20)
+
+            p.level = 0
+            p.space_after = Pt(12)
+
     def _generate_executive_presentation(self):
         """Generate executive presentation (5-8 slides)."""
         # Slide 1: Purpose
-        if self.pyramid.vision:
-            slide = self._add_content_slide("Our Purpose")
-            text_frame = slide.placeholders[1].text_frame
-            text_frame.clear()
-
-            p = text_frame.paragraphs[0]
-            p.text = self.pyramid.vision.statement
-            p.font.size = Pt(24)
-            p.font.italic = True
-            p.alignment = PP_ALIGN.CENTER
-            p.level = 0
+        # Vision/Mission/Belief statements
+        self._add_vision_slides()
 
         # Slide 2: Values
         if self.pyramid.values:
@@ -194,16 +215,8 @@ class PowerPointExporter:
         self._add_section_divider("Section 1: Purpose", "Why we exist")
 
         # Purpose slides
-        if self.pyramid.vision:
-            slide = self._add_content_slide("Our Vision")
-            text_frame = slide.placeholders[1].text_frame
-            text_frame.clear()
-
-            p = text_frame.paragraphs[0]
-            p.text = self.pyramid.vision.statement
-            p.font.size = Pt(28)
-            p.font.italic = True
-            p.alignment = PP_ALIGN.CENTER
+        # Vision/Mission/Belief statements
+        self._add_vision_slides()
 
         if self.pyramid.values:
             slide = self._add_content_slide("Our Values")
