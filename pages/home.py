@@ -8,6 +8,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from pyramid_builder.core.builder import PyramidBuilder
+from pyramid_builder.visualization import PyramidDiagram
 
 
 def show():
@@ -197,59 +198,61 @@ def show_pyramid_loaded():
 
     st.markdown("---")
 
-    # Show pyramid contents
-    st.markdown("### 📊 Pyramid Contents")
+    # Visual pyramid diagram
+    st.markdown("### 🏛️ Visual Pyramid Structure")
 
-    summary = st.session_state.builder.get_pyramid_summary()
-    counts = summary['counts']
+    diagram = PyramidDiagram(pyramid)
 
-    # Create metrics
-    col1, col2, col3, col4 = st.columns(4)
+    # Create tabs for different visualizations
+    viz_tabs = st.tabs(["📊 Pyramid Diagram", "🎯 Distribution", "📅 Timeline", "📈 Statistics"])
 
-    with col1:
-        st.metric("Vision", "✓" if summary['has_vision'] else "✗")
-        st.metric("Values", counts['values'])
+    with viz_tabs[0]:
+        st.markdown("Interactive visualization of your 9-tier strategic pyramid:")
+        pyramid_fig = diagram.create_pyramid_diagram(show_counts=True)
+        st.plotly_chart(pyramid_fig, use_container_width=True)
 
-    with col2:
-        st.metric("Behaviours", counts['behaviours'])
-        st.metric("Enablers", counts['enablers'])
+    with viz_tabs[1]:
+        st.markdown("See how your Iconic Commitments are distributed across Strategic Drivers:")
+        sunburst_fig = diagram.create_distribution_sunburst()
+        st.plotly_chart(sunburst_fig, use_container_width=True)
 
-    with col3:
-        st.metric("Strategic Drivers", counts['strategic_drivers'])
-        st.metric("Strategic Intents", counts['strategic_intents'])
+    with viz_tabs[2]:
+        st.markdown("View your commitments organized by time horizon (H1, H2, H3):")
+        timeline_fig = diagram.create_horizon_timeline()
+        st.plotly_chart(timeline_fig, use_container_width=True)
 
-    with col4:
-        st.metric("Iconic Commitments", counts['iconic_commitments'])
-        st.metric("Team Objectives", counts['team_objectives'])
+    with viz_tabs[3]:
+        st.markdown("### 📊 Pyramid Statistics")
 
-    # Distribution
-    if counts['iconic_commitments'] > 0 and counts['strategic_drivers'] > 0:
-        st.markdown("---")
-        st.markdown("### 📈 Distribution Across Drivers")
+        summary = st.session_state.builder.get_pyramid_summary()
+        counts = summary['counts']
 
-        distribution = summary['distribution_by_driver']
+        # Create metrics
+        col1, col2, col3, col4 = st.columns(4)
 
-        import plotly.graph_objects as go
+        with col1:
+            st.metric("Vision", "✓" if summary['has_vision'] else "✗")
+            st.metric("Values", counts['values'])
 
-        fig = go.Figure(data=[
-            go.Bar(
-                x=list(distribution.keys()),
-                y=list(distribution.values()),
-                marker_color='#1f77b4',
-                text=list(distribution.values()),
-                textposition='auto',
-            )
-        ])
+        with col2:
+            st.metric("Behaviours", counts['behaviours'])
+            st.metric("Enablers", counts['enablers'])
 
-        fig.update_layout(
-            title="Iconic Commitments by Strategic Driver",
-            xaxis_title="Strategic Driver",
-            yaxis_title="Number of Commitments",
-            height=400,
-            showlegend=False
-        )
+        with col3:
+            st.metric("Strategic Drivers", counts['strategic_drivers'])
+            st.metric("Strategic Intents", counts['strategic_intents'])
 
-        st.plotly_chart(fig, use_container_width=True)
+        with col4:
+            st.metric("Iconic Commitments", counts['iconic_commitments'])
+            st.metric("Team Objectives", counts['team_objectives'])
+
+        # Distribution bar chart
+        if counts['iconic_commitments'] > 0 and counts['strategic_drivers'] > 0:
+            st.markdown("---")
+            st.markdown("### 📈 Intents & Commitments by Driver")
+
+            network_fig = diagram.create_network_diagram()
+            st.plotly_chart(network_fig, use_container_width=True)
 
     # Next steps
     st.markdown("---")
