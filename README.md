@@ -1,11 +1,11 @@
 # Strategic Pyramid Builder
 
-**Version:** 0.2.0
+**Version:** 0.3.0 - Professional Edition
 **Language:** British English
 
 An interactive tool for building clear, coherent strategy pyramids that cascade from purpose through to individual objectives. Transform bespoke facilitation expertise into scalable, repeatable methodology.
 
-**✨ NEW: Consumer-grade web interface!** Simple, visual, guided workflow - no command line needed.
+**✨ NEW in v0.3.0:** Professional document exports (Word, PowerPoint), interactive visual pyramid diagrams, and premium UI polish!
 
 ## Overview
 
@@ -19,13 +19,15 @@ The Strategic Pyramid Builder helps HR leadership teams (and other functions) cr
 
 ## Key Features
 
-✓ **Consumer-Grade Web UI** - Simple, visual interface - no technical skills required
-✓ **9-Tier Strategic Pyramid** - From Vision to Individual Objectives
+✓ **Professional Document Exports** - Word (DOCX), PowerPoint (PPTX), Markdown, JSON - all with audience-specific formats
+✓ **Interactive Visual Pyramid Diagrams** - Beautiful pyramid visualization, sunburst charts, timeline views, network diagrams
+✓ **Premium UI Design** - Modern, polished interface with smooth animations and professional styling
+✓ **9-Tier Strategic Pyramid** - Complete cascade from Vision to Individual Objectives
 ✓ **Primary + Secondary Architecture** - Forces strategic choices while acknowledging cross-cutting initiatives
-✓ **Validation Engine** - Checks for orphaned items, balance, language quality, and structural integrity
-✓ **Visual Analytics** - Interactive charts showing distribution and balance
-✓ **Multiple Export Formats** - JSON, Markdown with preview (Word/PowerPoint coming soon)
-✓ **Audience-Specific Views** - Executive summary, leadership document, detailed strategy, team cascade
+✓ **Comprehensive Validation Engine** - 8 validation checks for structure, balance, language quality, and coherence
+✓ **Cloud-Ready Deployment** - Deploy to Streamlit Cloud in minutes (like Vercel for Python)
+✓ **Audience-Specific Views** - Executive (1-2 pages), Leadership (5-10 pages), Detailed (15-20 pages), Team Cascade
+✓ **Consumer-Grade Web UI** - Simple, visual interface - no technical skills required
 ✓ **CLI & Python API** - Command-line interface and programmatic access for power users
 
 ## The 9-Tier Architecture
