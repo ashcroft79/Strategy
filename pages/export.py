@@ -9,6 +9,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from pyramid_builder.exports.markdown_exporter import MarkdownExporter
 from pyramid_builder.exports.json_exporter import JSONExporter
+from pyramid_builder.exports.word_exporter import WordExporter
+from pyramid_builder.exports.powerpoint_exporter import PowerPointExporter
 
 
 def show():
@@ -29,13 +31,285 @@ def show():
     # Export options
     st.markdown("### Choose Export Format")
 
-    format_tabs = st.tabs(["📄 Markdown", "💾 JSON"])
+    format_tabs = st.tabs(["📝 Word", "📊 PowerPoint", "📄 Markdown", "💾 JSON"])
 
     with format_tabs[0]:
-        show_markdown_export()
+        show_word_export()
 
     with format_tabs[1]:
+        show_powerpoint_export()
+
+    with format_tabs[2]:
+        show_markdown_export()
+
+    with format_tabs[3]:
         show_json_export()
+
+
+def show_word_export():
+    """Show Word (DOCX) export options."""
+
+    pyramid = st.session_state.pyramid
+
+    st.markdown("### Word Document Export")
+    st.markdown("📝 Generate professional Word documents for sharing and editing")
+
+    # Audience selection
+    audience = st.selectbox(
+        "Select Target Audience",
+        [
+            "Executive (1-2 pages)",
+            "Leadership (5-10 pages)",
+            "Detailed (15-20 pages)",
+            "Team Cascade"
+        ],
+        help="Different audiences need different levels of detail",
+        key="word_audience"
+    )
+
+    # Map selection to audience code
+    audience_map = {
+        "Executive (1-2 pages)": "executive",
+        "Leadership (5-10 pages)": "leadership",
+        "Detailed (15-20 pages)": "detailed",
+        "Team Cascade": "team"
+    }
+    audience_code = audience_map[audience]
+
+    # Description
+    descriptions = {
+        "executive": """
+        **Executive Summary Document**
+        - Professional cover page
+        - Purpose and values
+        - Strategic drivers overview
+        - Top 5 iconic commitments
+        - **Perfect for:** Board papers, executive briefings
+        """,
+        "leadership": """
+        **Leadership Strategy Document**
+        - Complete strategic pyramid
+        - All drivers with strategic intents
+        - All iconic commitments (organized by horizon)
+        - Distribution analysis table
+        - **Perfect for:** Leadership team meetings, planning sessions
+        """,
+        "detailed": """
+        **Detailed Strategy Pack**
+        - Full pyramid with all tiers
+        - Team and individual objectives
+        - Complete relationship mapping
+        - Implementation details
+        - **Perfect for:** Implementation planning, facilitation
+        """,
+        "team": """
+        **Team Cascade Document**
+        - Purpose → Drivers → Commitments → Team objectives
+        - Clear line of sight for each team
+        - Filtered views by driver
+        - **Perfect for:** Team briefings, cascading strategy
+        """
+    }
+
+    st.markdown(descriptions[audience_code])
+
+    include_cover = st.checkbox("Include professional cover page", value=True, key="word_cover")
+
+    st.markdown("---")
+
+    # Export button
+    col1, col2, col3 = st.columns([1, 1, 1])
+
+    with col2:
+        if st.button("📥 Generate Word Document", use_container_width=True, type="primary", key="word_export"):
+            with st.spinner("✨ Creating professional Word document..."):
+                try:
+                    import tempfile
+                    import os
+
+                    # Create temporary file
+                    with tempfile.NamedTemporaryFile(delete=False, suffix='.docx') as tmp_file:
+                        tmp_path = tmp_file.name
+
+                    # Generate Word document
+                    exporter = WordExporter(pyramid)
+                    exporter.export(tmp_path, audience=audience_code, include_cover_page=include_cover)
+
+                    # Read the file
+                    with open(tmp_path, 'rb') as f:
+                        docx_data = f.read()
+
+                    # Clean up
+                    os.unlink(tmp_path)
+
+                    # Generate filename
+                    project_name = pyramid.metadata.project_name.lower().replace(" ", "_")
+                    filename = f"{project_name}_{audience_code}.docx"
+
+                    # Download button
+                    st.download_button(
+                        label=f"💾 Download {filename}",
+                        data=docx_data,
+                        file_name=filename,
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        use_container_width=True
+                    )
+
+                    st.success("✅ Word document generated successfully!")
+
+                except Exception as e:
+                    st.error(f"Error generating Word document: {str(e)}")
+
+    st.markdown("---")
+    st.markdown("### ✨ What You Get")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("""
+        **Professional formatting:**
+        - Clean, modern layout
+        - Proper heading hierarchy
+        - Formatted tables
+        - Cover page with metadata
+        """)
+
+    with col2:
+        st.markdown("""
+        **Ready to use:**
+        - Fully editable in Word
+        - Share via email
+        - Print-ready
+        - Track changes enabled
+        """)
+
+
+def show_powerpoint_export():
+    """Show PowerPoint (PPTX) export options."""
+
+    pyramid = st.session_state.pyramid
+
+    st.markdown("### PowerPoint Presentation Export")
+    st.markdown("📊 Generate professional presentation slides")
+
+    # Audience selection
+    audience = st.selectbox(
+        "Select Target Audience",
+        [
+            "Executive (5-8 slides)",
+            "Leadership (15-20 slides)",
+            "Detailed (25-30 slides)"
+        ],
+        help="Different audiences need different amounts of detail",
+        key="ppt_audience"
+    )
+
+    # Map selection to audience code
+    audience_map = {
+        "Executive (5-8 slides)": "executive",
+        "Leadership (15-20 slides)": "leadership",
+        "Detailed (25-30 slides)": "detailed"
+    }
+    audience_code = audience_map[audience]
+
+    # Description
+    descriptions = {
+        "executive": """
+        **Executive Presentation (5-8 slides)**
+        - Purpose and values (1-2 slides)
+        - Strategic drivers (1 slide)
+        - Key commitments by horizon (3-4 slides)
+        - **Perfect for:** Board presentations, quick updates
+        """,
+        "leadership": """
+        **Leadership Presentation (15-20 slides)**
+        - Complete purpose section
+        - One slide per strategic driver
+        - All iconic commitments
+        - Distribution analysis
+        - **Perfect for:** Leadership offsites, strategy reviews
+        """,
+        "detailed": """
+        **Detailed Presentation (25-30 slides)**
+        - Full strategic pyramid
+        - Enablers and team objectives
+        - Detailed breakdowns
+        - Implementation timeline
+        - **Perfect for:** Workshops, facilitation sessions
+        """
+    }
+
+    st.markdown(descriptions[audience_code])
+
+    include_title = st.checkbox("Include title slide", value=True, key="ppt_title")
+
+    st.markdown("---")
+
+    # Export button
+    col1, col2, col3 = st.columns([1, 1, 1])
+
+    with col2:
+        if st.button("📥 Generate PowerPoint", use_container_width=True, type="primary", key="ppt_export"):
+            with st.spinner("✨ Creating professional presentation..."):
+                try:
+                    import tempfile
+                    import os
+
+                    # Create temporary file
+                    with tempfile.NamedTemporaryFile(delete=False, suffix='.pptx') as tmp_file:
+                        tmp_path = tmp_file.name
+
+                    # Generate PowerPoint
+                    exporter = PowerPointExporter(pyramid)
+                    exporter.export(tmp_path, audience=audience_code, include_title_slide=include_title)
+
+                    # Read the file
+                    with open(tmp_path, 'rb') as f:
+                        pptx_data = f.read()
+
+                    # Clean up
+                    os.unlink(tmp_path)
+
+                    # Generate filename
+                    project_name = pyramid.metadata.project_name.lower().replace(" ", "_")
+                    filename = f"{project_name}_{audience_code}.pptx"
+
+                    # Download button
+                    st.download_button(
+                        label=f"💾 Download {filename}",
+                        data=pptx_data,
+                        file_name=filename,
+                        mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                        use_container_width=True
+                    )
+
+                    st.success("✅ PowerPoint presentation generated successfully!")
+
+                except Exception as e:
+                    st.error(f"Error generating PowerPoint: {str(e)}")
+
+    st.markdown("---")
+    st.markdown("### ✨ What You Get")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("""
+        **Professional slides:**
+        - Clean, modern design
+        - Consistent formatting
+        - Color-coded themes
+        - Title and content layouts
+        """)
+
+    with col2:
+        st.markdown("""
+        **Ready to present:**
+        - Fully editable in PowerPoint
+        - Present directly
+        - Add your own branding
+        - Speaker notes ready
+        """)
 
 
 def show_markdown_export():
@@ -230,12 +504,10 @@ def show_json_export():
     st.markdown("""
     After exporting:
     - **Share** the documents with your team
-    - **Present** the executive summary to leadership
-    - **Use** the detailed pack for implementation planning
-    - **Keep** the JSON as a backup or for analysis
+    - **Present** using PowerPoint slides
+    - **Edit** Word documents collaboratively
+    - **Keep** JSON as a backup or for analysis
+    - **Distribute** Markdown for documentation
 
-    **Coming in Phase 2:**
-    - Word (docx) export
-    - PowerPoint (pptx) export
-    - PDF export with custom branding
+    **All export formats are now available!** Switch between tabs to try Word, PowerPoint, Markdown, or JSON exports.
     """)
