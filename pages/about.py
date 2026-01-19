@@ -31,8 +31,10 @@ def show():
     1. **9-Tier Strategic Pyramid** - From Vision to Individual Objectives
     2. **Primary + Secondary Architecture** - Forces strategic choices
     3. **Validation Engine** - 8 comprehensive quality checks
-    4. **Multiple Export Formats** - For different audiences
-    5. **Guided Workflow** - Step-by-step pyramid building
+    4. **Professional Document Exports** - Word, PowerPoint, Markdown, JSON
+    5. **Interactive Visualizations** - Visual pyramid diagrams and analytics
+    6. **Guided Workflow** - Step-by-step pyramid building
+    7. **Cloud-Ready Deployment** - Deploy to Streamlit Cloud instantly
     """)
 
     st.markdown("---")
@@ -141,21 +143,21 @@ def show():
         """)
 
     with col2:
-        st.markdown("### 🎯 Current (v0.2.0)")
+        st.markdown("### ✅ Professional (v0.3.0)")
         st.markdown("""
-        - Web UI (Streamlit)
-        - Guided wizard
-        - Visual validation
-        - Export preview
+        - Word export ✓
+        - PowerPoint export ✓
+        - Interactive pyramid diagrams ✓
+        - Premium UI polish ✓
         """)
 
     with col3:
         st.markdown("### 🔄 Coming Soon")
         st.markdown("""
-        - Word export
-        - PowerPoint export
         - PDF export
-        - Pyramid visualizations
+        - Advanced analytics
+        - Collaboration features
+        - Template library
         """)
 
     st.markdown("---")
@@ -183,10 +185,10 @@ def show():
     st.markdown("""
     **Documentation:**
     - [README.md](README.md) - Comprehensive guide
-    - [QUICKSTART.md](QUICKSTART.md) - 5-minute quick start
-    - [PROJECT_STATUS.md](PROJECT_STATUS.md) - Current project status
+    - [STREAMLIT_CLOUD_DEPLOY.md](STREAMLIT_CLOUD_DEPLOY.md) - Cloud deployment guide
+    - [WEB_UI_GUIDE.md](WEB_UI_GUIDE.md) - Web UI user guide
 
-    **Version:** 0.2.0 (Web UI)
+    **Version:** 0.3.0 (Professional Edition)
 
     **License:** MIT License
     """)
