@@ -1,0 +1,29 @@
+# Strategic Pyramid Builder - Python Dependencies
+
+# Core dependencies
+pydantic>=2.5.0          # Data validation and settings management
+python-dateutil>=2.8.2   # Date handling
+
+# Export functionality
+python-docx>=1.1.0       # Word document generation
+python-pptx>=0.6.23      # PowerPoint generation
+reportlab>=4.0.7         # PDF generation
+markdown>=3.5.1          # Markdown processing
+
+# Visualization
+matplotlib>=3.8.0        # Charts and diagrams
+plotly>=5.18.0          # Interactive visualizations
+
+# CLI interface
+click>=8.1.7            # Command-line interface creation
+rich>=13.7.0            # Rich terminal output with colors
+questionary>=2.0.1      # Interactive prompts
+
+# Testing (optional but recommended)
+pytest>=7.4.3           # Testing framework
+pytest-cov>=4.1.0       # Coverage reporting
+
+# Development tools (optional)
+black>=23.12.0          # Code formatting
+flake8>=6.1.0           # Linting
+mypy>=1.7.1             # Type checking
