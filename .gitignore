@@ -44,3 +44,8 @@ Thumbs.db
 # Project specific
 pyramid.json
 *.json.bak
+temp_pyramid.json
+outputs/
+
+# Streamlit
+.streamlit/secrets.toml
