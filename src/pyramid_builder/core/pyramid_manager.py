@@ -13,6 +13,8 @@ from ..models.pyramid import (
     StrategyPyramid,
     ProjectMetadata,
     Vision,
+    VisionStatement,
+    StatementType,
     Value,
     Behaviour,
     StrategicDriver,
@@ -88,9 +90,113 @@ class PyramidManager:
     # SECTION 1: PURPOSE (The Why)
     # ========================================================================
 
+    def ensure_vision_exists(self, created_by: Optional[str] = None) -> Vision:
+        """
+        Ensure pyramid has a Vision container (may be empty).
+
+        Args:
+            created_by: Who created this
+
+        Returns:
+            Vision instance
+        """
+        if not self.pyramid:
+            raise ValueError("No pyramid initialized")
+
+        if not self.pyramid.vision:
+            self.pyramid.vision = Vision(created_by=created_by)
+
+        return self.pyramid.vision
+
+    def add_vision_statement(
+        self,
+        statement_type: StatementType,
+        statement: str,
+        order: Optional[int] = None,
+        created_by: Optional[str] = None,
+    ) -> VisionStatement:
+        """
+        Add a new vision/mission/belief/passion statement.
+
+        Args:
+            statement_type: Type of statement (vision, mission, belief, passion, etc.)
+            statement: The statement text
+            order: Display order (None = add at end)
+            created_by: Who created this
+
+        Returns:
+            VisionStatement instance
+        """
+        if not self.pyramid:
+            raise ValueError("No pyramid initialized")
+
+        vision = self.ensure_vision_exists(created_by)
+        new_statement = vision.add_statement(statement_type, statement, order)
+
+        if created_by:
+            new_statement.created_by = created_by
+
+        return new_statement
+
+    def update_vision_statement(
+        self,
+        statement_id: UUID,
+        statement_type: Optional[StatementType] = None,
+        statement: Optional[str] = None,
+    ) -> bool:
+        """
+        Update an existing vision statement.
+
+        Args:
+            statement_id: ID of statement to update
+            statement_type: New type (if changing)
+            statement: New text (if changing)
+
+        Returns:
+            True if updated, False if not found
+        """
+        if not self.pyramid or not self.pyramid.vision:
+            return False
+
+        return self.pyramid.vision.update_statement(
+            statement_id, statement_type, statement
+        )
+
+    def remove_vision_statement(self, statement_id: UUID) -> bool:
+        """
+        Remove a vision statement.
+
+        Args:
+            statement_id: ID of statement to remove
+
+        Returns:
+            True if removed, False if not found
+        """
+        if not self.pyramid or not self.pyramid.vision:
+            return False
+
+        return self.pyramid.vision.remove_statement(statement_id)
+
+    def reorder_vision_statement(self, statement_id: UUID, new_order: int) -> bool:
+        """
+        Change the order of a vision statement.
+
+        Args:
+            statement_id: ID of statement to reorder
+            new_order: New order position
+
+        Returns:
+            True if reordered, False if not found
+        """
+        if not self.pyramid or not self.pyramid.vision:
+            return False
+
+        return self.pyramid.vision.reorder_statement(statement_id, new_order)
+
     def set_vision(self, statement: str, created_by: Optional[str] = None) -> Vision:
         """
-        Set the vision/mission/belief statement.
+        LEGACY: Set a single vision statement (for backward compatibility).
+        Creates a vision-type statement. Use add_vision_statement() for multiple statements.
 
         Args:
             statement: Vision statement
@@ -102,10 +208,10 @@ class PyramidManager:
         if not self.pyramid:
             raise ValueError("No pyramid initialized")
 
-        self.pyramid.vision = Vision(
-            statement=statement,
-            created_by=created_by,
-        )
+        # Clear existing and create new
+        self.pyramid.vision = Vision(created_by=created_by)
+        self.pyramid.vision.add_statement(StatementType.VISION, statement)
+
         return self.pyramid.vision
 
     def add_value(
@@ -135,6 +241,37 @@ class PyramidManager:
         )
         self.pyramid.values.append(value)
         return value
+
+    def update_value(
+        self,
+        value_id: UUID,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+    ) -> bool:
+        """
+        Update an existing value.
+
+        Args:
+            value_id: ID of value to update
+            name: New name (if changing)
+            description: New description (if changing)
+
+        Returns:
+            True if updated, False if not found
+        """
+        if not self.pyramid:
+            return False
+
+        for value in self.pyramid.values:
+            if value.id == value_id:
+                if name is not None:
+                    value.name = name
+                if description is not None:
+                    value.description = description
+                value.update_timestamp()
+                return True
+
+        return False
 
     def remove_value(self, value_id: UUID) -> bool:
         """Remove a value by ID."""
@@ -177,6 +314,37 @@ class PyramidManager:
         self.pyramid.behaviours.append(behaviour)
         return behaviour
 
+    def update_behaviour(
+        self,
+        behaviour_id: UUID,
+        statement: Optional[str] = None,
+        value_ids: Optional[List[UUID]] = None,
+    ) -> bool:
+        """
+        Update an existing behaviour.
+
+        Args:
+            behaviour_id: ID of behaviour to update
+            statement: New statement (if changing)
+            value_ids: New value IDs (if changing)
+
+        Returns:
+            True if updated, False if not found
+        """
+        if not self.pyramid:
+            return False
+
+        for behaviour in self.pyramid.behaviours:
+            if behaviour.id == behaviour_id:
+                if statement is not None:
+                    behaviour.statement = statement
+                if value_ids is not None:
+                    behaviour.value_ids = value_ids
+                behaviour.update_timestamp()
+                return True
+
+        return False
+
     def add_strategic_driver(
         self,
         name: str,
@@ -207,6 +375,41 @@ class PyramidManager:
         )
         self.pyramid.strategic_drivers.append(driver)
         return driver
+
+    def update_strategic_driver(
+        self,
+        driver_id: UUID,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        rationale: Optional[str] = None,
+    ) -> bool:
+        """
+        Update an existing strategic driver.
+
+        Args:
+            driver_id: ID of driver to update
+            name: New name (if changing)
+            description: New description (if changing)
+            rationale: New rationale (if changing)
+
+        Returns:
+            True if updated, False if not found
+        """
+        if not self.pyramid:
+            return False
+
+        for driver in self.pyramid.strategic_drivers:
+            if driver.id == driver_id:
+                if name is not None:
+                    driver.name = name
+                if description is not None:
+                    driver.description = description
+                if rationale is not None:
+                    driver.rationale = rationale
+                driver.update_timestamp()
+                return True
+
+        return False
 
     def add_strategic_intent(
         self,
@@ -243,6 +446,45 @@ class PyramidManager:
         )
         self.pyramid.strategic_intents.append(intent)
         return intent
+
+    def update_strategic_intent(
+        self,
+        intent_id: UUID,
+        statement: Optional[str] = None,
+        driver_id: Optional[UUID] = None,
+        is_stakeholder_voice: Optional[bool] = None,
+    ) -> bool:
+        """
+        Update an existing strategic intent.
+
+        Args:
+            intent_id: ID of intent to update
+            statement: New statement (if changing)
+            driver_id: New driver ID (if changing)
+            is_stakeholder_voice: New stakeholder voice flag (if changing)
+
+        Returns:
+            True if updated, False if not found
+        """
+        if not self.pyramid:
+            return False
+
+        for intent in self.pyramid.strategic_intents:
+            if intent.id == intent_id:
+                if statement is not None:
+                    intent.statement = statement
+                if driver_id is not None:
+                    # Validate driver exists
+                    driver = self.pyramid.get_driver_by_id(driver_id)
+                    if not driver:
+                        raise ValueError(f"Strategic driver {driver_id} not found")
+                    intent.driver_id = driver_id
+                if is_stakeholder_voice is not None:
+                    intent.is_stakeholder_voice = is_stakeholder_voice
+                intent.update_timestamp()
+                return True
+
+        return False
 
     def add_enabler(
         self,
@@ -454,6 +696,194 @@ class PyramidManager:
         return objective
 
     # ========================================================================
+    # UPDATE METHODS (continued)
+    # ========================================================================
+
+    def update_enabler(
+        self,
+        enabler_id: UUID,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        driver_ids: Optional[List[UUID]] = None,
+        enabler_type: Optional[str] = None,
+    ) -> bool:
+        """
+        Update an existing enabler.
+
+        Args:
+            enabler_id: ID of enabler to update
+            name: New name (if changing)
+            description: New description (if changing)
+            driver_ids: New driver IDs (if changing)
+            enabler_type: New type (if changing)
+
+        Returns:
+            True if updated, False if not found
+        """
+        if not self.pyramid:
+            return False
+
+        for enabler in self.pyramid.enablers:
+            if enabler.id == enabler_id:
+                if name is not None:
+                    enabler.name = name
+                if description is not None:
+                    enabler.description = description
+                if driver_ids is not None:
+                    enabler.driver_ids = driver_ids
+                if enabler_type is not None:
+                    enabler.enabler_type = enabler_type
+                enabler.update_timestamp()
+                return True
+
+        return False
+
+    def update_iconic_commitment(
+        self,
+        commitment_id: UUID,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        horizon: Optional[Horizon] = None,
+        target_date: Optional[str] = None,
+        primary_driver_id: Optional[UUID] = None,
+        owner: Optional[str] = None,
+    ) -> bool:
+        """
+        Update an existing iconic commitment.
+
+        Args:
+            commitment_id: ID of commitment to update
+            name: New name (if changing)
+            description: New description (if changing)
+            horizon: New horizon (if changing)
+            target_date: New target date (if changing)
+            primary_driver_id: New primary driver (if changing)
+            owner: New owner (if changing)
+
+        Returns:
+            True if updated, False if not found
+        """
+        if not self.pyramid:
+            return False
+
+        for commitment in self.pyramid.iconic_commitments:
+            if commitment.id == commitment_id:
+                if name is not None:
+                    commitment.name = name
+                if description is not None:
+                    commitment.description = description
+                if horizon is not None:
+                    commitment.horizon = horizon
+                if target_date is not None:
+                    commitment.target_date = target_date
+                if primary_driver_id is not None:
+                    # Validate driver exists
+                    driver = self.pyramid.get_driver_by_id(primary_driver_id)
+                    if not driver:
+                        raise ValueError(f"Strategic driver {primary_driver_id} not found")
+                    commitment.primary_driver_id = primary_driver_id
+                if owner is not None:
+                    commitment.owner = owner
+                commitment.update_timestamp()
+                return True
+
+        return False
+
+    def update_team_objective(
+        self,
+        objective_id: UUID,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        team_name: Optional[str] = None,
+        primary_commitment_id: Optional[UUID] = None,
+        primary_intent_id: Optional[UUID] = None,
+        metrics: Optional[List[str]] = None,
+        owner: Optional[str] = None,
+    ) -> bool:
+        """
+        Update an existing team objective.
+
+        Args:
+            objective_id: ID of objective to update
+            name: New name (if changing)
+            description: New description (if changing)
+            team_name: New team name (if changing)
+            primary_commitment_id: New primary commitment (if changing)
+            primary_intent_id: New primary intent (if changing)
+            metrics: New metrics (if changing)
+            owner: New owner (if changing)
+
+        Returns:
+            True if updated, False if not found
+        """
+        if not self.pyramid:
+            return False
+
+        for objective in self.pyramid.team_objectives:
+            if objective.id == objective_id:
+                if name is not None:
+                    objective.name = name
+                if description is not None:
+                    objective.description = description
+                if team_name is not None:
+                    objective.team_name = team_name
+                if primary_commitment_id is not None:
+                    objective.primary_commitment_id = primary_commitment_id
+                if primary_intent_id is not None:
+                    objective.primary_intent_id = primary_intent_id
+                if metrics is not None:
+                    objective.metrics = metrics
+                if owner is not None:
+                    objective.owner = owner
+                objective.update_timestamp()
+                return True
+
+        return False
+
+    def update_individual_objective(
+        self,
+        objective_id: UUID,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        individual_name: Optional[str] = None,
+        team_objective_ids: Optional[List[UUID]] = None,
+        success_criteria: Optional[List[str]] = None,
+    ) -> bool:
+        """
+        Update an existing individual objective.
+
+        Args:
+            objective_id: ID of objective to update
+            name: New name (if changing)
+            description: New description (if changing)
+            individual_name: New individual name (if changing)
+            team_objective_ids: New team objective IDs (if changing)
+            success_criteria: New success criteria (if changing)
+
+        Returns:
+            True if updated, False if not found
+        """
+        if not self.pyramid:
+            return False
+
+        for objective in self.pyramid.individual_objectives:
+            if objective.id == objective_id:
+                if name is not None:
+                    objective.name = name
+                if description is not None:
+                    objective.description = description
+                if individual_name is not None:
+                    objective.individual_name = individual_name
+                if team_objective_ids is not None:
+                    objective.team_objective_ids = team_objective_ids
+                if success_criteria is not None:
+                    objective.success_criteria = success_criteria
+                objective.update_timestamp()
+                return True
+
+        return False
+
+    # ========================================================================
     # QUERY METHODS
     # ========================================================================
 
@@ -467,10 +897,17 @@ class PyramidManager:
         if not self.pyramid:
             return {}
 
+        # Check if vision has any statements
+        has_vision_statements = (
+            self.pyramid.vision is not None and
+            len(self.pyramid.vision.statements) > 0
+        )
+
         return {
             "project_name": self.pyramid.metadata.project_name,
             "organization": self.pyramid.metadata.organization,
-            "has_vision": self.pyramid.vision is not None,
+            "has_vision": has_vision_statements,
+            "vision_statement_count": len(self.pyramid.vision.statements) if self.pyramid.vision else 0,
             "counts": {
                 "values": len(self.pyramid.values),
                 "behaviours": len(self.pyramid.behaviours),

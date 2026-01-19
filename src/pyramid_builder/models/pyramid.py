@@ -13,6 +13,16 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 
+class StatementType(str, Enum):
+    """Types of purpose statements in Tier 1."""
+    VISION = "vision"
+    MISSION = "mission"
+    BELIEF = "belief"
+    PASSION = "passion"
+    PURPOSE = "purpose"
+    ASPIRATION = "aspiration"
+
+
 class Horizon(str, Enum):
     """Time horizons for iconic commitments."""
     H1 = "H1"  # 0-12 months
@@ -58,16 +68,24 @@ class BaseItem(BaseModel):
 # SECTION 1: PURPOSE (The Why)
 # ============================================================================
 
-class Vision(BaseItem):
+class VisionStatement(BaseItem):
     """
-    Tier 1: Vision/Mission/Belief
-    Why we exist - single statement, permanent/enduring.
+    Individual statement within Tier 1 (Vision/Mission/Belief/Passion/Purpose).
+    Each statement has a type and can be reordered.
     """
 
+    statement_type: StatementType = Field(
+        description="Type of statement (vision, mission, belief, passion, etc.)"
+    )
     statement: str = Field(
         min_length=10,
         max_length=500,
-        description="Your vision/mission/belief statement"
+        description="The statement text"
+    )
+    order: int = Field(
+        default=0,
+        ge=0,
+        description="Display order (0 = first)"
     )
 
     @field_validator('statement')
@@ -75,8 +93,88 @@ class Vision(BaseItem):
     def validate_statement(cls, v: str) -> str:
         """Ensure the statement is substantive."""
         if v.strip().lower() in ["tbd", "to be determined", "n/a", ""]:
-            raise ValueError("Vision statement must be meaningful, not a placeholder")
+            raise ValueError("Statement must be meaningful, not a placeholder")
         return v.strip()
+
+
+class Vision(BaseItem):
+    """
+    Tier 1: Vision/Mission/Belief/Passion/Purpose
+    Why we exist - can contain multiple statement types (vision, mission, passion, etc.).
+    Supports ordering for presentation.
+    """
+
+    statements: List[VisionStatement] = Field(
+        default_factory=list,
+        description="List of vision/mission/belief/passion statements"
+    )
+
+    def get_statements_ordered(self) -> List[VisionStatement]:
+        """Get statements sorted by order."""
+        return sorted(self.statements, key=lambda s: s.order)
+
+    def add_statement(
+        self,
+        statement_type: StatementType,
+        statement: str,
+        order: Optional[int] = None
+    ) -> VisionStatement:
+        """Add a new statement."""
+        if order is None:
+            order = len(self.statements)
+
+        new_statement = VisionStatement(
+            statement_type=statement_type,
+            statement=statement,
+            order=order
+        )
+        self.statements.append(new_statement)
+        self.update_timestamp()
+        return new_statement
+
+    def remove_statement(self, statement_id: UUID) -> bool:
+        """Remove a statement by ID."""
+        original_count = len(self.statements)
+        self.statements = [s for s in self.statements if s.id != statement_id]
+        if len(self.statements) < original_count:
+            self._reorder_statements()
+            self.update_timestamp()
+            return True
+        return False
+
+    def update_statement(
+        self,
+        statement_id: UUID,
+        statement_type: Optional[StatementType] = None,
+        statement: Optional[str] = None
+    ) -> bool:
+        """Update an existing statement."""
+        for stmt in self.statements:
+            if stmt.id == statement_id:
+                if statement_type is not None:
+                    stmt.statement_type = statement_type
+                if statement is not None:
+                    stmt.statement = statement
+                stmt.update_timestamp()
+                self.update_timestamp()
+                return True
+        return False
+
+    def reorder_statement(self, statement_id: UUID, new_order: int) -> bool:
+        """Change the order of a statement."""
+        statement = next((s for s in self.statements if s.id == statement_id), None)
+        if statement:
+            statement.order = new_order
+            self._reorder_statements()
+            self.update_timestamp()
+            return True
+        return False
+
+    def _reorder_statements(self):
+        """Normalize order values to 0, 1, 2, 3..."""
+        sorted_statements = sorted(self.statements, key=lambda s: s.order)
+        for i, stmt in enumerate(sorted_statements):
+            stmt.order = i
 
 
 class Value(BaseItem):
@@ -340,7 +438,11 @@ class IconicCommitment(BaseItem):
 class TeamObjective(BaseItem):
     """
     Tier 8: Team/Functional Objectives
-    Departmental or functional goals - more granular than Iconic Commitments.
+    Departmental or functional goals that feed into either:
+    - Iconic Commitments (Tier 7), OR
+    - Strategic Intents (Tier 4)
+
+    This allows teams to support both tactical commitments and strategic aspirations.
     """
 
     name: str = Field(
@@ -357,7 +459,7 @@ class TeamObjective(BaseItem):
         description="Which team owns this objective"
     )
 
-    # Alignment to Iconic Commitments
+    # Alignment to Iconic Commitments (Tier 7)
     primary_commitment_id: Optional[UUID] = Field(
         default=None,
         description="Primary iconic commitment this supports"
@@ -367,17 +469,43 @@ class TeamObjective(BaseItem):
         description="Secondary commitments this supports"
     )
 
+    # OR Alignment to Strategic Intents (Tier 4)
+    primary_intent_id: Optional[UUID] = Field(
+        default=None,
+        description="Primary strategic intent this supports"
+    )
+    secondary_intent_ids: List[UUID] = Field(
+        default_factory=list,
+        description="Secondary intents this supports"
+    )
+
     metrics: List[str] = Field(
         default_factory=list,
         description="How success will be measured"
     )
     owner: Optional[str] = Field(default=None)
 
+    @model_validator(mode='after')
+    def validate_alignment(self):
+        """Ensure the objective aligns to at least one commitment OR intent."""
+        has_commitment = self.primary_commitment_id or self.secondary_commitment_ids
+        has_intent = self.primary_intent_id or self.secondary_intent_ids
+
+        if not has_commitment and not has_intent:
+            raise ValueError(
+                "Team objective must align to at least one Iconic Commitment "
+                "OR Strategic Intent"
+            )
+
+        return self
+
 
 class IndividualObjective(BaseItem):
     """
     Tier 9: Individual Objectives/Contributions
-    Personal goals and KPIs - how individuals contribute.
+    Personal goals and KPIs - how individuals contribute to team objectives.
+
+    MUST link to at least one Team Objective to show personal contribution.
     """
 
     name: str = Field(
@@ -394,16 +522,26 @@ class IndividualObjective(BaseItem):
         description="Who owns this objective"
     )
 
-    # Alignment to Team Objectives
+    # Alignment to Team Objectives (REQUIRED)
     team_objective_ids: List[UUID] = Field(
         default_factory=list,
-        description="Which team objectives this supports"
+        description="Which team objectives this supports (at least one required)"
     )
 
     success_criteria: List[str] = Field(
         default_factory=list,
         description="How success will be measured"
     )
+
+    @model_validator(mode='after')
+    def validate_team_alignment(self):
+        """Ensure the individual objective links to at least one team objective."""
+        if not self.team_objective_ids:
+            raise ValueError(
+                "Individual objective must support at least one Team Objective "
+                "to show personal contribution"
+            )
+        return self
 
 
 # ============================================================================

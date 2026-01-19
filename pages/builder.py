@@ -7,7 +7,7 @@ from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from pyramid_builder.models.pyramid import Horizon
+from pyramid_builder.models.pyramid import Horizon, StatementType
 
 
 def show():
@@ -52,55 +52,165 @@ def show():
 
 
 def show_purpose_section():
-    """Show Purpose section (Vision and Values)."""
+    """Show Purpose section (Vision and Values) with edit capabilities."""
 
     st.markdown("## Section 1: Purpose (The Why)")
-    st.markdown("*Why you exist and what matters to you*")
+    st.markdown("*Why you exist and what matters to you - the foundation of your strategy*")
+
+    st.info("""
+    **Guidance:** Your purpose defines why you exist. It's permanent and enduring.
+    Take time to craft statements that inspire and provide direction.
+    You can add multiple types: Vision (where you're going), Mission (what you do),
+    Belief (what you stand for), or Passion (what drives you).
+    """)
+
     st.markdown("---")
 
     builder = st.session_state.builder
     pyramid = st.session_state.pyramid
 
-    # Vision
-    st.markdown("### Tier 1: Vision/Mission/Belief")
-    st.markdown("Your fundamental purpose - why you exist")
+    # Vision/Mission/Belief/Passion Statements
+    st.markdown("### Tier 1: Vision / Mission / Belief / Passion")
+    st.markdown("**Your fundamental purpose statements** - articulate why you exist")
 
-    current_vision = pyramid.vision.statement if pyramid.vision else ""
+    # Ensure vision container exists
+    if not pyramid.vision:
+        builder.manager.ensure_vision_exists()
 
-    vision_statement = st.text_area(
-        "Vision Statement",
-        value=current_vision,
-        height=100,
-        placeholder="Our mission is to...",
-        help="A single, permanent statement of why you exist"
-    )
+    # Show existing statements
+    if pyramid.vision and pyramid.vision.statements:
+        st.markdown("#### Your Purpose Statements")
 
-    if st.button("Save Vision", key="save_vision"):
-        if vision_statement.strip():
-            builder.manager.set_vision(vision_statement.strip())
-            st.success("✓ Vision saved")
-            st.rerun()
-        else:
-            st.error("Vision statement cannot be empty")
+        for i, stmt in enumerate(pyramid.vision.get_statements_ordered()):
+            with st.expander(f"**{stmt.statement_type.value.title()}**: {stmt.statement[:60]}..."):
+                st.markdown(f"*Type:* {stmt.statement_type.value.title()}")
+                st.markdown(f"*Statement:* {stmt.statement}")
 
-    st.markdown("**Good example:** *Our mission is to partner with, and empower our global workforce with innovative, data-driven and transparent people strategies*")
+                # Edit form
+                with st.form(f"edit_vision_stmt_{i}"):
+                    new_type = st.selectbox(
+                        "Statement Type",
+                        options=[t.value for t in StatementType],
+                        index=[t.value for t in StatementType].index(stmt.statement_type.value),
+                        key=f"vision_type_edit_{i}"
+                    )
+
+                    new_statement = st.text_area(
+                        "Statement",
+                        value=stmt.statement,
+                        height=100,
+                        key=f"vision_stmt_edit_{i}"
+                    )
+
+                    col1, col2, col3 = st.columns(3)
+
+                    with col1:
+                        if st.form_submit_button("💾 Update", use_container_width=True):
+                            builder.manager.update_vision_statement(
+                                stmt.id,
+                                statement_type=StatementType(new_type),
+                                statement=new_statement.strip()
+                            )
+                            st.success("✓ Updated!")
+                            st.rerun()
+
+                    with col2:
+                        if st.form_submit_button("🔼 Move Up", use_container_width=True, disabled=(i == 0)):
+                            builder.manager.reorder_vision_statement(stmt.id, i - 1)
+                            st.rerun()
+
+                    with col3:
+                        if st.form_submit_button("🗑️ Remove", use_container_width=True):
+                            builder.manager.remove_vision_statement(stmt.id)
+                            st.success("Removed statement")
+                            st.rerun()
+
+    # Add new statement
+    st.markdown("#### Add New Purpose Statement")
+
+    with st.form("add_vision_statement_form"):
+        statement_type = st.selectbox(
+            "Statement Type",
+            options=[t.value for t in StatementType],
+            help="Choose the type that best fits your statement"
+        )
+
+        statement = st.text_area(
+            "Statement",
+            height=100,
+            placeholder="e.g., Our mission is to partner with and empower our global workforce...",
+            help="Craft a clear, inspiring statement that captures this aspect of your purpose"
+        )
+
+        if st.form_submit_button("➕ Add Statement", use_container_width=True):
+            if statement.strip():
+                builder.manager.add_vision_statement(
+                    statement_type=StatementType(statement_type),
+                    statement=statement.strip()
+                )
+                st.success(f"✓ Added {statement_type} statement")
+                st.rerun()
+            else:
+                st.error("Statement cannot be empty")
+
+    st.markdown("**💡 Examples:**")
+    st.markdown("- *Vision:* 'To be the most trusted HR partner in our industry'")
+    st.markdown("- *Mission:* 'We partner with and empower our global workforce with innovative people strategies'")
+    st.markdown("- *Belief:* 'We believe every employee deserves transparent, data-driven career support'")
 
     st.markdown("---")
 
     # Values
     st.markdown("### Tier 2: Values")
-    st.markdown("3-5 core values - timeless principles that guide you")
+    st.markdown("**Your 3-5 core values** - timeless principles that guide all decisions")
+
+    st.info("""
+    **Guidance:** Values are your non-negotiable principles. They should be:
+    - **Timeless:** True 10 years ago, true today, true in 10 years
+    - **Distinctive:** What makes YOU different
+    - **Memorable:** 1-3 words each (e.g., 'Trust', 'Bold', 'Connected')
+    - **Behavioral:** Observable in daily actions
+    """)
 
     # Show existing values
     if pyramid.values:
-        st.markdown("#### Current Values")
+        st.markdown(f"#### Your Values ({len(pyramid.values)}/3-5)")
+
         for i, value in enumerate(pyramid.values):
             with st.expander(f"**{value.name}**"):
                 st.markdown(f"*{value.description}*" if value.description else "*No description*")
-                if st.button("🗑️ Remove", key=f"remove_value_{i}"):
-                    builder.manager.remove_value(value.id)
-                    st.success(f"Removed value: {value.name}")
-                    st.rerun()
+
+                # Edit form
+                with st.form(f"edit_value_{i}"):
+                    new_name = st.text_input(
+                        "Value Name",
+                        value=value.name,
+                        help="Keep it to 1-3 words"
+                    )
+
+                    new_description = st.text_area(
+                        "Description",
+                        value=value.description or "",
+                        help="What this value means in practice"
+                    )
+
+                    col1, col2 = st.columns(2)
+
+                    with col1:
+                        if st.form_submit_button("💾 Update", use_container_width=True):
+                            builder.manager.update_value(
+                                value.id,
+                                name=new_name.strip(),
+                                description=new_description.strip() if new_description.strip() else None
+                            )
+                            st.success("✓ Updated!")
+                            st.rerun()
+
+                    with col2:
+                        if st.form_submit_button("🗑️ Remove", use_container_width=True):
+                            builder.manager.remove_value(value.id)
+                            st.success(f"Removed value: {value.name}")
+                            st.rerun()
 
     # Add new value
     st.markdown("#### Add New Value")
@@ -110,18 +220,19 @@ def show_purpose_section():
         with col1:
             value_name = st.text_input(
                 "Value Name",
-                placeholder="e.g., Trust",
-                help="Keep it to 1-3 words"
+                placeholder="e.g., Trust, Bold, Connected",
+                help="Keep it to 1-3 words - make it memorable"
             )
 
         with col2:
-            value_description = st.text_input(
+            value_description = st.text_area(
                 "Description",
-                placeholder="What this value means to you",
-                help="Optional but recommended"
+                placeholder="What this value means and how it shows up in daily actions",
+                help="Be specific about what this looks like in practice",
+                height=100
             )
 
-        if st.form_submit_button("➕ Add Value"):
+        if st.form_submit_button("➕ Add Value", use_container_width=True):
             if value_name.strip():
                 builder.manager.add_value(
                     name=value_name.strip(),
@@ -132,10 +243,15 @@ def show_purpose_section():
             else:
                 st.error("Value name is required")
 
-    if len(pyramid.values) < 3:
-        st.info("💡 Aim for 3-5 core values")
-    elif len(pyramid.values) > 5:
-        st.warning("⚠️ You have more than 5 values. Consider consolidating.")
+    # Coaching feedback
+    if len(pyramid.values) == 0:
+        st.warning("⚠️ Add at least 3 core values to define what matters to you")
+    elif len(pyramid.values) < 3:
+        st.info(f"💡 You have {len(pyramid.values)} value(s). Aim for 3-5 core values")
+    elif len(pyramid.values) <= 5:
+        st.success(f"✅ Great! You have {len(pyramid.values)} values - well balanced")
+    else:
+        st.warning(f"⚠️ You have {len(pyramid.values)} values. Consider consolidating to 3-5 for clarity")
 
 
 def show_strategy_section():
