@@ -381,9 +381,73 @@ class PowerPointExporter:
                     p.font.bold = True
                     p.level = 0
 
+                    # Show relationships (NEW: supports commitment OR intent)
+                    relationships = []
+                    if obj.primary_commitment_id:
+                        commitment = self.pyramid.get_commitment_by_id(obj.primary_commitment_id)
+                        if commitment:
+                            relationships.append(f"→ {commitment.name}")
+
+                    if obj.primary_intent_id:
+                        intent = self.pyramid.get_intent_by_id(obj.primary_intent_id)
+                        if intent:
+                            relationships.append(f"→ {intent.statement[:40]}...")
+
+                    if relationships:
+                        p2 = text_frame.add_paragraph()
+                        p2.text = f"Supports: {' | '.join(relationships)}"
+                        p2.font.size = Pt(11)
+                        p2.font.italic = True
+                        p2.level = 1
+
                     if obj.metrics:
                         for metric in obj.metrics[:2]:  # Max 2 metrics
                             p2 = text_frame.add_paragraph()
                             p2.text = f"• {metric}"
+                            p2.font.size = Pt(12)
+                            p2.level = 1
+
+        # Add individual objectives if present (NEW in v0.4.0)
+        if self.pyramid.individual_objectives:
+            self._add_section_divider("Individual Objectives", "Personal contributions")
+
+            # Group by individual
+            individuals = {}
+            for obj in self.pyramid.individual_objectives:
+                if obj.individual_name not in individuals:
+                    individuals[obj.individual_name] = []
+                individuals[obj.individual_name].append(obj)
+
+            for individual_name, objectives in individuals.items():
+                slide = self._add_content_slide(f"{individual_name}'s Objectives")
+                text_frame = slide.placeholders[1].text_frame
+                text_frame.clear()
+
+                for obj in objectives[:3]:  # Max 3 per slide
+                    p = text_frame.add_paragraph()
+                    p.text = obj.name
+                    p.font.size = Pt(16)
+                    p.font.bold = True
+                    p.level = 0
+
+                    # Show which team objectives this supports
+                    if obj.team_objective_ids:
+                        team_objs = []
+                        for team_id in obj.team_objective_ids[:2]:  # Max 2
+                            team_obj = next((to for to in self.pyramid.team_objectives if to.id == team_id), None)
+                            if team_obj:
+                                team_objs.append(f"→ {team_obj.name}")
+
+                        if team_objs:
+                            p2 = text_frame.add_paragraph()
+                            p2.text = f"Supports: {' | '.join(team_objs)}"
+                            p2.font.size = Pt(11)
+                            p2.font.italic = True
+                            p2.level = 1
+
+                    if obj.success_criteria:
+                        for criterion in obj.success_criteria[:2]:  # Max 2 criteria
+                            p2 = text_frame.add_paragraph()
+                            p2.text = f"✓ {criterion}"
                             p2.font.size = Pt(12)
                             p2.level = 1

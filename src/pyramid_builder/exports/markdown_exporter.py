@@ -329,12 +329,21 @@ class MarkdownExporter:
                             lines.append(f"- {metric}")
                         lines.append("")
 
-                    # Show which commitment this supports
+                    # Show relationships (NEW: supports commitment OR intent)
+                    relationships = []
                     if obj.primary_commitment_id:
                         commitment = self.pyramid.get_commitment_by_id(obj.primary_commitment_id)
                         if commitment:
-                            lines.append(f"*Supports: {commitment.name}*")
-                            lines.append("")
+                            relationships.append(f"Commitment: {commitment.name}")
+
+                    if obj.primary_intent_id:
+                        intent = self.pyramid.get_intent_by_id(obj.primary_intent_id)
+                        if intent:
+                            relationships.append(f"Intent: {intent.statement[:50]}...")
+
+                    if relationships:
+                        lines.append(f"*Supports: {' | '.join(relationships)}*")
+                        lines.append("")
 
         # Add individual objectives if present
         if self.pyramid.individual_objectives:
@@ -349,6 +358,20 @@ class MarkdownExporter:
                 lines.append("")
                 lines.append(obj.description)
                 lines.append("")
+
+                # Show which team objectives this supports (NEW relationship)
+                if obj.team_objective_ids:
+                    team_objs = []
+                    for team_id in obj.team_objective_ids:
+                        team_obj = next((to for to in self.pyramid.team_objectives if to.id == team_id), None)
+                        if team_obj:
+                            team_objs.append(f"{team_obj.team_name}: {team_obj.name}")
+
+                    if team_objs:
+                        lines.append("**Supports Team Objectives:**")
+                        for team_obj_name in team_objs:
+                            lines.append(f"- {team_obj_name}")
+                        lines.append("")
 
                 if obj.success_criteria:
                     lines.append("**Success Criteria:**")
