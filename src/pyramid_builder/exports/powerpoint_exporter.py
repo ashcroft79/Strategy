@@ -114,26 +114,27 @@ class PowerPointExporter:
         text_frame = slide.placeholders[1].text_frame
         text_frame.clear()
 
-        for i, stmt in enumerate(self.pyramid.vision.get_statements_ordered()):
-            if i > 0:
-                text_frame.add_paragraph()
-
-            p = text_frame.paragraphs[i]
-            # Add statement type as bold prefix
+        statements = list(self.pyramid.vision.get_statements_ordered())
+        for i, stmt in enumerate(statements):
+            # Add statement type as heading
+            p = text_frame.paragraphs[0] if i == 0 else text_frame.add_paragraph()
             run = p.add_run()
-            run.text = f"{stmt.statement_type.value.title()}: "
+            run.text = stmt.statement_type.value.title()
             run.font.bold = True
             run.font.color.rgb = self.primary_color
             run.font.size = Pt(20)
+            p.level = 0
+            p.space_after = Pt(6)
 
-            # Add statement content
-            run_content = p.add_run()
+            # Add statement content with better formatting
+            p_content = text_frame.add_paragraph()
+            run_content = p_content.add_run()
             run_content.text = stmt.statement
             run_content.font.italic = True
-            run_content.font.size = Pt(20)
-
-            p.level = 0
-            p.space_after = Pt(12)
+            run_content.font.size = Pt(18)
+            run_content.font.color.rgb = RGBColor(60, 60, 60)
+            p_content.level = 0
+            p_content.space_after = Pt(18)
 
     def _generate_executive_presentation(self):
         """Generate executive presentation (5-8 slides)."""
@@ -147,19 +148,24 @@ class PowerPointExporter:
             text_frame = slide.placeholders[1].text_frame
             text_frame.clear()
 
-            for value in self.pyramid.values[:5]:  # Max 5 values
-                p = text_frame.add_paragraph()
-                p.text = value.name
-                p.font.size = Pt(20)
-                p.font.bold = True
-                p.font.color.rgb = self.primary_color
+            for i, value in enumerate(self.pyramid.values[:5]):  # Max 5 values
+                p = text_frame.paragraphs[0] if i == 0 else text_frame.add_paragraph()
+                run = p.add_run()
+                run.text = value.name
+                run.font.size = Pt(20)
+                run.font.bold = True
+                run.font.color.rgb = self.primary_color
                 p.level = 0
+                p.space_after = Pt(6)
 
                 if value.description:
                     p2 = text_frame.add_paragraph()
-                    p2.text = value.description
-                    p2.font.size = Pt(16)
-                    p2.level = 1
+                    run2 = p2.add_run()
+                    run2.text = value.description
+                    run2.font.size = Pt(16)
+                    run2.font.color.rgb = RGBColor(60, 60, 60)
+                    p2.level = 0
+                    p2.space_after = Pt(14)
 
         # Slide 3: Strategic Drivers
         if self.pyramid.strategic_drivers:
@@ -195,19 +201,25 @@ class PowerPointExporter:
                     text_frame = slide.placeholders[1].text_frame
                     text_frame.clear()
 
-                    for commitment in commitments:
-                        p = text_frame.add_paragraph()
-                        p.text = commitment.name
-                        p.font.size = Pt(18)
-                        p.font.bold = True
+                    for idx, commitment in enumerate(commitments):
+                        p = text_frame.paragraphs[0] if idx == 0 else text_frame.add_paragraph()
+                        run = p.add_run()
+                        run.text = commitment.name
+                        run.font.size = Pt(18)
+                        run.font.bold = True
+                        run.font.color.rgb = self.primary_color
                         p.level = 0
+                        p.space_after = Pt(4)
 
                         if commitment.target_date:
                             p2 = text_frame.add_paragraph()
-                            p2.text = f"Target: {commitment.target_date}"
-                            p2.font.size = Pt(14)
-                            p2.font.italic = True
-                            p2.level = 1
+                            run2 = p2.add_run()
+                            run2.text = f"Target: {commitment.target_date}"
+                            run2.font.size = Pt(14)
+                            run2.font.italic = True
+                            run2.font.color.rgb = RGBColor(100, 100, 100)
+                            p2.level = 0
+                            p2.space_after = Pt(16)
 
     def _generate_leadership_presentation(self):
         """Generate full leadership presentation (15-20 slides)."""
@@ -297,26 +309,34 @@ class PowerPointExporter:
                 text_frame = slide.placeholders[1].text_frame
                 text_frame.clear()
 
-                for commitment in commitments[:4]:  # Max 4 per slide
+                for idx, commitment in enumerate(commitments[:4]):  # Max 4 per slide
                     driver = self.pyramid.get_driver_by_id(commitment.primary_driver_id)
-                    driver_name = driver.name if driver else "Unknown"
+                    driver_name = driver.name if driver else "Not specified"
 
-                    p = text_frame.add_paragraph()
-                    p.text = commitment.name
-                    p.font.size = Pt(18)
-                    p.font.bold = True
+                    p = text_frame.paragraphs[0] if idx == 0 else text_frame.add_paragraph()
+                    run = p.add_run()
+                    run.text = commitment.name
+                    run.font.size = Pt(18)
+                    run.font.bold = True
+                    run.font.color.rgb = self.primary_color
                     p.level = 0
+                    p.space_after = Pt(4)
+
+                    # Build details array dynamically
+                    details_parts = [f"Driver: {driver_name}"]
+                    if commitment.target_date:
+                        details_parts.append(f"Target: {commitment.target_date}")
+                    if commitment.owner:
+                        details_parts.append(f"Owner: {commitment.owner}")
 
                     p2 = text_frame.add_paragraph()
-                    details = f"Driver: {driver_name}"
-                    if commitment.target_date:
-                        details += f" | Target: {commitment.target_date}"
-                    if commitment.owner:
-                        details += f" | Owner: {commitment.owner}"
-                    p2.text = details
-                    p2.font.size = Pt(12)
-                    p2.font.italic = True
-                    p2.level = 1
+                    run2 = p2.add_run()
+                    run2.text = " | ".join(details_parts)
+                    run2.font.size = Pt(12)
+                    run2.font.italic = True
+                    run2.font.color.rgb = RGBColor(100, 100, 100)
+                    p2.level = 0
+                    p2.space_after = Pt(16)
 
         # Distribution slide
         if self.pyramid.iconic_commitments:
