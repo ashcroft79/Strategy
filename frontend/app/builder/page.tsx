@@ -53,6 +53,11 @@ export default function BuilderPage() {
   const [individualName, setIndividualName] = useState("");
   const [selectedTeamObjectiveIds, setSelectedTeamObjectiveIds] = useState<string[]>([]);
 
+  // Edit states
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editType, setEditType] = useState<string | null>(null);
+  const [editFormData, setEditFormData] = useState<any>({});
+
   useEffect(() => {
     if (!pyramid) {
       // Redirect to home if no pyramid loaded
@@ -199,6 +204,124 @@ export default function BuilderPage() {
       showToast("Individual objective deleted", "success");
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to delete individual objective", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Edit mode helpers
+  const startEdit = (id: string, type: string, currentData: any) => {
+    setEditingId(id);
+    setEditType(type);
+    setEditFormData(currentData);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditType(null);
+    setEditFormData({});
+  };
+
+  const handleSaveEdit = async (type: string) => {
+    if (!editingId) return;
+
+    try {
+      setLoading(true);
+
+      switch (type) {
+        case "vision":
+          await visionApi.updateStatement(
+            sessionId,
+            editingId,
+            editFormData.statement_type,
+            editFormData.statement
+          );
+          break;
+        case "value":
+          await valuesApi.update(
+            sessionId,
+            editingId,
+            editFormData.name,
+            editFormData.description
+          );
+          break;
+        case "behaviour":
+          await behavioursApi.update(
+            sessionId,
+            editingId,
+            editFormData.statement,
+            editFormData.value_ids
+          );
+          break;
+        case "driver":
+          await driversApi.update(
+            sessionId,
+            editingId,
+            editFormData.name,
+            editFormData.description,
+            editFormData.rationale
+          );
+          break;
+        case "intent":
+          await intentsApi.update(
+            sessionId,
+            editingId,
+            editFormData.statement,
+            editFormData.driver_id
+          );
+          break;
+        case "enabler":
+          await enablersApi.update(
+            sessionId,
+            editingId,
+            editFormData.name,
+            editFormData.description,
+            editFormData.driver_ids,
+            editFormData.enabler_type
+          );
+          break;
+        case "commitment":
+          await commitmentsApi.update(
+            sessionId,
+            editingId,
+            editFormData.name,
+            editFormData.description,
+            editFormData.horizon,
+            editFormData.target_date,
+            editFormData.primary_driver_id,
+            editFormData.owner
+          );
+          break;
+        case "team_objective":
+          await teamObjectivesApi.update(
+            sessionId,
+            editingId,
+            editFormData.name,
+            editFormData.description,
+            editFormData.team_name,
+            editFormData.primary_commitment_id,
+            editFormData.metrics,
+            editFormData.owner
+          );
+          break;
+        case "individual_objective":
+          await individualObjectivesApi.update(
+            sessionId,
+            editingId,
+            editFormData.name,
+            editFormData.description,
+            editFormData.individual_name,
+            editFormData.team_objective_ids,
+            editFormData.success_criteria
+          );
+          break;
+      }
+
+      await refreshPyramid();
+      showToast("Successfully updated", "success");
+      cancelEdit();
+    } catch (err: any) {
+      showToast(err.response?.data?.detail || "Failed to update", "error");
     } finally {
       setLoading(false);
     }
