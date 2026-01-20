@@ -76,7 +76,7 @@ This guide enables you to use any AI tool (ChatGPT, Claude, Gemini, etc.) to gen
 
 ### How It Works
 
-1. **Prepare**: Gather your organization's context and goals
+1. **Prepare**: Gather your organization context and goals
 2. **Generate**: Use the prompt templates with your AI tool
 3. **Compile**: Combine responses into the JSON format
 4. **Import**: Load your JSON file into the application
@@ -88,14 +88,14 @@ This guide enables you to use any AI tool (ChatGPT, Claude, Gemini, etc.) to gen
 The strategic pyramid consists of 9 interconnected tiers:
 
 ### Tier 1: Vision (Foundation)
-**Purpose**: Your organization's fundamental purpose
+**Purpose**: Your organization fundamental purpose
 **Components**: Vision, Mission, and Belief statements
 **Example**: "To democratize financial services for underserved communities"
 
 ### Tier 2: Values (Culture)
 **Purpose**: Core principles guiding behavior
 **Components**: Value names with descriptions
-**Example**: "Integrity - We do what's right, even when no one is watching"
+**Example**: "Integrity - We do what is right, even when no one is watching"
 
 ### Tier 3: Behaviours (Actions)
 **Purpose**: Observable actions that demonstrate values
@@ -343,7 +343,7 @@ Belief: [statement]
 ### 2. Values Template
 
 ```
-Generate 4-6 core values for my organization's strategic pyramid.
+Generate 4-6 core values for my organization strategic pyramid.
 
 ORGANIZATION CONTEXT:
 [Your organization details]
@@ -507,7 +507,7 @@ TEAMS:
 For each relevant team, generate 2-3 objectives that:
 - Support specific commitments
 - Are measurable
-- Are achievable within the team's scope
+- Are achievable within the team scope
 
 Format as:
 Team: [Team Name]
@@ -533,7 +533,7 @@ ROLES:
 
 For each role, generate 2-3 objectives that:
 - Support team objectives
-- Are within individual's control
+- Are within individual control
 - Have clear success criteria
 
 Format as:
@@ -552,13 +552,13 @@ Success Criteria: [2-3 measurable criteria]
 2. **Provide Context**: The more specific context you provide, the better the AI output
 3. **Iterate**: If output isn't quite right, ask AI to refine specific parts
 4. **Mix and Match**: Take the best from multiple AI generations
-5. **Add Your Voice**: Edit AI output to match your organization's tone and language
+5. **Add Your Voice**: Edit AI output to match your organization tone and language
 6. **Maintain Alignment**: Regularly reference earlier tiers to ensure strategic thread"""
 
     def _example_pyramid(self) -> str:
         return """## Example: Complete Strategic Pyramid
 
-Here's a complete example for a fintech startup:
+Here is a complete example for a fintech startup:
 
 ```json
 {
@@ -791,7 +791,7 @@ Before importing, check:
 **DO:**
 - ✅ Provide rich context to your AI tool (industry, size, challenges)
 - ✅ Generate more options than you need, then select the best
-- ✅ Use specific language that reflects your organization's voice
+- ✅ Use specific language that reflects your organization voice
 - ✅ Include quantitative elements in intents and commitments
 - ✅ Ensure every commitment traces back to a strategic driver
 - ✅ Balance across horizons (don't front-load all in H1)
@@ -866,7 +866,7 @@ Get better AI output by:
 **Quick Fix**: Ask your AI tool:
 ```
 Convert all the id fields in this JSON to valid UUIDs while maintaining
-all the connections. Here's my JSON: [paste your JSON]
+all the connections. Here is my JSON: [paste your JSON]
 ```
 
 The AI will regenerate your file with proper UUIDs and update all references.
