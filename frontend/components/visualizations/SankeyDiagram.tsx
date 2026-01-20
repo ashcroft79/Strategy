@@ -212,9 +212,9 @@ export default function SankeyDiagram({ pyramid }: SankeyDiagramProps) {
   const config = {
     displayModeBar: true,
     displaylogo: false,
-    modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+    modeBarButtonsToRemove: ['lasso2d', 'select2d'] as any,
     toImageButtonOptions: {
-      format: 'png',
+      format: 'png' as const,
       filename: 'strategic_pyramid_flow',
       height: 1000,
       width: 1400,
