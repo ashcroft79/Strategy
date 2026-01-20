@@ -138,6 +138,37 @@ All tiers connect through strategic alignment - each item should trace back to v
     def _json_schema(self) -> str:
         return """## JSON Schema
 
+### Important: UUID Format Required
+
+**All `id` fields MUST be valid UUIDs** (Universally Unique Identifiers).
+
+❌ **INCORRECT**: "drv-001", "com-002"
+✅ **CORRECT**: "550e8400-e29b-41d4-a716-446655440000"
+
+### How to Generate UUIDs
+
+**Option 1: Online UUID Generator**
+- Visit: https://www.uuidgenerator.net/
+- Click "Generate" for each ID you need
+- Copy and paste into your JSON
+
+**Option 2: Ask Your AI Tool**
+```
+Generate 10 UUIDs for me to use as IDs in my JSON file.
+```
+
+**Option 3: Command Line (Mac/Linux)**
+```bash
+uuidgen
+```
+
+**Option 4: Python**
+```python
+import uuid
+for i in range(10):
+    print(uuid.uuid4())
+```
+
 ### Complete Structure
 
 ```json
@@ -152,17 +183,17 @@ All tiers connect through strategic alignment - each item should trace back to v
   "vision": {
     "statements": [
       {
-        "id": "vis-001",
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         "statement_type": "vision",
         "statement": "Your vision statement"
       },
       {
-        "id": "mis-001",
+        "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
         "statement_type": "mission",
         "statement": "Your mission statement"
       },
       {
-        "id": "bel-001",
+        "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
         "statement_type": "belief",
         "statement": "Your belief statement"
       }
@@ -170,21 +201,21 @@ All tiers connect through strategic alignment - each item should trace back to v
   },
   "values": [
     {
-      "id": "val-001",
+      "id": "d4e5f6a7-b8c9-0123-def1-234567890123",
       "name": "Value Name",
       "description": "What this value means"
     }
   ],
   "behaviours": [
     {
-      "id": "beh-001",
+      "id": "e5f6a7b8-c9d0-1234-ef12-345678901234",
       "statement": "We [specific observable behavior]",
-      "value_ids": ["val-001"]
+      "value_ids": ["d4e5f6a7-b8c9-0123-def1-234567890123"]
     }
   ],
   "strategic_drivers": [
     {
-      "id": "drv-001",
+      "id": "f6a7b8c9-d0e1-2345-f123-456789012345",
       "name": "Driver Name",
       "description": "What this driver aims to achieve",
       "rationale": "Why this is strategically important"
@@ -192,27 +223,27 @@ All tiers connect through strategic alignment - each item should trace back to v
   ],
   "strategic_intents": [
     {
-      "id": "int-001",
-      "driver_id": "drv-001",
+      "id": "a7b8c9d0-e1f2-3456-1234-567890123456",
+      "driver_id": "f6a7b8c9-d0e1-2345-f123-456789012345",
       "statement": "What success looks like for this driver",
       "timeframe": "2025-2027"
     }
   ],
   "enablers": [
     {
-      "id": "ena-001",
+      "id": "b8c9d0e1-f2a3-4567-2345-678901234567",
       "name": "Enabler Name",
       "description": "How this capability enables strategy",
       "enabler_type": "Technology",
-      "driver_ids": ["drv-001"]
+      "driver_ids": ["f6a7b8c9-d0e1-2345-f123-456789012345"]
     }
   ],
   "iconic_commitments": [
     {
-      "id": "com-001",
+      "id": "c9d0e1f2-a3b4-5678-3456-789012345678",
       "name": "Commitment Name",
       "description": "What we will accomplish",
-      "primary_driver_id": "drv-001",
+      "primary_driver_id": "f6a7b8c9-d0e1-2345-f123-456789012345",
       "horizon": "H1",
       "target_date": "2025-06-30",
       "owner": "Executive Sponsor"
@@ -220,22 +251,22 @@ All tiers connect through strategic alignment - each item should trace back to v
   ],
   "team_objectives": [
     {
-      "id": "tob-001",
+      "id": "d0e1f2a3-b4c5-6789-4567-890123456789",
       "team_name": "Team Name",
       "name": "Objective Name",
       "description": "What the team will achieve",
-      "primary_commitment_id": "com-001",
+      "primary_commitment_id": "c9d0e1f2-a3b4-5678-3456-789012345678",
       "metrics": ["Metric 1", "Metric 2"],
       "owner": "Team Lead"
     }
   ],
   "individual_objectives": [
     {
-      "id": "ind-001",
+      "id": "e1f2a3b4-c5d6-7890-5678-901234567890",
       "individual_name": "Person Name",
       "name": "Objective Name",
       "description": "What the individual will accomplish",
-      "team_objective_ids": ["tob-001"],
+      "team_objective_ids": ["d0e1f2a3-b4c5-6789-4567-890123456789"],
       "success_criteria": ["Criterion 1", "Criterion 2"]
     }
   ]
@@ -245,7 +276,7 @@ All tiers connect through strategic alignment - each item should trace back to v
 ### Field Reference
 
 #### Required Fields
-- **id**: Unique identifier (e.g., "drv-001", "com-002")
+- **id**: Valid UUID (e.g., "550e8400-e29b-41d4-a716-446655440000")
 - **name** or **statement**: Main content text
 - **description**: Detailed explanation
 
@@ -257,12 +288,23 @@ All tiers connect through strategic alignment - each item should trace back to v
 - **enabler_type**: Technology, People, Process, or Partnership
 
 #### Connection Fields
-- **value_ids**: Links to values
-- **driver_id**: Links to a strategic driver
-- **driver_ids**: Links to multiple drivers
-- **primary_driver_id**: Primary driver link
-- **primary_commitment_id**: Primary commitment link
-- **team_objective_ids**: Links to team objectives"""
+These must reference valid UUIDs that exist elsewhere in your file:
+- **value_ids**: Links to values (array of UUIDs)
+- **driver_id**: Links to a strategic driver (single UUID)
+- **driver_ids**: Links to multiple drivers (array of UUIDs)
+- **primary_driver_id**: Primary driver link (single UUID)
+- **primary_commitment_id**: Primary commitment link (single UUID)
+- **team_objective_ids**: Links to team objectives (array of UUIDs)
+
+### Pro Tip: AI-Assisted UUID Generation
+
+Ask your AI tool to generate the complete JSON with UUIDs:
+
+```
+Generate a complete strategic pyramid JSON file for [your organization].
+Use valid UUIDs for all id fields.
+Ensure all connection IDs reference existing UUIDs within the file.
+```
 
     def _prompt_templates(self) -> str:
         return """## AI Prompt Templates
@@ -530,17 +572,17 @@ Here's a complete example for a fintech startup:
   "vision": {
     "statements": [
       {
-        "id": "vis-001",
+        "id": "11111111-1111-1111-1111-111111111111",
         "statement_type": "vision",
         "statement": "A world where every small business has access to the financial tools they need to thrive"
       },
       {
-        "id": "mis-001",
+        "id": "22222222-2222-2222-2222-222222222222",
         "statement_type": "mission",
         "statement": "We provide intelligent, accessible financial services that empower small businesses to make better decisions and grow with confidence"
       },
       {
-        "id": "bel-001",
+        "id": "33333333-3333-3333-3333-333333333333",
         "statement_type": "belief",
         "statement": "We believe financial services should be designed for entrepreneurs, not banks"
       }
@@ -548,53 +590,53 @@ Here's a complete example for a fintech startup:
   },
   "values": [
     {
-      "id": "val-001",
+      "id": "44444444-4444-4444-4444-444444444444",
       "name": "Customer Obsession",
       "description": "We start with the customer problem and work backwards. Every decision is tested against whether it serves our customers better."
     },
     {
-      "id": "val-002",
+      "id": "55555555-5555-5555-5555-555555555555",
       "name": "Move Fast",
       "description": "Speed is our advantage. We ship quickly, learn rapidly, and iterate constantly to stay ahead."
     },
     {
-      "id": "val-003",
+      "id": "66666666-6666-6666-6666-666666666666",
       "name": "Build Trust",
       "description": "In financial services, trust is everything. We earn it through transparency, security, and doing what we promise."
     }
   ],
   "behaviours": [
     {
-      "id": "beh-001",
+      "id": "77777777-7777-7777-7777-777777777777",
       "statement": "We talk to customers every week to understand their real problems",
-      "value_ids": ["val-001"]
+      "value_ids": ["44444444-4444-4444-4444-444444444444"]
     },
     {
-      "id": "beh-002",
+      "id": "88888888-8888-8888-8888-888888888888",
       "statement": "We ship features to production daily, learning from real usage",
-      "value_ids": ["val-002"]
+      "value_ids": ["55555555-5555-5555-5555-555555555555"]
     },
     {
-      "id": "beh-003",
+      "id": "99999999-9999-9999-9999-999999999999",
       "statement": "We communicate openly about outages, issues, and roadblocks",
-      "value_ids": ["val-003"]
+      "value_ids": ["66666666-6666-6666-6666-666666666666"]
     }
   ],
   "strategic_drivers": [
     {
-      "id": "drv-001",
+      "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
       "name": "Customer Growth",
       "description": "Expand our customer base in priority SMB segments through product-led growth and strategic partnerships",
       "rationale": "Growing our customer base is essential to achieving scale and market leadership"
     },
     {
-      "id": "drv-002",
+      "id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
       "name": "Product Excellence",
       "description": "Deliver best-in-class financial management tools that integrate seamlessly into business workflows",
       "rationale": "Superior product experience drives retention, referrals, and competitive differentiation"
     },
     {
-      "id": "drv-003",
+      "id": "cccccccc-cccc-cccc-cccc-cccccccccccc",
       "name": "Trust & Compliance",
       "description": "Build the most trusted, secure, and compliant fintech platform for small businesses",
       "rationale": "Trust is the foundation of financial services and critical for enterprise adoption"
@@ -602,55 +644,55 @@ Here's a complete example for a fintech startup:
   ],
   "strategic_intents": [
     {
-      "id": "int-001",
-      "driver_id": "drv-001",
+      "id": "dddddddd-dddd-dddd-dddd-dddddddddddd",
+      "driver_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
       "statement": "Reach 50,000 active business customers by end of 2026",
       "timeframe": "2025-2026"
     },
     {
-      "id": "int-002",
-      "driver_id": "drv-002",
+      "id": "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee",
+      "driver_id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
       "statement": "Achieve 4.5+ app store rating and >60 NPS score",
       "timeframe": "2025-2027"
     },
     {
-      "id": "int-003",
-      "driver_id": "drv-003",
+      "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+      "driver_id": "cccccccc-cccc-cccc-cccc-cccccccccccc",
       "statement": "Achieve SOC 2 Type II and ISO 27001 certification",
       "timeframe": "2025-2026"
     }
   ],
   "enablers": [
     {
-      "id": "ena-001",
+      "id": "10101010-1010-1010-1010-101010101010",
       "name": "AI-Powered Financial Insights",
       "description": "Machine learning platform that provides automated cash flow forecasting and spending recommendations",
       "enabler_type": "Technology",
-      "driver_ids": ["drv-002"]
+      "driver_ids": ["bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"]
     },
     {
-      "id": "ena-002",
+      "id": "20202020-2020-2020-2020-202020202020",
       "name": "Growth Marketing Team",
       "description": "Dedicated team focused on performance marketing, SEO, and partnership channels",
       "enabler_type": "People",
-      "driver_ids": ["drv-001"]
+      "driver_ids": ["aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"]
     }
   ],
   "iconic_commitments": [
     {
-      "id": "com-001",
+      "id": "30303030-3030-3030-3030-303030303030",
       "name": "Launch Mobile App in 5 New Markets",
       "description": "Expand iOS and Android apps to UK, Canada, Australia, Germany, and France with localized features",
-      "primary_driver_id": "drv-001",
+      "primary_driver_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
       "horizon": "H1",
       "target_date": "2025-06-30",
       "owner": "CPO"
     },
     {
-      "id": "com-002",
+      "id": "40404040-4040-4040-4040-404040404040",
       "name": "Ship AI Cash Flow Forecasting",
       "description": "Launch ML-powered cash flow predictions with 90%+ accuracy, integrated into dashboard",
-      "primary_driver_id": "drv-002",
+      "primary_driver_id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
       "horizon": "H2",
       "target_date": "2025-12-31",
       "owner": "CTO"
@@ -658,22 +700,22 @@ Here's a complete example for a fintech startup:
   ],
   "team_objectives": [
     {
-      "id": "tob-001",
+      "id": "50505050-5050-5050-5050-505050505050",
       "team_name": "Engineering",
       "name": "Achieve 99.9% Platform Uptime",
       "description": "Reduce incidents and improve infrastructure reliability to support growth",
-      "primary_commitment_id": "com-001",
+      "primary_commitment_id": "30303030-3030-3030-3030-303030303030",
       "metrics": ["99.9% uptime", "MTTR <15 minutes", "Zero critical security incidents"],
       "owner": "VP Engineering"
     }
   ],
   "individual_objectives": [
     {
-      "id": "ind-001",
+      "id": "60606060-6060-6060-6060-606060606060",
       "individual_name": "Sarah Chen - Backend Lead",
       "name": "Implement Real-Time Monitoring System",
       "description": "Deploy comprehensive monitoring with alerting for all critical services",
-      "team_objective_ids": ["tob-001"],
+      "team_objective_ids": ["50505050-5050-5050-5050-505050505050"],
       "success_criteria": ["100% service coverage", "Alert response <5 minutes", "Zero missed critical incidents"]
     }
   ]
@@ -687,8 +729,8 @@ Here's a complete example for a fintech startup:
 
 1. Copy the complete JSON structure
 2. Fill in each section using the AI-generated content
-3. Ensure all IDs are unique (e.g., drv-001, drv-002, drv-003)
-4. Verify all connection IDs reference existing items
+3. **CRITICAL: Ensure all IDs are valid UUIDs** (e.g., "550e8400-e29b-41d4-a716-446655440000")
+4. Verify all connection IDs reference existing UUIDs in the file
 5. Validate JSON syntax using a tool like [jsonlint.com](https://jsonlint.com)
 
 ### Step 2: Save as JSON File
@@ -720,11 +762,26 @@ After import, verify:
 
 | Issue | Solution |
 |-------|----------|
+| **"Input should be a valid UUID"** | **All id fields must be UUIDs. Use a UUID generator.** |
 | "Invalid JSON syntax" | Validate JSON at jsonlint.com |
 | "Missing required field" | Check all required fields are present |
 | "Invalid ID reference" | Ensure all connection IDs exist in the file |
 | "Date format error" | Use YYYY-MM-DD format |
-| "Duplicate IDs" | Make all IDs unique within their tier |"""
+| "Duplicate IDs" | Make all IDs unique within their tier |
+
+### UUID Validation Checklist
+
+Before importing, check:
+- ✅ All `id` fields use UUID format (8-4-4-4-12 hex digits)
+- ✅ All `value_ids`, `driver_ids`, etc. reference valid UUIDs from the file
+- ✅ UUIDs are in quotes: `"550e8400-e29b-41d4-a716-446655440000"`
+- ✅ No simple strings like "drv-001" or "value1"
+
+**Example of invalid vs valid:**
+```
+❌ INVALID: "id": "drv-001"
+✅ VALID: "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+```"""
 
     def _best_practices(self) -> str:
         return """## Best Practices
@@ -794,6 +851,26 @@ Get better AI output by:
     def _troubleshooting(self) -> str:
         return """## Troubleshooting
 
+### "Input should be a valid UUID" Error
+
+**This is the #1 most common error!**
+
+**Problem**: You used simple IDs like "drv-001" instead of UUIDs
+
+**Solution**: Replace ALL IDs with valid UUIDs
+```
+❌ WRONG: "id": "drv-001"
+✅ RIGHT: "id": "550e8400-e29b-41d4-a716-446655440000"
+```
+
+**Quick Fix**: Ask your AI tool:
+```
+Convert all the id fields in this JSON to valid UUIDs while maintaining
+all the connections. Here's my JSON: [paste your JSON]
+```
+
+The AI will regenerate your file with proper UUIDs and update all references.
+
 ### "AI output is too generic"
 
 **Solution**: Add more specific context to your prompts
@@ -821,9 +898,9 @@ Get better AI output by:
 ### "JSON syntax errors"
 
 **Solution**: Validation and formatting
-- Use a JSON validator before importing
+- Use a JSON validator before importing (jsonlint.com)
 - Check for missing commas, brackets, or quotes
-- Ensure all IDs are strings (in quotes)
+- Ensure all IDs are strings in quotes
 - Verify date format is YYYY-MM-DD
 - Look for smart quotes from word processors (use straight quotes)
 
@@ -831,17 +908,18 @@ Get better AI output by:
 
 **Solution**: AI output formatting
 - Ask AI to "format as JSON matching this schema: [paste schema]"
+- **Important**: Add "Use valid UUIDs for all id fields"
 - Generate in smaller chunks and assemble manually
 - Use the example pyramid as a template
 - Start simple, add complexity after successful import
 
 ### "Connections missing after import"
 
-**Solution**: ID reference checking
-- Print all IDs to verify uniqueness
-- Search for referenced IDs to ensure they exist
-- Use consistent ID prefixes (drv-, com-, tob-)
-- Number sequentially for easier tracking
+**Solution**: UUID reference checking
+- All connection IDs must match existing UUIDs in the file
+- Use find/replace to verify references exist
+- Keep a UUID reference list as you generate
+- Ask AI to validate all connections before finalizing
 
 ---
 
