@@ -13,10 +13,15 @@ export default function ValidationPage() {
   const { sessionId, pyramid } = usePyramidStore();
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isValidating, setIsValidating] = useState(false);
+  const [filterLevel, setFilterLevel] = useState<string>("all");
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!pyramid) {
       router.push("/");
+    } else {
+      // Auto-run validation on page load
+      runValidation();
     }
   }, [pyramid, router]);
 
@@ -56,6 +61,35 @@ export default function ValidationPage() {
       default:
         return "bg-gray-50 border-gray-200";
     }
+  };
+
+  const toggleCategory = (category: string) => {
+    const newExpanded = new Set(expandedCategories);
+    if (newExpanded.has(category)) {
+      newExpanded.delete(category);
+    } else {
+      newExpanded.add(category);
+    }
+    setExpandedCategories(newExpanded);
+  };
+
+  const groupIssuesByCategory = () => {
+    if (!validationResult) return {};
+
+    const grouped: Record<string, ValidationResult["issues"]> = {};
+    validationResult.issues.forEach((issue) => {
+      const category = issue.category || "Other";
+      if (!grouped[category]) {
+        grouped[category] = [];
+      }
+      grouped[category].push(issue);
+    });
+    return grouped;
+  };
+
+  const getFilteredIssues = (issues: ValidationResult["issues"]) => {
+    if (filterLevel === "all") return issues;
+    return issues.filter((issue) => issue.level === filterLevel);
   };
 
   if (!pyramid) {
@@ -123,34 +157,123 @@ export default function ValidationPage() {
             {/* Issues */}
             {validationResult.issues.length > 0 && (
               <div className="card">
-                <h2 className="text-2xl font-bold mb-4">Issues</h2>
-                <div className="space-y-3">
-                  {validationResult.issues.map((issue, index) => (
-                    <div
-                      key={index}
-                      className={`p-4 border rounded-lg ${getBgColor(issue.level)}`}
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold">Issues</h2>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setFilterLevel("all")}
+                      className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                        filterLevel === "all"
+                          ? "bg-gray-800 text-white"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
                     >
-                      <div className="flex items-start gap-3">
-                        {getIcon(issue.level)}
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-semibold text-gray-800">{issue.category}</span>
-                            {issue.level && (
-                              <span className="px-2 py-0.5 bg-white rounded text-xs font-medium capitalize">
-                                {issue.level}
-                              </span>
-                            )}
+                      All
+                    </button>
+                    <button
+                      onClick={() => setFilterLevel("error")}
+                      className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                        filterLevel === "error"
+                          ? "bg-red-600 text-white"
+                          : "bg-red-100 text-red-700 hover:bg-red-200"
+                      }`}
+                    >
+                      Errors
+                    </button>
+                    <button
+                      onClick={() => setFilterLevel("warning")}
+                      className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                        filterLevel === "warning"
+                          ? "bg-yellow-600 text-white"
+                          : "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
+                      }`}
+                    >
+                      Warnings
+                    </button>
+                    <button
+                      onClick={() => setFilterLevel("info")}
+                      className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                        filterLevel === "info"
+                          ? "bg-blue-600 text-white"
+                          : "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                      }`}
+                    >
+                      Info
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {Object.entries(groupIssuesByCategory()).map(([category, issues]) => {
+                    const filteredIssues = getFilteredIssues(issues);
+                    if (filteredIssues.length === 0) return null;
+
+                    const isExpanded = expandedCategories.has(category);
+                    const errorCount = filteredIssues.filter((i) => i.level === "error").length;
+                    const warningCount = filteredIssues.filter((i) => i.level === "warning").length;
+                    const infoCount = filteredIssues.filter((i) => i.level === "info").length;
+
+                    return (
+                      <div key={category} className="border rounded-lg overflow-hidden">
+                        <button
+                          onClick={() => toggleCategory(category)}
+                          className="w-full p-4 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="font-semibold text-gray-800">{category}</span>
+                            <div className="flex gap-2">
+                              {errorCount > 0 && (
+                                <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-medium">
+                                  {errorCount} error{errorCount !== 1 ? "s" : ""}
+                                </span>
+                              )}
+                              {warningCount > 0 && (
+                                <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded text-xs font-medium">
+                                  {warningCount} warning{warningCount !== 1 ? "s" : ""}
+                                </span>
+                              )}
+                              {infoCount > 0 && (
+                                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                                  {infoCount} info
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          <p className="text-gray-700">{issue.message}</p>
-                          {issue.suggestion && (
-                            <p className="text-sm text-gray-600 mt-2">
-                              💡 {issue.suggestion}
-                            </p>
-                          )}
-                        </div>
+                          <span className="text-gray-500">{isExpanded ? "▼" : "▶"}</span>
+                        </button>
+
+                        {isExpanded && (
+                          <div className="p-4 space-y-3 bg-white">
+                            {filteredIssues.map((issue, index) => (
+                              <div
+                                key={index}
+                                className={`p-4 border rounded-lg ${getBgColor(issue.level)}`}
+                              >
+                                <div className="flex items-start gap-3">
+                                  {getIcon(issue.level)}
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      {issue.level && (
+                                        <span className="px-2 py-0.5 bg-white rounded text-xs font-medium capitalize">
+                                          {issue.level}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <p className="text-gray-700">{issue.message}</p>
+                                    {issue.suggestion && (
+                                      <p className="text-sm text-gray-600 mt-2">
+                                        💡 {issue.suggestion}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

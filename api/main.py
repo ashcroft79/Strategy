@@ -14,16 +14,17 @@ from api.routers import pyramids, validation, exports, visualizations
 app = FastAPI(
     title="Strategic Pyramid Builder API",
     description="REST API for building and managing strategic pyramids",
-    version="1.0.0",
+    version="1.0.2",  # Added all missing remove methods
 )
 
 # Configure CORS for Next.js development
 app.add_middleware(
     CORSMiddleware,
+    allow_origin_regex=r"https://.*\.vercel\.app",  # All Vercel deployments
     allow_origins=[
         "http://localhost:3000",  # Next.js dev server
         "http://localhost:3001",
-        "https://*.vercel.app",   # Vercel deployments
+        "https://ausp-strategy.vercel.app",  # Production Vercel deployment
     ],
     allow_credentials=True,
     allow_methods=["*"],

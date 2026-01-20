@@ -6,6 +6,12 @@ import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
 import type { StrategyPyramid, PyramidSummary } from "@/types/pyramid";
 
+interface Toast {
+  id: string;
+  message: string;
+  type: "success" | "error" | "warning" | "info";
+}
+
 interface PyramidStore {
   // State
   sessionId: string;
@@ -13,6 +19,7 @@ interface PyramidStore {
   summary: PyramidSummary | null;
   isLoading: boolean;
   error: string | null;
+  toasts: Toast[];
 
   // Actions
   setSessionId: (id: string) => void;
@@ -20,6 +27,8 @@ interface PyramidStore {
   setSummary: (summary: PyramidSummary | null) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  showToast: (message: string, type?: Toast["type"]) => void;
+  removeToast: (id: string) => void;
   reset: () => void;
 }
 
@@ -32,6 +41,7 @@ export const usePyramidStore = create<PyramidStore>((set) => ({
   summary: null,
   isLoading: false,
   error: null,
+  toasts: [],
 
   // Actions
   setSessionId: (id: string) => {
@@ -49,6 +59,19 @@ export const usePyramidStore = create<PyramidStore>((set) => ({
 
   setError: (error: string | null) => set({ error }),
 
+  showToast: (message: string, type: Toast["type"] = "info") => {
+    const id = uuidv4();
+    set((state) => ({
+      toasts: [...state.toasts, { id, message, type }],
+    }));
+  },
+
+  removeToast: (id: string) => {
+    set((state) => ({
+      toasts: state.toasts.filter((t) => t.id !== id),
+    }));
+  },
+
   reset: () => {
     const newSessionId = uuidv4();
     if (typeof window !== "undefined") {
@@ -60,6 +83,7 @@ export const usePyramidStore = create<PyramidStore>((set) => ({
       summary: null,
       isLoading: false,
       error: null,
+      toasts: [],
     });
   },
 }));

@@ -1,5 +1,10 @@
 # Strategic Pyramid Builder - Python Dependencies
 
+# API Backend
+fastapi>=0.109.0         # REST API framework
+uvicorn[standard]>=0.27.0  # ASGI server
+python-multipart>=0.0.6  # File upload support
+
 # Core dependencies
 pydantic>=2.5.0          # Data validation and settings management
 python-dateutil>=2.8.2   # Date handling

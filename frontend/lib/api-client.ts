@@ -169,6 +169,10 @@ export const behavioursApi = {
       value_ids: valueIds,
     });
   },
+
+  async remove(sessionId: string, behaviourId: string): Promise<void> {
+    await api.delete(`/api/pyramids/${sessionId}/behaviours/${behaviourId}`);
+  },
 };
 
 // ============================================================================
@@ -206,6 +210,10 @@ export const driversApi = {
       rationale,
     });
   },
+
+  async remove(sessionId: string, driverId: string): Promise<void> {
+    await api.delete(`/api/pyramids/${sessionId}/drivers/${driverId}`);
+  },
 };
 
 // ============================================================================
@@ -242,6 +250,10 @@ export const intentsApi = {
       driver_id: driverId,
       is_stakeholder_voice: isStakeholderVoice,
     });
+  },
+
+  async remove(sessionId: string, intentId: string): Promise<void> {
+    await api.delete(`/api/pyramids/${sessionId}/intents/${intentId}`);
   },
 };
 
@@ -283,6 +295,10 @@ export const enablersApi = {
       driver_ids: driverIds,
       enabler_type: enablerType,
     });
+  },
+
+  async remove(sessionId: string, enablerId: string): Promise<void> {
+    await api.delete(`/api/pyramids/${sessionId}/enablers/${enablerId}`);
   },
 };
 
@@ -335,6 +351,10 @@ export const commitmentsApi = {
       owner,
     });
   },
+
+  async remove(sessionId: string, commitmentId: string): Promise<void> {
+    await api.delete(`/api/pyramids/${sessionId}/commitments/${commitmentId}`);
+  },
 };
 
 // ============================================================================
@@ -384,6 +404,10 @@ export const teamObjectivesApi = {
       owner,
     });
   },
+
+  async remove(sessionId: string, objectiveId: string): Promise<void> {
+    await api.delete(`/api/pyramids/${sessionId}/team-objectives/${objectiveId}`);
+  },
 };
 
 // ============================================================================
@@ -428,6 +452,10 @@ export const individualObjectivesApi = {
       team_objective_ids: teamObjectiveIds,
       success_criteria: successCriteria,
     });
+  },
+
+  async remove(sessionId: string, objectiveId: string): Promise<void> {
+    await api.delete(`/api/pyramids/${sessionId}/individual-objectives/${objectiveId}`);
   },
 };
 
