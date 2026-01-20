@@ -133,18 +133,26 @@ class UpdateVisionStatementRequest(BaseModel):
 @router.post("/{session_id}/vision/statements")
 async def add_vision_statement(session_id: str, request: AddVisionStatementRequest):
     """Add a vision/mission/belief/passion statement."""
-    if session_id not in active_pyramids:
-        raise HTTPException(status_code=404, detail="Pyramid not found")
+    try:
+        if session_id not in active_pyramids:
+            raise HTTPException(status_code=404, detail="Pyramid not found")
 
-    manager = active_pyramids[session_id]
-    statement = manager.add_vision_statement(
-        statement_type=request.statement_type,
-        statement=request.statement,
-        order=request.order,
-        created_by=request.created_by,
-    )
+        manager = active_pyramids[session_id]
+        statement = manager.add_vision_statement(
+            statement_type=request.statement_type,
+            statement=request.statement,
+            order=request.order,
+            created_by=request.created_by,
+        )
 
-    return statement.model_dump(mode="json")
+        return statement.model_dump(mode="json")
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        print(f"Error adding vision statement: {str(e)}")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
 
 
 @router.put("/{session_id}/vision/statements")
@@ -319,18 +327,26 @@ class UpdateDriverRequest(BaseModel):
 @router.post("/{session_id}/drivers")
 async def add_strategic_driver(session_id: str, request: AddDriverRequest):
     """Add a strategic driver."""
-    if session_id not in active_pyramids:
-        raise HTTPException(status_code=404, detail="Pyramid not found")
+    try:
+        if session_id not in active_pyramids:
+            raise HTTPException(status_code=404, detail="Pyramid not found")
 
-    manager = active_pyramids[session_id]
-    driver = manager.add_strategic_driver(
-        name=request.name,
-        description=request.description,
-        rationale=request.rationale,
-        created_by=request.created_by,
-    )
+        manager = active_pyramids[session_id]
+        driver = manager.add_strategic_driver(
+            name=request.name,
+            description=request.description,
+            rationale=request.rationale,
+            created_by=request.created_by,
+        )
 
-    return driver.model_dump(mode="json")
+        return driver.model_dump(mode="json")
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        print(f"Error adding driver: {str(e)}")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
 
 
 @router.put("/{session_id}/drivers")

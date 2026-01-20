@@ -14,7 +14,7 @@ from api.routers import pyramids, validation, exports, visualizations
 app = FastAPI(
     title="Strategic Pyramid Builder API",
     description="REST API for building and managing strategic pyramids",
-    version="1.0.0",
+    version="1.0.1",  # Version bump to trigger redeploy
 )
 
 # Configure CORS for Next.js development
