@@ -45,7 +45,6 @@ async def export_word(session_id: str, request: ExportRequest):
         exporter.export(
             filepath=tmp_path,
             audience=request.audience,
-            include_metadata=request.include_metadata,
             include_cover_page=request.include_cover_page,
         )
 
@@ -82,7 +81,7 @@ async def export_powerpoint(session_id: str, request: ExportRequest):
         exporter.export(
             filepath=tmp_path,
             audience=request.audience,
-            include_metadata=request.include_metadata,
+            include_title_slide=request.include_cover_page,
         )
 
         # Return file
@@ -148,8 +147,8 @@ async def export_json(session_id: str, request: ExportRequest):
         exporter = JSONExporter(manager.pyramid)
 
         # Export to JSON string
-        json_content = exporter.export_to_string(
-            include_metadata=request.include_metadata
+        json_content = exporter.to_json_string(
+            indent=2
         )
 
         # Return JSON
