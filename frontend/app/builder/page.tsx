@@ -647,23 +647,32 @@ export default function BuilderPage() {
 
               <div className="space-y-3 mb-4">
                 {pyramid.behaviours?.map((behaviour) => (
-                  <div key={behaviour.id} className="p-4 bg-green-50 rounded-lg">
-                    <div className="text-gray-700 mb-2">{behaviour.statement}</div>
-                    {behaviour.value_ids && behaviour.value_ids.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {behaviour.value_ids.map((valueId) => {
-                          const value = pyramid.values.find((v) => v.id === valueId);
-                          return value ? (
-                            <span
-                              key={valueId}
-                              className="px-2 py-1 bg-green-200 text-green-800 rounded text-xs"
-                            >
-                              {value.name}
-                            </span>
-                          ) : null;
-                        })}
-                      </div>
-                    )}
+                  <div key={behaviour.id} className="p-4 bg-green-50 rounded-lg flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="text-gray-700 mb-2">{behaviour.statement}</div>
+                      {behaviour.value_ids && behaviour.value_ids.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {behaviour.value_ids.map((valueId) => {
+                            const value = pyramid.values.find((v) => v.id === valueId);
+                            return value ? (
+                              <span
+                                key={valueId}
+                                className="px-2 py-1 bg-green-200 text-green-800 rounded text-xs"
+                              >
+                                {value.name}
+                              </span>
+                            ) : null;
+                          })}
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => handleDeleteBehaviour(behaviour.id)}
+                      className="ml-3 p-2 text-red-600 hover:bg-red-100 rounded transition-colors flex-shrink-0"
+                      title="Delete behaviour"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 ))}
               </div>
@@ -716,9 +725,18 @@ export default function BuilderPage() {
 
               <div className="space-y-3 mb-4">
                 {pyramid.strategic_drivers.map((driver) => (
-                  <div key={driver.id} className="p-4 bg-blue-50 rounded-lg">
-                    <div className="font-bold text-blue-900 text-lg">{driver.name}</div>
-                    <div className="text-gray-700 mt-1">{driver.description}</div>
+                  <div key={driver.id} className="p-4 bg-blue-50 rounded-lg flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="font-bold text-blue-900 text-lg">{driver.name}</div>
+                      <div className="text-gray-700 mt-1">{driver.description}</div>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteDriver(driver.id)}
+                      className="ml-3 p-2 text-red-600 hover:bg-red-100 rounded transition-colors flex-shrink-0"
+                      title="Delete driver"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 ))}
               </div>
@@ -757,11 +775,20 @@ export default function BuilderPage() {
                 {pyramid.strategic_intents.map((intent) => {
                   const driver = pyramid.strategic_drivers.find(d => d.id === intent.driver_id);
                   return (
-                    <div key={intent.id} className="p-4 bg-green-50 rounded-lg">
-                      <div className="text-xs text-green-700 font-medium mb-1">
-                        {driver?.name || "Unknown Driver"}
+                    <div key={intent.id} className="p-4 bg-green-50 rounded-lg flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="text-xs text-green-700 font-medium mb-1">
+                          {driver?.name || "Unknown Driver"}
+                        </div>
+                        <div className="text-gray-700">{intent.statement}</div>
                       </div>
-                      <div className="text-gray-700">{intent.statement}</div>
+                      <button
+                        onClick={() => handleDeleteIntent(intent.id)}
+                        className="ml-3 p-2 text-red-600 hover:bg-red-100 rounded transition-colors flex-shrink-0"
+                        title="Delete intent"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   );
                 })}
@@ -826,29 +853,40 @@ export default function BuilderPage() {
                 {pyramid.enablers?.map((enabler) => (
                   <div key={enabler.id} className="p-4 bg-purple-50 rounded-lg">
                     <div className="flex items-start justify-between mb-2">
-                      <div className="font-bold text-purple-900">{enabler.name}</div>
-                      {enabler.enabler_type && (
-                        <span className="px-2 py-1 bg-purple-200 text-purple-800 rounded text-xs">
-                          {enabler.enabler_type}
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-gray-700 mb-2">{enabler.description}</div>
-                    {enabler.driver_ids && enabler.driver_ids.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {enabler.driver_ids.map((driverId) => {
-                          const driver = pyramid.strategic_drivers.find((d) => d.id === driverId);
-                          return driver ? (
-                            <span
-                              key={driverId}
-                              className="px-2 py-1 bg-purple-200 text-purple-800 rounded text-xs"
-                            >
-                              {driver.name}
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="font-bold text-purple-900">{enabler.name}</div>
+                          {enabler.enabler_type && (
+                            <span className="px-2 py-1 bg-purple-200 text-purple-800 rounded text-xs">
+                              {enabler.enabler_type}
                             </span>
-                          ) : null;
-                        })}
+                          )}
+                        </div>
+                        <div className="text-gray-700 mb-2">{enabler.description}</div>
+                        {enabler.driver_ids && enabler.driver_ids.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {enabler.driver_ids.map((driverId) => {
+                              const driver = pyramid.strategic_drivers.find((d) => d.id === driverId);
+                              return driver ? (
+                                <span
+                                  key={driverId}
+                                  className="px-2 py-1 bg-purple-200 text-purple-800 rounded text-xs"
+                                >
+                                  {driver.name}
+                                </span>
+                              ) : null;
+                            })}
+                          </div>
+                        )}
                       </div>
-                    )}
+                      <button
+                        onClick={() => handleDeleteEnabler(enabler.id)}
+                        className="ml-3 p-2 text-red-600 hover:bg-red-100 rounded transition-colors flex-shrink-0"
+                        title="Delete enabler"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -923,14 +961,25 @@ export default function BuilderPage() {
                   const driver = pyramid.strategic_drivers.find(d => d.id === commitment.primary_driver_id);
                   return (
                     <div key={commitment.id} className="p-4 bg-purple-50 rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="font-bold text-purple-900">{commitment.name}</div>
-                        <span className="px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-sm">
-                          {commitment.horizon}
-                        </span>
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="font-bold text-purple-900">{commitment.name}</div>
+                            <span className="px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-sm">
+                              {commitment.horizon}
+                            </span>
+                          </div>
+                          <div className="text-gray-700 mb-1">{commitment.description}</div>
+                          <div className="text-xs text-purple-700">Driver: {driver?.name}</div>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteCommitment(commitment.id)}
+                          className="ml-3 p-2 text-red-600 hover:bg-red-100 rounded transition-colors flex-shrink-0"
+                          title="Delete commitment"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
-                      <div className="text-gray-700 mb-1">{commitment.description}</div>
-                      <div className="text-xs text-purple-700">Driver: {driver?.name}</div>
                     </div>
                   );
                 })}
@@ -1014,21 +1063,32 @@ export default function BuilderPage() {
                   );
                   return (
                     <div key={objective.id} className="p-4 bg-orange-50 rounded-lg">
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="font-bold text-orange-900">{objective.name}</div>
-                        <span className="px-2 py-1 bg-orange-200 text-orange-800 rounded text-xs">
-                          {objective.team_name}
-                        </span>
-                      </div>
-                      <div className="text-gray-700 mb-1">{objective.description}</div>
-                      {commitment && (
-                        <div className="text-xs text-orange-700 mt-2">
-                          Commitment: {commitment.name}
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="font-bold text-orange-900">{objective.name}</div>
+                            <span className="px-2 py-1 bg-orange-200 text-orange-800 rounded text-xs">
+                              {objective.team_name}
+                            </span>
+                          </div>
+                          <div className="text-gray-700 mb-1">{objective.description}</div>
+                          {commitment && (
+                            <div className="text-xs text-orange-700 mt-2">
+                              Commitment: {commitment.name}
+                            </div>
+                          )}
+                          {objective.owner && (
+                            <div className="text-xs text-gray-600 mt-1">Owner: {objective.owner}</div>
+                          )}
                         </div>
-                      )}
-                      {objective.owner && (
-                        <div className="text-xs text-gray-600 mt-1">Owner: {objective.owner}</div>
-                      )}
+                        <button
+                          onClick={() => handleDeleteTeamObjective(objective.id)}
+                          className="ml-3 p-2 text-red-600 hover:bg-red-100 rounded transition-colors flex-shrink-0"
+                          title="Delete team objective"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
@@ -1096,28 +1156,39 @@ export default function BuilderPage() {
               <div className="space-y-3 mb-4">
                 {pyramid.individual_objectives?.map((objective) => (
                   <div key={objective.id} className="p-4 bg-teal-50 rounded-lg">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="font-bold text-teal-900">{objective.name}</div>
-                      <span className="px-2 py-1 bg-teal-200 text-teal-800 rounded text-xs">
-                        {objective.individual_name}
-                      </span>
-                    </div>
-                    <div className="text-gray-700 mb-2">{objective.description}</div>
-                    {objective.team_objective_ids && objective.team_objective_ids.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {objective.team_objective_ids.map((teamObjId) => {
-                          const teamObj = pyramid.team_objectives?.find((t) => t.id === teamObjId);
-                          return teamObj ? (
-                            <span
-                              key={teamObjId}
-                              className="px-2 py-1 bg-teal-200 text-teal-800 rounded text-xs"
-                            >
-                              {teamObj.name}
-                            </span>
-                          ) : null;
-                        })}
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="font-bold text-teal-900">{objective.name}</div>
+                          <span className="px-2 py-1 bg-teal-200 text-teal-800 rounded text-xs">
+                            {objective.individual_name}
+                          </span>
+                        </div>
+                        <div className="text-gray-700 mb-2">{objective.description}</div>
+                        {objective.team_objective_ids && objective.team_objective_ids.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {objective.team_objective_ids.map((teamObjId) => {
+                              const teamObj = pyramid.team_objectives?.find((t) => t.id === teamObjId);
+                              return teamObj ? (
+                                <span
+                                  key={teamObjId}
+                                  className="px-2 py-1 bg-teal-200 text-teal-800 rounded text-xs"
+                                >
+                                  {teamObj.name}
+                                </span>
+                              ) : null;
+                            })}
+                          </div>
+                        )}
                       </div>
-                    )}
+                      <button
+                        onClick={() => handleDeleteIndividualObjective(objective.id)}
+                        className="ml-3 p-2 text-red-600 hover:bg-red-100 rounded transition-colors flex-shrink-0"
+                        title="Delete individual objective"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
