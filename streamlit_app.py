@@ -16,242 +16,435 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for premium, professional styling
+# Custom CSS for warm, consumer-grade styling (Crextio/Payoneer inspired)
 st.markdown("""
 <style>
     /* Import professional fonts */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-    /* Global improvements */
-    .main {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    /* ========== COLOR VARIABLES ========== */
+    :root {
+        /* Warm Base Colors (Crextio inspired) */
+        --cream-50: #FFFBF5;
+        --cream-100: #FFF9E6;
+        --cream-200: #F5F0E1;
+        --cream-300: #E8DCC8;
+        --cream-400: #D4C5A9;
+
+        /* Gold Accent Colors */
+        --gold-400: #FFD93D;
+        --gold-500: #FFC107;
+        --gold-600: #F9A825;
+        --amber-500: #FF9800;
+
+        /* Semantic Colors - Warm Tones */
+        --success-light: #E8F5E9;
+        --success-main: #66BB6A;
+        --warning-light: #FFF8E1;
+        --warning-main: #FFB74D;
+        --info-light: #E3F2FD;
+        --info-main: #42A5F5;
+        --error-light: #FFEBEE;
+        --error-main: #EF5350;
+
+        /* Text Colors - Warm Grays */
+        --text-primary: #3E3530;
+        --text-secondary: #6B5D52;
+        --text-tertiary: #8C7E73;
+        --text-disabled: #B8ADA3;
+
+        /* UI Elements */
+        --card-bg: #FFFFFF;
+        --card-shadow: rgba(62, 53, 48, 0.08);
+        --card-shadow-hover: rgba(62, 53, 48, 0.15);
+        --border-color: #E8DCC8;
+        --hover-bg: #FFF4DC;
     }
 
-    /* Headers with gradient */
+    /* ========== GLOBAL STYLES ========== */
+    .main {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: var(--cream-100);
+        color: var(--text-primary);
+    }
+
+    /* Remove default Streamlit padding for cleaner layout */
+    .block-container {
+        padding-top: 3rem;
+        padding-bottom: 3rem;
+        max-width: 1400px;
+    }
+
+    /* ========== TYPOGRAPHY ========== */
     .main-header {
-        font-size: 2.8rem;
-        font-weight: 700;
-        background: linear-gradient(135deg, #1f77b4 0%, #5b9bd5 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin-bottom: 0.5rem;
-        letter-spacing: -0.5px;
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin-bottom: 0.75rem;
+        letter-spacing: -1px;
+        line-height: 1.2;
     }
 
     .sub-header {
-        font-size: 1.25rem;
-        color: #555;
-        margin-bottom: 2.5rem;
+        font-size: 1.35rem;
+        color: var(--text-secondary);
         font-weight: 400;
-        line-height: 1.6;
+        line-height: 1.7;
+        margin-bottom: 3rem;
     }
 
-    /* Enhanced metric cards */
+    h1, h2, h3 {
+        color: var(--text-primary);
+    }
+
+    /* ========== CARD COMPONENTS ========== */
     .metric-card {
-        background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
-        padding: 1.5rem;
-        border-radius: 12px;
-        margin: 0.5rem 0;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        border: 1px solid #e9ecef;
-        transition: all 0.3s ease;
+        background: var(--card-bg);
+        padding: 1.75rem;
+        border-radius: 16px;
+        margin: 1rem 0;
+        box-shadow: 0 2px 12px var(--card-shadow);
+        border: 1px solid var(--cream-300);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .metric-card:hover {
-        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-        transform: translateY(-2px);
+        box-shadow: 0 8px 24px var(--card-shadow-hover);
+        transform: translateY(-4px);
     }
 
-    /* Status boxes with modern design */
+    /* Featured card for key metrics */
+    .featured-card {
+        background: linear-gradient(135deg, var(--cream-100) 0%, var(--card-bg) 100%);
+        border: 2px solid var(--gold-400);
+        box-shadow: 0 4px 16px rgba(255, 217, 61, 0.15);
+    }
+
+    /* ========== STATUS BOXES ========== */
     .success-box {
-        background: linear-gradient(145deg, #d4edda 0%, #c3e6cb 100%);
-        border-left: 4px solid #28a745;
-        padding: 1.25rem;
-        margin: 1rem 0;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(40, 167, 69, 0.1);
+        background: var(--success-light);
+        border-left: 4px solid var(--success-main);
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+        margin: 1.5rem 0;
+        box-shadow: 0 2px 8px rgba(102, 187, 106, 0.15);
     }
 
     .warning-box {
-        background: linear-gradient(145deg, #fff3cd 0%, #ffecb5 100%);
-        border-left: 4px solid #ffc107;
-        padding: 1.25rem;
-        margin: 1rem 0;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(255, 193, 7, 0.1);
+        background: var(--warning-light);
+        border-left: 4px solid var(--warning-main);
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+        margin: 1.5rem 0;
+        box-shadow: 0 2px 8px rgba(255, 183, 77, 0.15);
     }
 
     .info-box {
-        background: linear-gradient(145deg, #d1ecf1 0%, #bee5eb 100%);
-        border-left: 4px solid #17a2b8;
-        padding: 1.25rem;
-        margin: 1rem 0;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(23, 162, 184, 0.1);
+        background: var(--info-light);
+        border-left: 4px solid var(--info-main);
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+        margin: 1.5rem 0;
+        box-shadow: 0 2px 8px rgba(66, 165, 245, 0.15);
     }
 
-    /* Premium button styling */
+    .error-box {
+        background: var(--error-light);
+        border-left: 4px solid var(--error-main);
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+        margin: 1.5rem 0;
+        box-shadow: 0 2px 8px rgba(239, 83, 80, 0.15);
+    }
+
+    /* ========== BUTTONS ========== */
     .stButton>button {
         width: 100%;
-        background: linear-gradient(135deg, #1f77b4 0%, #5b9bd5 100%);
-        color: white;
+        background: linear-gradient(135deg, var(--gold-400) 0%, var(--gold-500) 100%);
+        color: var(--text-primary);
         border: none;
-        border-radius: 8px;
-        padding: 0.75rem 1.5rem;
-        font-weight: 600;
+        border-radius: 12px;
+        padding: 0.875rem 1.75rem;
+        font-weight: 700;
         font-size: 1rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(31, 119, 180, 0.2);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 12px rgba(255, 217, 61, 0.3);
         letter-spacing: 0.3px;
     }
 
     .stButton>button:hover {
-        box-shadow: 0 4px 16px rgba(31, 119, 180, 0.3);
+        background: linear-gradient(135deg, var(--gold-500) 0%, var(--gold-600) 100%);
+        box-shadow: 0 6px 20px rgba(255, 217, 61, 0.4);
         transform: translateY(-2px);
-        background: linear-gradient(135deg, #1865a0 0%, #4a8bc2 100%);
     }
 
     .stButton>button:active {
         transform: translateY(0px);
     }
 
-    /* Form inputs styling */
+    /* Download button - Success green */
+    .stDownloadButton>button {
+        background: linear-gradient(135deg, var(--success-main) 0%, #4CAF50 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.875rem 1.75rem;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(102, 187, 106, 0.3);
+    }
+
+    .stDownloadButton>button:hover {
+        box-shadow: 0 6px 20px rgba(102, 187, 106, 0.4);
+        transform: translateY(-2px);
+        background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+    }
+
+    /* ========== FORM INPUTS ========== */
     .stTextInput>div>div>input,
     .stTextArea>div>div>textarea,
-    .stSelectbox>div>div>select {
-        border-radius: 8px;
-        border: 1.5px solid #e0e0e0;
-        padding: 0.75rem;
+    .stSelectbox>div>div>select,
+    .stNumberInput>div>div>input {
+        border-radius: 12px;
+        border: 2px solid var(--cream-300);
+        padding: 1rem 1.25rem;
+        background: var(--card-bg);
+        color: var(--text-primary);
+        font-size: 1rem;
         transition: all 0.3s ease;
         font-family: 'Inter', sans-serif;
     }
 
     .stTextInput>div>div>input:focus,
     .stTextArea>div>div>textarea:focus,
-    .stSelectbox>div>div>select:focus {
-        border-color: #1f77b4;
-        box-shadow: 0 0 0 3px rgba(31, 119, 180, 0.1);
+    .stSelectbox>div>div>select:focus,
+    .stNumberInput>div>div>input:focus {
+        border-color: var(--gold-400);
+        box-shadow: 0 0 0 4px rgba(255, 217, 61, 0.1);
+        outline: none;
     }
 
-    /* Tab styling */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-    }
-
-    .stTabs [data-baseweb="tab"] {
-        border-radius: 8px 8px 0 0;
-        padding: 12px 24px;
+    /* Input labels */
+    .stTextInput label,
+    .stTextArea label,
+    .stSelectbox label,
+    .stNumberInput label {
+        color: var(--text-secondary);
         font-weight: 600;
-        background-color: #f8f9fa;
-        transition: all 0.3s ease;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
     }
 
-    .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #1f77b4 0%, #5b9bd5 100%);
-        color: white;
-    }
-
-    /* Metric components */
-    [data-testid="stMetricValue"] {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #1f77b4;
-    }
-
-    [data-testid="stMetricLabel"] {
-        font-weight: 600;
-        color: #555;
-        font-size: 0.95rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    /* Sidebar improvements */
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
-    }
-
-    [data-testid="stSidebar"] .stRadio>div {
-        gap: 8px;
-    }
-
-    [data-testid="stSidebar"] .stRadio label {
-        padding: 12px 16px;
-        border-radius: 8px;
-        transition: all 0.3s ease;
-        font-weight: 500;
-    }
-
-    [data-testid="stSidebar"] .stRadio label:hover {
-        background-color: #e9ecef;
-    }
-
-    /* File uploader */
+    /* ========== FILE UPLOADER ========== */
     [data-testid="stFileUploader"] {
-        border: 2px dashed #d0d0d0;
-        border-radius: 12px;
-        padding: 2rem;
-        background-color: #fafafa;
+        border: 3px dashed var(--cream-300);
+        border-radius: 16px;
+        padding: 3rem;
+        background: linear-gradient(135deg, var(--cream-50) 0%, var(--cream-100) 100%);
         transition: all 0.3s ease;
     }
 
     [data-testid="stFileUploader"]:hover {
-        border-color: #1f77b4;
-        background-color: #f0f7ff;
+        border-color: var(--gold-400);
+        background: var(--hover-bg);
     }
 
-    /* Dividers */
-    hr {
-        margin: 2rem 0;
-        border: none;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, #e0e0e0, transparent);
+    /* ========== TABS ========== */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 0.5rem;
+        background: var(--cream-200);
+        padding: 0.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
     }
 
-    /* Cards and containers */
-    .element-container {
-        transition: all 0.3s ease;
-    }
-
-    /* Expander styling */
-    .streamlit-expanderHeader {
+    .stTabs [data-baseweb="tab"] {
         border-radius: 8px;
-        background-color: #f8f9fa;
+        padding: 0.875rem 1.5rem;
+        font-weight: 600;
+        background: transparent;
+        color: var(--text-secondary);
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .stTabs [data-baseweb="tab"]:hover {
+        background: var(--hover-bg);
+        color: var(--text-primary);
+    }
+
+    .stTabs [aria-selected="true"] {
+        background: var(--card-bg) !important;
+        color: var(--text-primary) !important;
+        box-shadow: 0 2px 8px var(--card-shadow);
+    }
+
+    /* ========== METRICS ========== */
+    [data-testid="stMetricValue"] {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text-primary);
+    }
+
+    [data-testid="stMetricLabel"] {
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    [data-testid="stMetricDelta"] {
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    /* ========== SIDEBAR ========== */
+    [data-testid="stSidebar"] {
+        background: var(--card-bg);
+        border-right: 2px solid var(--cream-300);
+        box-shadow: 4px 0 12px var(--card-shadow);
+    }
+
+    [data-testid="stSidebar"] > div:first-child {
+        padding: 2rem 1.5rem;
+    }
+
+    /* Sidebar navigation */
+    [data-testid="stSidebar"] .stRadio > div {
+        gap: 0.5rem;
+    }
+
+    [data-testid="stSidebar"] .stRadio label {
+        padding: 1rem 1.25rem;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        border: 2px solid transparent;
+        background: transparent;
+        color: var(--text-secondary);
+    }
+
+    [data-testid="stSidebar"] .stRadio label:hover {
+        background: var(--hover-bg);
+        border-color: var(--cream-300);
+    }
+
+    [data-testid="stSidebar"] .stRadio label[data-checked="true"] {
+        background: linear-gradient(135deg, var(--gold-400), var(--gold-500)) !important;
+        color: var(--text-primary) !important;
+        font-weight: 700;
+        box-shadow: 0 4px 12px rgba(255, 217, 61, 0.3);
+    }
+
+    /* Sidebar dividers */
+    [data-testid="stSidebar"] hr {
+        border: none;
+        height: 2px;
+        background: var(--cream-300);
+        margin: 1.5rem 0;
+    }
+
+    /* ========== EXPANDERS ========== */
+    .streamlit-expanderHeader {
+        border-radius: 12px;
+        background: var(--card-bg);
+        border: 2px solid var(--cream-300);
+        padding: 1rem 1.5rem;
         font-weight: 600;
         transition: all 0.3s ease;
+        color: var(--text-primary);
     }
 
     .streamlit-expanderHeader:hover {
-        background-color: #e9ecef;
+        border-color: var(--gold-400);
+        background: var(--hover-bg);
+        box-shadow: 0 2px 8px var(--card-shadow);
     }
 
-    /* Download button specific */
-    .stDownloadButton>button {
-        background: linear-gradient(135deg, #28a745 0%, #48c965 100%);
-        color: white;
+    .streamlit-expanderContent {
+        border: 2px solid var(--cream-300);
+        border-top: none;
+        border-radius: 0 0 12px 12px;
+        background: var(--card-bg);
+        padding: 1.5rem;
+    }
+
+    /* ========== DIVIDERS ========== */
+    hr {
+        margin: 2.5rem 0;
         border: none;
-        border-radius: 8px;
-        padding: 0.75rem 1.5rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--cream-300), transparent);
     }
 
-    .stDownloadButton>button:hover {
-        box-shadow: 0 4px 16px rgba(40, 167, 69, 0.3);
-        transform: translateY(-2px);
-        background: linear-gradient(135deg, #218838 0%, #3fba5d 100%);
-    }
-
-    /* Smooth animations */
+    /* ========== SMOOTH ANIMATIONS ========== */
     * {
         transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* Loading spinner */
+    /* ========== LOADING SPINNER ========== */
     .stSpinner > div {
-        border-color: #1f77b4;
+        border-color: var(--gold-400) !important;
+    }
+
+    /* ========== CUSTOM COMPONENTS ========== */
+    /* Progress bar */
+    .progress-container {
+        background: var(--cream-200);
+        border-radius: 12px;
+        height: 12px;
+        overflow: hidden;
+        position: relative;
+        margin: 1rem 0;
+    }
+
+    .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, var(--gold-400), var(--amber-500));
+        border-radius: 12px;
+        transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 8px rgba(255, 217, 61, 0.3);
+    }
+
+    /* Success/Info messages from Streamlit */
+    .stAlert {
+        border-radius: 12px;
+        border-left-width: 4px;
+        padding: 1.25rem 1.5rem;
+    }
+
+    /* ========== DATAFRAME STYLING ========== */
+    [data-testid="stDataFrame"] {
+        border-radius: 12px;
+        overflow: hidden;
+        border: 2px solid var(--cream-300);
+    }
+
+    /* ========== MARKDOWN STYLING ========== */
+    .stMarkdown {
+        color: var(--text-secondary);
+    }
+
+    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
+        color: var(--text-primary);
+    }
+
+    .stMarkdown a {
+        color: var(--gold-500);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .stMarkdown a:hover {
+        color: var(--gold-600);
+        text-decoration: underline;
+    }
+
+    /* ========== PLOTLY CHART CONTAINER ========== */
+    .js-plotly-plot {
+        border-radius: 12px;
+        overflow: hidden;
     }
 </style>
 """, unsafe_allow_html=True)

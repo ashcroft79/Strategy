@@ -23,13 +23,16 @@ class PyramidDiagram:
         """
         self.pyramid = pyramid
 
-        # Color scheme
+        # Warm color scheme (Crextio inspired)
         self.colors = {
-            "purpose": "#E8F4F8",  # Light blue
-            "strategy": "#B3E5FC",  # Medium blue
-            "execution": "#4FC3F7",  # Bright blue
-            "text": "#1565C0",  # Dark blue
-            "border": "#0D47A1"  # Very dark blue
+            "purpose": "#FFF4DC",      # Warm cream
+            "strategy": "#FFE5B4",     # Light peach
+            "execution": "#FFD93D",    # Gold accent
+            "text": "#3E3530",         # Warm dark brown
+            "border": "#6B5D52",       # Warm brown
+            "accent": "#FF9800",       # Amber accent
+            "success": "#66BB6A",      # Warm green
+            "info": "#42A5F5"          # Soft blue
         }
 
     def create_pyramid_diagram(self, show_counts: bool = True) -> go.Figure:
@@ -142,13 +145,13 @@ class PyramidDiagram:
             xanchor="right"
         )
 
-        # Update layout
+        # Update layout with warm aesthetic
         fig.update_layout(
             title={
                 "text": f"<b>{self.pyramid.metadata.project_name}</b><br><sub>Strategic Pyramid Structure</sub>",
                 "x": 0.5,
                 "xanchor": "center",
-                "font": {"size": 20, "color": self.colors["text"]}
+                "font": {"size": 20, "color": self.colors["text"], "family": "Inter, sans-serif"}
             },
             showlegend=False,
             xaxis=dict(
@@ -163,7 +166,9 @@ class PyramidDiagram:
                 showticklabels=False,
                 range=[0, 10]
             ),
-            plot_bgcolor="white",
+            plot_bgcolor="rgba(255, 249, 230, 0.3)",  # Light cream background
+            paper_bgcolor="#FFFFFF",
+            font=dict(family="Inter, sans-serif", color=self.colors["text"]),
             height=600,
             margin=dict(l=120, r=50, t=100, b=50)
         )
@@ -196,10 +201,10 @@ class PyramidDiagram:
         labels = ["Strategic Pyramid"]
         parents = [""]
         values = [len(self.pyramid.iconic_commitments)]
-        colors_list = ["#1f77b4"]
+        colors_list = ["#FFD93D"]  # Gold center
 
-        # Add drivers
-        driver_colors = px.colors.qualitative.Set2
+        # Add drivers - warm color palette
+        driver_colors = ["#FFD93D", "#FF9800", "#66BB6A", "#42A5F5", "#AB47BC", "#EF5350"]
         for idx, driver in enumerate(self.pyramid.strategic_drivers):
             labels.append(driver.name)
             parents.append("Strategic Pyramid")
@@ -252,9 +257,9 @@ class PyramidDiagram:
         for commitment in self.pyramid.iconic_commitments:
             horizons[commitment.horizon.value].append(commitment)
 
-        # Create data for each horizon
+        # Create data for each horizon - warm color palette
         data = []
-        colors = {"H1": "#4CAF50", "H2": "#2196F3", "H3": "#FF9800"}
+        colors = {"H1": "#66BB6A", "H2": "#FFD93D", "H3": "#FF9800"}  # Green, Gold, Amber
         y_pos = {"H1": 3, "H2": 2, "H3": 1}
 
         for horizon, commitments in horizons.items():

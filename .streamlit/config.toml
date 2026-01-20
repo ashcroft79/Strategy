@@ -10,10 +10,10 @@ gatherUsageStats = false
 serverAddress = "0.0.0.0"
 
 [theme]
-primaryColor = "#1f77b4"
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F0F2F6"
-textColor = "#262730"
+primaryColor = "#FFD93D"
+backgroundColor = "#FFF9E6"
+secondaryBackgroundColor = "#F5F0E1"
+textColor = "#3E3530"
 font = "sans serif"
 
 [client]
