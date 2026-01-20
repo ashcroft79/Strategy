@@ -18,6 +18,9 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
+import Modal from "@/components/ui/Modal";
+import TierHeader from "@/components/ui/TierHeader";
+import TierCard from "@/components/ui/TierCard";
 import PyramidVisualization from "@/components/visualizations/PyramidVisualization";
 import { StatementType, Horizon } from "@/types/pyramid";
 import { Save, Home, CheckCircle, FileDown, Eye, Trash2, Edit, Plus } from "lucide-react";
@@ -26,6 +29,12 @@ export default function BuilderPage() {
   const router = useRouter();
   const { sessionId, pyramid, setPyramid, setLoading, setError, showToast, isLoading } = usePyramidStore();
   const [activeTier, setActiveTier] = useState<string | undefined>(undefined);
+
+  // Modal states
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
+  const [modalItemType, setModalItemType] = useState<string>('');
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
   // Form states
   const [visionStatementType, setVisionStatementType] = useState<StatementType>(StatementType.VISION);
@@ -78,6 +87,28 @@ export default function BuilderPage() {
   const handleTierClick = (tierId: string) => {
     // Simply set the active tier - content will appear in the right panel
     setActiveTier(tierId);
+  };
+
+  const openAddModal = (tierType: string) => {
+    setModalMode('add');
+    setModalItemType(tierType);
+    setEditingItemId(null);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (tierType: string, itemId: string, itemData: any) => {
+    setModalMode('edit');
+    setModalItemType(tierType);
+    setEditingItemId(itemId);
+    setEditFormData(itemData);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setModalItemType('');
+    setEditingItemId(null);
+    setEditFormData({});
   };
 
   const handleDeleteVisionStatement = async (statementId: string) => {
@@ -229,7 +260,8 @@ export default function BuilderPage() {
   };
 
   const handleSaveEdit = async (type: string) => {
-    if (!editingId) return;
+    const itemId = editingItemId || editingId; // Support both modal and inline editing
+    if (!itemId) return;
 
     try {
       setLoading(true);
@@ -238,7 +270,7 @@ export default function BuilderPage() {
         case "vision":
           await visionApi.updateStatement(
             sessionId,
-            editingId,
+            itemId,
             editFormData.statement_type,
             editFormData.statement
           );
@@ -246,7 +278,7 @@ export default function BuilderPage() {
         case "value":
           await valuesApi.update(
             sessionId,
-            editingId,
+            itemId,
             editFormData.name,
             editFormData.description
           );
@@ -254,7 +286,7 @@ export default function BuilderPage() {
         case "behaviour":
           await behavioursApi.update(
             sessionId,
-            editingId,
+            itemId,
             editFormData.statement,
             editFormData.value_ids
           );
@@ -262,7 +294,7 @@ export default function BuilderPage() {
         case "driver":
           await driversApi.update(
             sessionId,
-            editingId,
+            itemId,
             editFormData.name,
             editFormData.description,
             editFormData.rationale
@@ -271,7 +303,7 @@ export default function BuilderPage() {
         case "intent":
           await intentsApi.update(
             sessionId,
-            editingId,
+            itemId,
             editFormData.statement,
             editFormData.driver_id
           );
@@ -279,7 +311,7 @@ export default function BuilderPage() {
         case "enabler":
           await enablersApi.update(
             sessionId,
-            editingId,
+            itemId,
             editFormData.name,
             editFormData.description,
             editFormData.driver_ids,
@@ -289,7 +321,7 @@ export default function BuilderPage() {
         case "commitment":
           await commitmentsApi.update(
             sessionId,
-            editingId,
+            itemId,
             editFormData.name,
             editFormData.description,
             editFormData.horizon,
@@ -301,7 +333,7 @@ export default function BuilderPage() {
         case "team_objective":
           await teamObjectivesApi.update(
             sessionId,
-            editingId,
+            itemId,
             editFormData.name,
             editFormData.description,
             editFormData.team_name,
@@ -313,7 +345,7 @@ export default function BuilderPage() {
         case "individual_objective":
           await individualObjectivesApi.update(
             sessionId,
-            editingId,
+            itemId,
             editFormData.name,
             editFormData.description,
             editFormData.individual_name,
@@ -325,7 +357,13 @@ export default function BuilderPage() {
 
       await refreshPyramid();
       showToast("Successfully updated", "success");
-      cancelEdit();
+
+      // Close modal if in modal mode, otherwise use inline edit cancel
+      if (editingItemId) {
+        closeModal();
+      } else {
+        cancelEdit();
+      }
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to update", "error");
     } finally {
@@ -344,6 +382,7 @@ export default function BuilderPage() {
       setVisionStatementType(StatementType.VISION);
       await refreshPyramid();
       showToast("Vision statement added successfully", "success");
+      closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add vision", "error");
     } finally {
@@ -362,6 +401,7 @@ export default function BuilderPage() {
       setValueDescription("");
       await refreshPyramid();
       showToast("Value added successfully", "success");
+      closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add value", "error");
     } finally {
@@ -380,6 +420,7 @@ export default function BuilderPage() {
       setSelectedValueIds([]);
       await refreshPyramid();
       showToast("Behaviour added successfully", "success");
+      closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add behaviour", "error");
     } finally {
@@ -615,353 +656,180 @@ export default function BuilderPage() {
 
             {/* Vision Content */}
             {activeTier === "vision" && (
-          <div className="space-y-6">
-            {/* Vision */}
-            <div id="tier-vision" className="card scroll-mt-6">
-              <h2 className="text-2xl font-bold mb-2">Tier 1: Vision / Mission / Belief / Passion</h2>
-              <p className="text-gray-600 mb-4">Your fundamental purpose statements - why you exist</p>
+              <>
+                <TierHeader
+                  tierName="Vision / Mission / Belief / Passion"
+                  tierDescription="Your fundamental purpose statements - why you exist. Create inspiring statements that guide your entire organization."
+                  itemCount={pyramid.vision?.statements?.length || 0}
+                  variant="blue"
+                  onAddNew={() => openAddModal('vision')}
+                  onBack={() => setActiveTier(undefined)}
+                />
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <p className="text-sm text-blue-900">
-                  <strong>💡 Guidance:</strong> Your purpose defines why you exist. It's permanent and enduring.
-                  You can add multiple types: <strong>Vision</strong> (where you're going), <strong>Mission</strong> (what you do),
-                  <strong>Belief</strong> (what you stand for), or <strong>Passion</strong> (what drives you).
-                  Take time to craft statements that inspire and provide direction.
-                </p>
-              </div>
-
-              {pyramid.vision?.statements.map((stmt) => (
-                <div key={stmt.id} className="p-4 bg-blue-50 rounded-lg mb-3">
-                  {editingId === stmt.id && editType === "vision" ? (
-                    // Edit mode
-                    <div className="space-y-3">
+                <div className="space-y-4">
+                  {pyramid.vision?.statements.map((stmt) => (
+                    <TierCard
+                      key={stmt.id}
+                      variant="blue"
+                      connections={[]} // Vision has no upstream connections
+                      onEdit={() => openEditModal('vision', stmt.id, stmt)}
+                      onDelete={() => handleDeleteVisionStatement(stmt.id)}
+                    >
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Statement Type
-                        </label>
-                        <select
-                          className="input"
-                          value={editFormData.statement_type || StatementType.VISION}
-                          onChange={(e) => setEditFormData({ ...editFormData, statement_type: e.target.value as StatementType })}
-                        >
-                          <option value={StatementType.VISION}>Vision - Where we're going</option>
-                          <option value={StatementType.MISSION}>Mission - What we do</option>
-                          <option value={StatementType.BELIEF}>Belief - What we stand for</option>
-                          <option value={StatementType.PASSION}>Passion - What drives us</option>
-                          <option value={StatementType.PURPOSE}>Purpose - Why we exist</option>
-                          <option value={StatementType.ASPIRATION}>Aspiration - What we aim for</option>
-                        </select>
+                        <div className="text-sm font-semibold text-blue-600 uppercase tracking-wide mb-1">
+                          {stmt.statement_type}
+                        </div>
+                        <div className="text-gray-900 leading-relaxed">
+                          {stmt.statement}
+                        </div>
                       </div>
-                      <Textarea
-                        label="Statement"
-                        value={editFormData.statement || ""}
-                        onChange={(e) => setEditFormData({ ...editFormData, statement: e.target.value })}
-                        rows={3}
-                      />
-                      <div className="flex gap-2">
-                        <Button onClick={() => handleSaveEdit("vision")} size="sm">
-                          <Save className="w-4 h-4 mr-1" />
-                          Save
-                        </Button>
-                        <Button onClick={cancelEdit} variant="ghost" size="sm">
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    // Display mode
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="font-medium text-blue-900 capitalize">{stmt.statement_type}</div>
-                        <div className="text-gray-700">{stmt.statement}</div>
-                      </div>
-                      <div className="flex gap-1 ml-3">
-                        <button
-                          onClick={() => startEdit(stmt.id, "vision", stmt)}
-                          className="p-2 text-blue-600 hover:bg-blue-100 rounded transition-colors"
-                          title="Edit statement"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteVisionStatement(stmt.id)}
-                          className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
-                          title="Delete statement"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                    </TierCard>
+                  ))}
+
+                  {pyramid.vision?.statements.length === 0 && (
+                    <div className="text-center py-12 bg-blue-50 rounded-xl border-2 border-dashed border-blue-200">
+                      <div className="text-4xl mb-3">🎯</div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No vision statements yet</h3>
+                      <p className="text-gray-600 mb-4">Start by adding your first vision, mission, or purpose statement</p>
+                      <Button onClick={() => openAddModal('vision')}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add First Statement
+                      </Button>
                     </div>
                   )}
                 </div>
-              ))}
-
-              <form onSubmit={handleAddVision} className="space-y-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Statement Type
-                  </label>
-                  <select
-                    className="input"
-                    value={visionStatementType}
-                    onChange={(e) => setVisionStatementType(e.target.value as StatementType)}
-                  >
-                    <option value={StatementType.VISION}>Vision - Where we're going</option>
-                    <option value={StatementType.MISSION}>Mission - What we do</option>
-                    <option value={StatementType.BELIEF}>Belief - What we stand for</option>
-                    <option value={StatementType.PASSION}>Passion - What drives us</option>
-                    <option value={StatementType.PURPOSE}>Purpose - Why we exist</option>
-                    <option value={StatementType.ASPIRATION}>Aspiration - What we aim for</option>
-                  </select>
-                </div>
-                <Textarea
-                  label="Statement (minimum 10 characters)"
-                  value={visionStatement}
-                  onChange={(e) => setVisionStatement(e.target.value)}
-                  placeholder="Our vision is to transform the way organizations build strategy..."
-                  rows={3}
-                  required
-                />
-                <div className="text-sm text-gray-600">
-                  {visionStatement.length}/10 characters (minimum)
-                </div>
-                <Button type="submit" disabled={visionStatement.length < 10}>
-                  Add Statement
-                </Button>
-              </form>
-            </div>
-          </div>
+              </>
             )}
 
             {/* Values Content */}
             {activeTier === "values" && (
-            <div id="tier-values" className="card scroll-mt-6">
-              <h2 className="text-2xl font-bold mb-4">Tier 2: Values</h2>
-              <p className="text-gray-600 mb-4">What matters to us - 3-5 core principles</p>
+              <>
+                <TierHeader
+                  tierName="Values"
+                  tierDescription="Your core principles - 3-5 values that guide decision-making and behavior. Each value should be clear, memorable, and meaningful."
+                  itemCount={pyramid.values.length}
+                  variant="blue"
+                  onAddNew={() => openAddModal('value')}
+                  onBack={() => setActiveTier(undefined)}
+                />
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <p className="text-sm text-blue-900">
-                  <strong>💡 Guidance:</strong> Values are the principles that guide decision-making and behavior.
-                  Keep to 3-5 core values. Each value should be clear, memorable, and meaningful to your organization.
-                </p>
-              </div>
+                <div className="space-y-4">
+                  {pyramid.values.map((value) => {
+                    // Calculate downstream connections to behaviours
+                    const downstreamConnections = pyramid.behaviours
+                      ?.filter((behaviour) => behaviour.value_ids?.includes(value.id))
+                      .map((behaviour) => ({
+                        id: behaviour.id,
+                        name: behaviour.statement.substring(0, 50) + (behaviour.statement.length > 50 ? '...' : ''),
+                        type: 'downstream' as const,
+                      })) || [];
 
-              <div className="grid md:grid-cols-2 gap-3 mb-4">
-                {pyramid.values.map((value) => (
-                  <div key={value.id} className="p-4 bg-blue-50 rounded-lg">
-                    {editingId === value.id && editType === "value" ? (
-                      // Edit mode
-                      <div className="space-y-3">
-                        <Input
-                          label="Value Name"
-                          value={editFormData.name || ""}
-                          onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                        />
-                        <Textarea
-                          label="Description"
-                          value={editFormData.description || ""}
-                          onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
-                          rows={2}
-                        />
-                        <div className="flex gap-2">
-                          <Button onClick={() => handleSaveEdit("value")} size="sm">
-                            <Save className="w-4 h-4 mr-1" />
-                            Save
-                          </Button>
-                          <Button onClick={cancelEdit} variant="ghost" size="sm">
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      // Display mode
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="font-bold text-blue-900">{value.name}</div>
+                    return (
+                      <TierCard
+                        key={value.id}
+                        variant="blue"
+                        connections={downstreamConnections}
+                        onEdit={() => openEditModal('value', value.id, value)}
+                        onDelete={() => handleDeleteValue(value.id)}
+                      >
+                        <div>
+                          <div className="text-lg font-bold text-blue-900 mb-1">
+                            {value.name}
+                          </div>
                           {value.description && (
-                            <div className="text-sm text-gray-700 mt-1">{value.description}</div>
+                            <div className="text-gray-700 leading-relaxed">
+                              {value.description}
+                            </div>
                           )}
                         </div>
-                        <div className="flex gap-1 ml-3 flex-shrink-0">
-                          <button
-                            onClick={() => startEdit(value.id, "value", value)}
-                            className="p-2 text-blue-600 hover:bg-blue-100 rounded transition-colors"
-                            title="Edit value"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteValue(value.id)}
-                            className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
-                            title="Delete value"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+                      </TierCard>
+                    );
+                  })}
 
-              <form onSubmit={handleAddValue} className="space-y-3">
-                <Input
-                  label="Value Name"
-                  value={valueName}
-                  onChange={(e) => setValueName(e.target.value)}
-                  placeholder="e.g., Trust, Innovation, Excellence"
-                />
-                <Textarea
-                  label="Description (Optional)"
-                  value={valueDescription}
-                  onChange={(e) => setValueDescription(e.target.value)}
-                  placeholder="What this value means..."
-                  rows={2}
-                />
-                <Button type="submit">Add Value</Button>
-              </form>
-            </div>
+                  {pyramid.values.length === 0 && (
+                    <div className="text-center py-12 bg-blue-50 rounded-xl border-2 border-dashed border-blue-200">
+                      <div className="text-4xl mb-3">💎</div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No values yet</h3>
+                      <p className="text-gray-600 mb-4">Define 3-5 core principles that guide your organization</p>
+                      <Button onClick={() => openAddModal('value')}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add First Value
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
 
             {/* Behaviours Content */}
             {activeTier === "behaviours" && (
-            <div id="tier-behaviours" className="card scroll-mt-6">
-              <h2 className="text-2xl font-bold mb-4">Tier 3: Behaviours</h2>
-              <p className="text-gray-600 mb-4">How we live our values - observable actions</p>
+              <>
+                <TierHeader
+                  tierName="Behaviours"
+                  tierDescription="Observable actions that demonstrate your values. Use action language to make them tangible and measurable."
+                  itemCount={pyramid.behaviours?.length || 0}
+                  variant="green"
+                  onAddNew={pyramid.values.length > 0 ? () => openAddModal('behaviour') : undefined}
+                  onBack={() => setActiveTier(undefined)}
+                />
 
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                <p className="text-sm text-green-900">
-                  <strong>💡 Guidance:</strong> Behaviours are specific, observable actions that demonstrate your values.
-                  Each behaviour should clearly link to one or more values. Use action language ("We listen actively",
-                  "We challenge ideas constructively") to make them tangible and measurable.
-                </p>
-              </div>
+                {pyramid.values.length > 0 ? (
+                  <div className="space-y-4">
+                    {pyramid.behaviours?.map((behaviour) => {
+                      // Calculate upstream connections to values
+                      const upstreamConnections = behaviour.value_ids
+                        ?.map((valueId) => {
+                          const value = pyramid.values.find((v) => v.id === valueId);
+                          return value ? {
+                            id: value.id,
+                            name: value.name,
+                            type: 'upstream' as const,
+                          } : null;
+                        })
+                        .filter((conn): conn is NonNullable<typeof conn> => conn !== null) || [];
 
-              <div className="space-y-3 mb-4">
-                {pyramid.behaviours?.map((behaviour) => (
-                  <div key={behaviour.id} className="p-4 bg-green-50 rounded-lg">
-                    {editingId === behaviour.id && editType === "behaviour" ? (
-                      // Edit mode
-                      <div className="space-y-3">
-                        <Textarea
-                          label="Behaviour Statement"
-                          value={editFormData.statement || ""}
-                          onChange={(e) => setEditFormData({ ...editFormData, statement: e.target.value })}
-                          rows={3}
-                        />
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Link to Values
-                          </label>
-                          <div className="grid md:grid-cols-2 gap-2">
-                            {pyramid.values.map((value) => (
-                              <label key={value.id} className="flex items-center gap-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={(editFormData.value_ids || []).includes(value.id)}
-                                  onChange={(e) => {
-                                    const currentIds = editFormData.value_ids || [];
-                                    const newIds = e.target.checked
-                                      ? [...currentIds, value.id]
-                                      : currentIds.filter((id: string) => id !== value.id);
-                                    setEditFormData({ ...editFormData, value_ids: newIds });
-                                  }}
-                                  className="rounded"
-                                />
-                                <span className="text-sm font-medium">{value.name}</span>
-                              </label>
-                            ))}
+                      return (
+                        <TierCard
+                          key={behaviour.id}
+                          variant="green"
+                          connections={upstreamConnections}
+                          onEdit={() => openEditModal('behaviour', behaviour.id, behaviour)}
+                          onDelete={() => handleDeleteBehaviour(behaviour.id)}
+                        >
+                          <div className="text-gray-900 leading-relaxed">
+                            {behaviour.statement}
                           </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button onClick={() => handleSaveEdit("behaviour")} size="sm">
-                            <Save className="w-4 h-4 mr-1" />
-                            Save
-                          </Button>
-                          <Button onClick={cancelEdit} variant="ghost" size="sm">
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      // Display mode
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="text-gray-700 mb-2">{behaviour.statement}</div>
-                          {behaviour.value_ids && behaviour.value_ids.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                              {behaviour.value_ids.map((valueId) => {
-                                const value = pyramid.values.find((v) => v.id === valueId);
-                                return value ? (
-                                  <span
-                                    key={valueId}
-                                    className="px-2 py-1 bg-green-200 text-green-800 rounded text-xs"
-                                  >
-                                    {value.name}
-                                  </span>
-                                ) : null;
-                              })}
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex gap-1 ml-3 flex-shrink-0">
-                          <button
-                            onClick={() => startEdit(behaviour.id, "behaviour", behaviour)}
-                            className="p-2 text-blue-600 hover:bg-blue-100 rounded transition-colors"
-                            title="Edit behaviour"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteBehaviour(behaviour.id)}
-                            className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
-                            title="Delete behaviour"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
+                        </TierCard>
+                      );
+                    })}
+
+                    {(!pyramid.behaviours || pyramid.behaviours.length === 0) && (
+                      <div className="text-center py-12 bg-green-50 rounded-xl border-2 border-dashed border-green-200">
+                        <div className="text-4xl mb-3">🎬</div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No behaviours yet</h3>
+                        <p className="text-gray-600 mb-4">Define observable actions that bring your values to life</p>
+                        <Button onClick={() => openAddModal('behaviour')}>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add First Behaviour
+                        </Button>
                       </div>
                     )}
                   </div>
-                ))}
-              </div>
-
-              {pyramid.values.length > 0 ? (
-                <form onSubmit={handleAddBehaviour} className="space-y-3">
-                  <Textarea
-                    label="Behaviour Statement"
-                    value={behaviourStatement}
-                    onChange={(e) => setBehaviourStatement(e.target.value)}
-                    placeholder="e.g., We actively seek diverse perspectives before making decisions..."
-                    rows={3}
-                    required
-                  />
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Link to Values (select one or more)
-                    </label>
-                    <div className="grid md:grid-cols-2 gap-2">
-                      {pyramid.values.map((value) => (
-                        <label key={value.id} className="flex items-center gap-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={selectedValueIds.includes(value.id)}
-                            onChange={() => toggleValueSelection(value.id)}
-                            className="rounded"
-                          />
-                          <span className="text-sm font-medium">{value.name}</span>
-                        </label>
-                      ))}
-                    </div>
+                ) : (
+                  <div className="p-6 bg-yellow-50 border-2 border-yellow-200 rounded-xl text-center">
+                    <div className="text-4xl mb-3">⚠️</div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Values Required</h3>
+                    <p className="text-yellow-800">Add Values first before adding Behaviours.</p>
+                    <Button
+                      onClick={() => setActiveTier('values')}
+                      variant="secondary"
+                      className="mt-4"
+                    >
+                      Go to Values
+                    </Button>
                   </div>
-                  <Button type="submit">Add Behaviour</Button>
-                </form>
-              ) : (
-                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800">
-                  Add Values first before adding Behaviours.
-                </div>
-              )}
-            </div>
+                )}
+              </>
             )}
 
             {/* Strategic Drivers Content */}
@@ -1899,6 +1767,182 @@ export default function BuilderPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal for Add/Edit Forms */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        title={
+          modalMode === 'add'
+            ? `Add New ${modalItemType === 'vision' ? 'Vision Statement' :
+                modalItemType === 'value' ? 'Value' :
+                modalItemType === 'behaviour' ? 'Behaviour' :
+                modalItemType === 'driver' ? 'Strategic Driver' :
+                modalItemType === 'intent' ? 'Strategic Intent' :
+                modalItemType === 'enabler' ? 'Enabler' :
+                modalItemType === 'commitment' ? 'Iconic Commitment' :
+                modalItemType === 'team_objective' ? 'Team Objective' :
+                modalItemType === 'individual_objective' ? 'Individual Objective' : ''}`
+            : `Edit ${modalItemType === 'vision' ? 'Vision Statement' :
+                modalItemType === 'value' ? 'Value' :
+                modalItemType === 'behaviour' ? 'Behaviour' :
+                modalItemType === 'driver' ? 'Strategic Driver' :
+                modalItemType === 'intent' ? 'Strategic Intent' :
+                modalItemType === 'enabler' ? 'Enabler' :
+                modalItemType === 'commitment' ? 'Iconic Commitment' :
+                modalItemType === 'team_objective' ? 'Team Objective' :
+                modalItemType === 'individual_objective' ? 'Individual Objective' : ''}`
+        }
+        size={modalItemType === 'behaviour' || modalItemType === 'enabler' || modalItemType === 'individual_objective' ? 'lg' : 'md'}
+      >
+        {/* Vision Form */}
+        {modalItemType === 'vision' && (
+          <form onSubmit={modalMode === 'add' ? handleAddVision : (e) => { e.preventDefault(); handleSaveEdit('vision'); }} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Statement Type
+              </label>
+              <select
+                className="input"
+                value={modalMode === 'edit' ? editFormData.statement_type : visionStatementType}
+                onChange={(e) => {
+                  if (modalMode === 'edit') {
+                    setEditFormData({ ...editFormData, statement_type: e.target.value });
+                  } else {
+                    setVisionStatementType(e.target.value as StatementType);
+                  }
+                }}
+                required
+              >
+                <option value={StatementType.VISION}>Vision</option>
+                <option value={StatementType.MISSION}>Mission</option>
+                <option value={StatementType.BELIEF}>Belief</option>
+                <option value={StatementType.PASSION}>Passion</option>
+              </select>
+            </div>
+            <Textarea
+              label="Statement"
+              value={modalMode === 'edit' ? editFormData.statement : visionStatement}
+              onChange={(e) => {
+                if (modalMode === 'edit') {
+                  setEditFormData({ ...editFormData, statement: e.target.value });
+                } else {
+                  setVisionStatement(e.target.value);
+                }
+              }}
+              placeholder="Enter your inspiring statement here..."
+              rows={4}
+              required
+            />
+            <div className="flex gap-3 justify-end pt-4 border-t">
+              <Button type="button" variant="ghost" onClick={closeModal}>
+                Cancel
+              </Button>
+              <Button type="submit">
+                {modalMode === 'add' ? 'Add Statement' : 'Save Changes'}
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {/* Values Form */}
+        {modalItemType === 'value' && (
+          <form onSubmit={modalMode === 'add' ? handleAddValue : (e) => { e.preventDefault(); handleSaveEdit('value'); }} className="space-y-4">
+            <Input
+              label="Value Name"
+              value={modalMode === 'edit' ? editFormData.name : valueName}
+              onChange={(e) => {
+                if (modalMode === 'edit') {
+                  setEditFormData({ ...editFormData, name: e.target.value });
+                } else {
+                  setValueName(e.target.value);
+                }
+              }}
+              placeholder="e.g., Trust, Innovation, Excellence"
+              required
+            />
+            <Textarea
+              label="Description (Optional)"
+              value={modalMode === 'edit' ? editFormData.description : valueDescription}
+              onChange={(e) => {
+                if (modalMode === 'edit') {
+                  setEditFormData({ ...editFormData, description: e.target.value });
+                } else {
+                  setValueDescription(e.target.value);
+                }
+              }}
+              placeholder="What this value means to your organization..."
+              rows={3}
+            />
+            <div className="flex gap-3 justify-end pt-4 border-t">
+              <Button type="button" variant="ghost" onClick={closeModal}>
+                Cancel
+              </Button>
+              <Button type="submit">
+                {modalMode === 'add' ? 'Add Value' : 'Save Changes'}
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {/* Behaviours Form */}
+        {modalItemType === 'behaviour' && (
+          <form onSubmit={modalMode === 'add' ? handleAddBehaviour : (e) => { e.preventDefault(); handleSaveEdit('behaviour'); }} className="space-y-4">
+            <Textarea
+              label="Behaviour Statement"
+              value={modalMode === 'edit' ? editFormData.statement : behaviourStatement}
+              onChange={(e) => {
+                if (modalMode === 'edit') {
+                  setEditFormData({ ...editFormData, statement: e.target.value });
+                } else {
+                  setBehaviourStatement(e.target.value);
+                }
+              }}
+              placeholder="e.g., We actively seek diverse perspectives before making decisions..."
+              rows={4}
+              required
+            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Link to Values (select one or more)
+              </label>
+              <div className="grid md:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                {pyramid.values.map((value) => (
+                  <label key={value.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={modalMode === 'edit'
+                        ? (editFormData.value_ids || []).includes(value.id)
+                        : selectedValueIds.includes(value.id)}
+                      onChange={() => {
+                        if (modalMode === 'edit') {
+                          const currentIds = editFormData.value_ids || [];
+                          const newIds = currentIds.includes(value.id)
+                            ? currentIds.filter((id: string) => id !== value.id)
+                            : [...currentIds, value.id];
+                          setEditFormData({ ...editFormData, value_ids: newIds });
+                        } else {
+                          toggleValueSelection(value.id);
+                        }
+                      }}
+                      className="rounded"
+                    />
+                    <span className="text-sm font-medium">{value.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="flex gap-3 justify-end pt-4 border-t">
+              <Button type="button" variant="ghost" onClick={closeModal}>
+                Cancel
+              </Button>
+              <Button type="submit">
+                {modalMode === 'add' ? 'Add Behaviour' : 'Save Changes'}
+              </Button>
+            </div>
+          </form>
+        )}
+      </Modal>
     </div>
   );
 }
