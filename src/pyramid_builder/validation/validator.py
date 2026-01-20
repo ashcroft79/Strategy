@@ -412,18 +412,19 @@ class PyramidValidator:
                         suggestion="Try writing from stakeholder perspective: what will THEY experience?"
                     )
 
-        # Check vision statement
-        if self.pyramid.vision:
-            vanilla_count = self._count_vanilla_phrases(self.pyramid.vision.statement)
-            if vanilla_count > 1:
-                result.add_issue(
-                    ValidationLevel.INFO,
-                    "Language Quality",
-                    f"Vision statement contains corporate jargon",
-                    item_id=str(self.pyramid.vision.id),
-                    item_type="Vision",
-                    suggestion="Vision should be inspiring and memorable, not corporate-speak"
-                )
+        # Check vision statements (NEW: multiple statements in v0.4.0)
+        if self.pyramid.vision and self.pyramid.vision.statements:
+            for stmt in self.pyramid.vision.statements:
+                vanilla_count = self._count_vanilla_phrases(stmt.statement)
+                if vanilla_count > 1:
+                    result.add_issue(
+                        ValidationLevel.INFO,
+                        "Language Quality",
+                        f"{stmt.statement_type.value.title()} statement contains corporate jargon",
+                        item_id=str(stmt.id),
+                        item_type=f"{stmt.statement_type.value.title()}",
+                        suggestion="Statements should be inspiring and memorable, not corporate-speak"
+                    )
 
     def _check_weighting(self, result: ValidationResult):
         """Check commitment weighting for genuine strategic choice."""

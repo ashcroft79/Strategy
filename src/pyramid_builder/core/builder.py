@@ -242,8 +242,10 @@ class PyramidBuilder:
         suggestions = []
 
         # Check completeness
-        if not pyramid.vision:
-            suggestions.append("⚠️  Add your vision/mission/belief statement")
+        if not pyramid.vision or not pyramid.vision.statements:
+            suggestions.append("⚠️  Add your vision/mission/belief statements")
+        elif len(pyramid.vision.statements) < 2:
+            suggestions.append("💡 Consider adding multiple statement types (e.g., vision + mission)")
 
         if len(pyramid.values) < 3:
             suggestions.append("⚠️  Add at least 3-5 core values")
@@ -258,6 +260,12 @@ class PyramidBuilder:
 
         if len(pyramid.iconic_commitments) == 0:
             suggestions.append("⚠️  Define iconic commitments (tangible milestones)")
+
+        if len(pyramid.team_objectives) == 0:
+            suggestions.append("💡 Add team objectives linked to commitments or intents")
+
+        if len(pyramid.individual_objectives) == 0:
+            suggestions.append("💡 Add individual objectives linked to team objectives")
 
         # Check for orphaned items
         orphaned_intents = self.manager.find_orphaned_intents()

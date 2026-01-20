@@ -4,7 +4,7 @@
 **Organisation:** Global Pharma Corp - People Team
 **Created by:** Rob Smith (External Facilitator)
 **Version:** 1.0
-**Last modified:** 19 January 2026
+**Last modified:** 20 January 2026
 
 ---
 
@@ -22,7 +22,11 @@
 
 ### Vision
 
-> Our mission is to partner with, and empower our global workforce with innovative, data-driven and transparent people strategies
+**Vision:** To be the most trusted and innovative People function in our industry
+
+**Mission:** Our mission is to partner with, and empower our global workforce with innovative, data-driven and transparent people strategies
+
+**Passion:** We're passionate about transforming HR from a compliance function to a strategic growth enabler
 
 ### Values
 

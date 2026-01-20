@@ -624,6 +624,9 @@ class PyramidManager:
         description: str,
         team_name: str,
         primary_commitment_id: Optional[UUID] = None,
+        primary_intent_id: Optional[UUID] = None,
+        secondary_commitment_ids: Optional[List[UUID]] = None,
+        secondary_intent_ids: Optional[List[UUID]] = None,
         metrics: Optional[List[str]] = None,
         owner: Optional[str] = None,
         created_by: Optional[str] = None,
@@ -636,6 +639,9 @@ class PyramidManager:
             description: What will be achieved
             team_name: Which team owns this
             primary_commitment_id: Primary commitment this supports
+            primary_intent_id: Primary strategic intent this supports (NEW in v0.4.0)
+            secondary_commitment_ids: Secondary commitments
+            secondary_intent_ids: Secondary intents
             metrics: Success metrics
             owner: Who is accountable
             created_by: Who created this
@@ -651,6 +657,9 @@ class PyramidManager:
             description=description,
             team_name=team_name,
             primary_commitment_id=primary_commitment_id,
+            primary_intent_id=primary_intent_id,
+            secondary_commitment_ids=secondary_commitment_ids or [],
+            secondary_intent_ids=secondary_intent_ids or [],
             metrics=metrics or [],
             owner=owner,
             created_by=created_by,

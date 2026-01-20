@@ -228,23 +228,27 @@ def show_pyramid_loaded():
         counts = summary['counts']
 
         # Create metrics
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3, col4, col5 = st.columns(5)
 
         with col1:
-            st.metric("Vision", "✓" if summary['has_vision'] else "✗")
+            st.metric("Vision Statements", summary.get('vision_statement_count', 0))
             st.metric("Values", counts['values'])
 
         with col2:
             st.metric("Behaviours", counts['behaviours'])
-            st.metric("Enablers", counts['enablers'])
+            st.metric("Strategic Drivers", counts['strategic_drivers'])
 
         with col3:
-            st.metric("Strategic Drivers", counts['strategic_drivers'])
             st.metric("Strategic Intents", counts['strategic_intents'])
+            st.metric("Enablers", counts['enablers'])
 
         with col4:
             st.metric("Iconic Commitments", counts['iconic_commitments'])
             st.metric("Team Objectives", counts['team_objectives'])
+
+        with col5:
+            st.metric("Individual Objectives", counts['individual_objectives'])
+            st.metric("Complete", "✓" if counts['individual_objectives'] > 0 else "○")
 
         # Distribution bar chart
         if counts['iconic_commitments'] > 0 and counts['strategic_drivers'] > 0:

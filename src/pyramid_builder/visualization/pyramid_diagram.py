@@ -44,7 +44,7 @@ class PyramidDiagram:
         """
         # Calculate counts for each tier
         counts = {
-            "vision": 1 if self.pyramid.vision else 0,
+            "vision": len(self.pyramid.vision.statements) if self.pyramid.vision else 0,
             "values": len(self.pyramid.values),
             "behaviours": len(self.pyramid.behaviours),
             "strategic_intents": len(self.pyramid.strategic_intents),
