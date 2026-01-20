@@ -15,6 +15,7 @@ interface TierCardProps {
   onDelete?: () => void;
   variant?: 'blue' | 'green' | 'purple' | 'orange' | 'teal';
   connections?: Connection[];
+  onConnectionClick?: (connectionId: string, connectionType: 'upstream' | 'downstream') => void;
 }
 
 export default function TierCard({
@@ -23,6 +24,7 @@ export default function TierCard({
   onDelete,
   variant = 'blue',
   connections = [],
+  onConnectionClick,
 }: TierCardProps) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -87,12 +89,13 @@ export default function TierCard({
             {upstreamConnections.map((conn, idx) => (
               <React.Fragment key={conn.id}>
                 {idx > 0 && <span className="text-gray-400">•</span>}
-                <span
-                  className="px-2 py-0.5 rounded-full bg-red-50 text-red-700 font-medium border border-red-200 hover:bg-red-100 transition-colors cursor-default"
-                  title={`Connected to: ${conn.name}`}
+                <button
+                  onClick={() => onConnectionClick?.(conn.id, 'upstream')}
+                  className="px-2 py-0.5 rounded-full bg-red-50 text-red-700 font-medium border border-red-200 hover:bg-red-100 hover:shadow-md transition-all cursor-pointer active:scale-95"
+                  title={`Click to view: ${conn.name}`}
                 >
                   {conn.name}
-                </span>
+                </button>
               </React.Fragment>
             ))}
           </div>
@@ -184,12 +187,13 @@ export default function TierCard({
             {downstreamConnections.map((conn, idx) => (
               <React.Fragment key={conn.id}>
                 {idx > 0 && <span className="text-gray-400">•</span>}
-                <span
-                  className="px-2 py-0.5 rounded-full bg-red-50 text-red-700 font-medium border border-red-200 hover:bg-red-100 transition-colors cursor-default"
-                  title={`Flows to: ${conn.name}`}
+                <button
+                  onClick={() => onConnectionClick?.(conn.id, 'downstream')}
+                  className="px-2 py-0.5 rounded-full bg-red-50 text-red-700 font-medium border border-red-200 hover:bg-red-100 hover:shadow-md transition-all cursor-pointer active:scale-95"
+                  title={`Click to view: ${conn.name}`}
                 >
                   {conn.name}
-                </span>
+                </button>
               </React.Fragment>
             ))}
           </div>

@@ -35,6 +35,7 @@ export default function BuilderPage() {
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
   const [modalItemType, setModalItemType] = useState<string>('');
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [showHomeConfirmation, setShowHomeConfirmation] = useState(false);
 
   // Form states
   const [visionStatementType, setVisionStatementType] = useState<StatementType>(StatementType.VISION);
@@ -109,6 +110,76 @@ export default function BuilderPage() {
     setModalItemType('');
     setEditingItemId(null);
     setEditFormData({});
+  };
+
+  // Navigate to a specific item by ID across all tiers
+  const handleConnectionClick = (connectionId: string, connectionType: 'upstream' | 'downstream') => {
+    // Search through all tiers to find the item
+    if (pyramid.vision?.statements.find(s => s.id === connectionId)) {
+      setActiveTier('vision');
+      // Scroll to item after tier loads
+      setTimeout(() => {
+        const element = document.getElementById(`item-${connectionId}`);
+        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    } else if (pyramid.values.find(v => v.id === connectionId)) {
+      setActiveTier('values');
+      setTimeout(() => {
+        const element = document.getElementById(`item-${connectionId}`);
+        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    } else if (pyramid.behaviours?.find(b => b.id === connectionId)) {
+      setActiveTier('behaviours');
+      setTimeout(() => {
+        const element = document.getElementById(`item-${connectionId}`);
+        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    } else if (pyramid.strategic_drivers.find(d => d.id === connectionId)) {
+      setActiveTier('drivers');
+      setTimeout(() => {
+        const element = document.getElementById(`item-${connectionId}`);
+        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    } else if (pyramid.strategic_intents.find(i => i.id === connectionId)) {
+      setActiveTier('intents');
+      setTimeout(() => {
+        const element = document.getElementById(`item-${connectionId}`);
+        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    } else if (pyramid.enablers?.find(e => e.id === connectionId)) {
+      setActiveTier('enablers');
+      setTimeout(() => {
+        const element = document.getElementById(`item-${connectionId}`);
+        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    } else if (pyramid.iconic_commitments.find(c => c.id === connectionId)) {
+      setActiveTier('commitments');
+      setTimeout(() => {
+        const element = document.getElementById(`item-${connectionId}`);
+        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    } else if (pyramid.team_objectives?.find(t => t.id === connectionId)) {
+      setActiveTier('team');
+      setTimeout(() => {
+        const element = document.getElementById(`item-${connectionId}`);
+        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    } else if (pyramid.individual_objectives?.find(i => i.id === connectionId)) {
+      setActiveTier('individual');
+      setTimeout(() => {
+        const element = document.getElementById(`item-${connectionId}`);
+        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+  };
+
+  const handleHomeClick = () => {
+    setShowHomeConfirmation(true);
+  };
+
+  const confirmHomeNavigation = () => {
+    setShowHomeConfirmation(false);
+    router.push("/");
   };
 
   const handleDeleteVisionStatement = async (statementId: string) => {
@@ -608,7 +679,7 @@ export default function BuilderPage() {
               <p className="text-sm text-gray-600">{pyramid.metadata.organization}</p>
             </div>
             <div className="flex gap-3">
-              <Button variant="ghost" onClick={() => router.push("/")}>
+              <Button variant="ghost" onClick={handleHomeClick}>
                 <Home className="w-4 h-4 mr-2" />
                 Home
               </Button>
@@ -674,22 +745,24 @@ export default function BuilderPage() {
 
                 <div className="space-y-4">
                   {pyramid.vision?.statements.map((stmt) => (
-                    <TierCard
-                      key={stmt.id}
-                      variant="blue"
-                      connections={[]} // Vision has no upstream connections
-                      onEdit={() => openEditModal('vision', stmt.id, stmt)}
-                      onDelete={() => handleDeleteVisionStatement(stmt.id)}
-                    >
-                      <div>
-                        <div className="text-sm font-semibold text-blue-600 uppercase tracking-wide mb-1">
-                          {stmt.statement_type}
+                    <div key={stmt.id} id={`item-${stmt.id}`}>
+                      <TierCard
+                        variant="blue"
+                        connections={[]} // Vision has no upstream connections
+                        onEdit={() => openEditModal('vision', stmt.id, stmt)}
+                        onDelete={() => handleDeleteVisionStatement(stmt.id)}
+                        onConnectionClick={handleConnectionClick}
+                      >
+                        <div>
+                          <div className="text-sm font-semibold text-blue-600 uppercase tracking-wide mb-1">
+                            {stmt.statement_type}
+                          </div>
+                          <div className="text-gray-900 leading-relaxed">
+                            {stmt.statement}
+                          </div>
                         </div>
-                        <div className="text-gray-900 leading-relaxed">
-                          {stmt.statement}
-                        </div>
-                      </div>
-                    </TierCard>
+                      </TierCard>
+                    </div>
                   ))}
 
                   {pyramid.vision?.statements.length === 0 && (
@@ -731,24 +804,26 @@ export default function BuilderPage() {
                       })) || [];
 
                     return (
-                      <TierCard
-                        key={value.id}
-                        variant="blue"
-                        connections={downstreamConnections}
-                        onEdit={() => openEditModal('value', value.id, value)}
-                        onDelete={() => handleDeleteValue(value.id)}
-                      >
-                        <div>
-                          <div className="text-lg font-bold text-blue-900 mb-1">
-                            {value.name}
-                          </div>
-                          {value.description && (
-                            <div className="text-gray-700 leading-relaxed">
-                              {value.description}
+                      <div key={value.id} id={`item-${value.id}`}>
+                        <TierCard
+                          variant="blue"
+                          connections={downstreamConnections}
+                          onEdit={() => openEditModal('value', value.id, value)}
+                          onDelete={() => handleDeleteValue(value.id)}
+                          onConnectionClick={handleConnectionClick}
+                        >
+                          <div>
+                            <div className="text-lg font-bold text-blue-900 mb-1">
+                              {value.name}
                             </div>
-                          )}
-                        </div>
-                      </TierCard>
+                            {value.description && (
+                              <div className="text-gray-700 leading-relaxed">
+                                {value.description}
+                              </div>
+                            )}
+                          </div>
+                        </TierCard>
+                      </div>
                     );
                   })}
 
@@ -1969,6 +2044,39 @@ export default function BuilderPage() {
           </form>
         )}
       </Modal>
+
+      {/* Home Confirmation Modal */}
+      {showHomeConfirmation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowHomeConfirmation(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4 animate-slideUp">
+            <div className="text-center">
+              <div className="mx-auto w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+                <Home className="w-6 h-6 text-yellow-600" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Return to Home?</h3>
+              <p className="text-gray-600 mb-6">
+                You'll leave the current builder session. Make sure you've exported your work if needed.
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowHomeConfirmation(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={confirmHomeNavigation}
+                  className="flex-1 bg-yellow-600 hover:bg-yellow-700"
+                >
+                  Go Home
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
