@@ -917,124 +917,78 @@ export default function BuilderPage() {
 
             {/* Strategic Intents Content */}
             {activeTier === "intents" && (
-            <div id="tier-intents" className="card scroll-mt-6">
-              <h2 className="text-2xl font-bold mb-4">Tier 4: Strategic Intent</h2>
-              <p className="text-gray-600 mb-4">What success looks like - aspirational statements</p>
+              <>
+                <TierHeader
+                  tierName="Strategic Intent"
+                  tierDescription="Aspirational statements that define what success looks like for each strategic driver."
+                  itemCount={pyramid.strategic_intents.length}
+                  variant="purple"
+                  onAddNew={pyramid.strategic_drivers.length > 0 ? () => openAddModal('intent') : undefined}
+                  onBack={() => setActiveTier(undefined)}
+                />
 
-              <div className="space-y-3 mb-4">
-                {pyramid.strategic_intents.map((intent) => {
-                  const driver = pyramid.strategic_drivers.find(d => d.id === intent.driver_id);
-                  return (
-                    <div key={intent.id} className="p-4 bg-green-50 rounded-lg">
-                      {editingId === intent.id && editType === "intent" ? (
-                        // Edit mode
-                        <div className="space-y-3">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Strategic Driver
-                            </label>
-                            <select
-                              className="input"
-                              value={editFormData.driver_id || ""}
-                              onChange={(e) => setEditFormData({ ...editFormData, driver_id: e.target.value })}
-                            >
-                              <option value="">Select a driver...</option>
-                              {pyramid.strategic_drivers.map((driver) => (
-                                <option key={driver.id} value={driver.id}>
-                                  {driver.name}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                          <Textarea
-                            label="Intent Statement"
-                            value={editFormData.statement || ""}
-                            onChange={(e) => setEditFormData({ ...editFormData, statement: e.target.value })}
-                            rows={3}
-                          />
-                          <div className="flex gap-2">
-                            <Button onClick={() => handleSaveEdit("intent")} size="sm">
-                              <Save className="w-4 h-4 mr-1" />
-                              Save
-                            </Button>
-                            <Button onClick={cancelEdit} variant="ghost" size="sm">
-                              Cancel
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        // Display mode
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="text-xs text-green-700 font-medium mb-1">
-                              {driver?.name || "Unknown Driver"}
-                            </div>
-                            <div className="text-gray-700">{intent.statement}</div>
-                          </div>
-                          <div className="flex gap-1 ml-3 flex-shrink-0">
-                            <button
-                              onClick={() => startEdit(intent.id, "intent", intent)}
-                              className="p-2 text-blue-600 hover:bg-blue-100 rounded transition-colors"
-                              title="Edit intent"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteIntent(intent.id)}
-                              className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
-                              title="Delete intent"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+                {pyramid.strategic_drivers.length > 0 ? (
+                  <div className="space-y-4">
+                    {pyramid.strategic_intents.map((intent) => {
+                      // Upstream: the driver it belongs to
+                      const driver = pyramid.strategic_drivers.find(d => d.id === intent.driver_id);
+                      const upstreamConnections = driver ? [{
+                        id: driver.id,
+                        name: driver.name,
+                        type: 'upstream' as const,
+                      }] : [];
 
-              {pyramid.strategic_drivers.length > 0 ? (
-                <form onSubmit={handleAddIntent} className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Strategic Driver
-                    </label>
-                    <select
-                      className="input"
-                      value={selectedDriver}
-                      onChange={(e) => setSelectedDriver(e.target.value)}
-                      required
+                      // Downstream: commitments that reference this intent
+                      const downstreamConnections = pyramid.iconic_commitments
+                        .filter((c) => c.primary_intent_ids?.includes(intent.id))
+                        .map((c) => ({
+                          id: c.id,
+                          name: c.name,
+                          type: 'downstream' as const,
+                        }));
+
+                      return (
+                        <TierCard
+                          key={intent.id}
+                          variant="purple"
+                          connections={[...upstreamConnections, ...downstreamConnections]}
+                          onEdit={() => openEditModal('intent', intent.id, intent)}
+                          onDelete={() => handleDeleteIntent(intent.id)}
+                        >
+                          <div className="text-gray-900 leading-relaxed">
+                            {intent.statement}
+                          </div>
+                        </TierCard>
+                      );
+                    })}
+
+                    {pyramid.strategic_intents.length === 0 && (
+                      <div className="text-center py-12 bg-purple-50 rounded-xl border-2 border-dashed border-purple-200">
+                        <div className="text-4xl mb-3">🎯</div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No strategic intents yet</h3>
+                        <p className="text-gray-600 mb-4">Define what success looks like for each strategic driver</p>
+                        <Button onClick={() => openAddModal('intent')}>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add First Intent
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="p-6 bg-yellow-50 border-2 border-yellow-200 rounded-xl text-center">
+                    <div className="text-4xl mb-3">⚠️</div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Strategic Drivers Required</h3>
+                    <p className="text-yellow-800">Add Strategic Drivers first before adding Intents.</p>
+                    <Button
+                      onClick={() => setActiveTier('drivers')}
+                      variant="secondary"
+                      className="mt-4"
                     >
-                      <option value="">Select a driver...</option>
-                      {pyramid.strategic_drivers.map((driver) => (
-                        <option key={driver.id} value={driver.id}>
-                          {driver.name}
-                        </option>
-                      ))}
-                    </select>
+                      Go to Drivers
+                    </Button>
                   </div>
-                  <Textarea
-                    label="Intent Statement (minimum 20 characters)"
-                    value={intentStatement}
-                    onChange={(e) => setIntentStatement(e.target.value)}
-                    placeholder="What does success look like for this driver? Describe the aspirational future state..."
-                    rows={3}
-                    required
-                  />
-                  <div className="text-sm text-gray-600">
-                    {intentStatement.length}/20 characters (minimum)
-                  </div>
-                  <Button type="submit" disabled={!selectedDriver || intentStatement.length < 20}>
-                    Add Strategic Intent
-                  </Button>
-                </form>
-              ) : (
-                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800">
-                  Add Strategic Drivers first before adding Intents.
-                </div>
-              )}
-            </div>
+                )}
+              </>
             )}
 
             {/* Enablers Content */}
@@ -1977,6 +1931,58 @@ export default function BuilderPage() {
               </Button>
               <Button type="submit">
                 {modalMode === 'add' ? 'Add Driver' : 'Save Changes'}
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {/* Intent Form */}
+        {modalItemType === 'intent' && (
+          <form onSubmit={modalMode === 'add' ? handleAddIntent : (e) => { e.preventDefault(); handleSaveEdit('intent'); }} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Strategic Driver
+              </label>
+              <select
+                className="input"
+                value={modalMode === 'edit' ? editFormData.driver_id : selectedDriver}
+                onChange={(e) => {
+                  if (modalMode === 'edit') {
+                    setEditFormData({ ...editFormData, driver_id: e.target.value });
+                  } else {
+                    setSelectedDriver(e.target.value);
+                  }
+                }}
+                required
+              >
+                <option value="">Select a driver...</option>
+                {pyramid.strategic_drivers.map((driver) => (
+                  <option key={driver.id} value={driver.id}>
+                    {driver.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <Textarea
+              label="Intent Statement"
+              value={modalMode === 'edit' ? editFormData.statement : intentStatement}
+              onChange={(e) => {
+                if (modalMode === 'edit') {
+                  setEditFormData({ ...editFormData, statement: e.target.value });
+                } else {
+                  setIntentStatement(e.target.value);
+                }
+              }}
+              placeholder="What does success look like for this driver? Describe the aspirational future state..."
+              rows={4}
+              required
+            />
+            <div className="flex gap-3 justify-end pt-4 border-t">
+              <Button type="button" variant="ghost" onClick={closeModal}>
+                Cancel
+              </Button>
+              <Button type="submit">
+                {modalMode === 'add' ? 'Add Intent' : 'Save Changes'}
               </Button>
             </div>
           </form>
