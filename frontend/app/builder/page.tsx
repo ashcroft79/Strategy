@@ -1059,527 +1059,244 @@ export default function BuilderPage() {
 
             {/* Iconic Commitments Content */}
             {activeTier === "commitments" && (
-            <div id="tier-commitments" className="card scroll-mt-6">
-              <h2 className="text-2xl font-bold mb-4">Tier 7: Iconic Commitments</h2>
-              <p className="text-gray-600 mb-4">Time-bound milestones that bring strategy to life</p>
+              <>
+                <TierHeader
+                  tierName="Iconic Commitments"
+                  tierDescription="Time-bound milestones that bring your strategy to life. Each commitment should be specific, measurable, and linked to strategic drivers."
+                  itemCount={pyramid.iconic_commitments.length}
+                  variant="orange"
+                  onAddNew={pyramid.strategic_drivers.length > 0 ? () => openAddModal('commitment') : undefined}
+                  onBack={() => setActiveTier(undefined)}
+                />
 
-              <div className="space-y-3 mb-4">
-                {pyramid.iconic_commitments.map((commitment) => {
-                  const driver = pyramid.strategic_drivers.find(d => d.id === commitment.primary_driver_id);
-                  return (
-                    <div key={commitment.id} className="p-4 bg-purple-50 rounded-lg">
-                      {editingId === commitment.id && editType === "commitment" ? (
-                        // Edit mode
-                        <div className="space-y-3">
-                          <Input
-                            label="Commitment Name"
-                            value={editFormData.name || ""}
-                            onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                          />
-                          <Textarea
-                            label="Description"
-                            value={editFormData.description || ""}
-                            onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
-                            rows={3}
-                          />
-                          <div className="grid grid-cols-2 gap-3">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Primary Driver
-                              </label>
-                              <select
-                                className="input"
-                                value={editFormData.primary_driver_id || ""}
-                                onChange={(e) => setEditFormData({ ...editFormData, primary_driver_id: e.target.value })}
-                              >
-                                <option value="">Select a driver...</option>
-                                {pyramid.strategic_drivers.map((driver) => (
-                                  <option key={driver.id} value={driver.id}>
-                                    {driver.name}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Horizon
-                              </label>
-                              <select
-                                className="input"
-                                value={editFormData.horizon || Horizon.H1}
-                                onChange={(e) => setEditFormData({ ...editFormData, horizon: e.target.value as Horizon })}
-                              >
-                                <option value={Horizon.H1}>H1 (0-12 months)</option>
-                                <option value={Horizon.H2}>H2 (12-24 months)</option>
-                                <option value={Horizon.H3}>H3 (24-36 months)</option>
-                              </select>
-                            </div>
-                          </div>
-                          <Input
-                            label="Owner (Optional)"
-                            value={editFormData.owner || ""}
-                            onChange={(e) => setEditFormData({ ...editFormData, owner: e.target.value })}
-                            placeholder="Person or team responsible"
-                          />
-                          <Input
-                            label="Target Date (Optional)"
-                            type="date"
-                            value={editFormData.target_date || ""}
-                            onChange={(e) => setEditFormData({ ...editFormData, target_date: e.target.value })}
-                          />
-                          <div className="flex gap-2">
-                            <Button onClick={() => handleSaveEdit("commitment")} size="sm">
-                              <Save className="w-4 h-4 mr-1" />
-                              Save
-                            </Button>
-                            <Button onClick={cancelEdit} variant="ghost" size="sm">
-                              Cancel
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        // Display mode
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
+                {pyramid.strategic_drivers.length > 0 ? (
+                  <div className="space-y-4">
+                    {pyramid.iconic_commitments.map((commitment) => {
+                      // Upstream: driver and possibly intents
+                      const driver = pyramid.strategic_drivers.find(d => d.id === commitment.primary_driver_id);
+                      const upstreamConnections = driver ? [{
+                        id: driver.id,
+                        name: driver.name,
+                        type: 'upstream' as const,
+                      }] : [];
+
+                      // Downstream: team objectives linked to this commitment
+                      const downstreamConnections = pyramid.team_objectives
+                        ?.filter((obj) => obj.primary_commitment_id === commitment.id)
+                        .map((obj) => ({
+                          id: obj.id,
+                          name: `${obj.team_name}: ${obj.name}`,
+                          type: 'downstream' as const,
+                        })) || [];
+
+                      return (
+                        <TierCard
+                          key={commitment.id}
+                          variant="orange"
+                          connections={[...upstreamConnections, ...downstreamConnections]}
+                          onEdit={() => openEditModal('commitment', commitment.id, commitment)}
+                          onDelete={() => handleDeleteCommitment(commitment.id)}
+                        >
+                          <div>
                             <div className="flex items-center justify-between mb-2">
-                              <div className="font-bold text-purple-900">{commitment.name}</div>
-                              <span className="px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-sm">
+                              <div className="text-lg font-bold text-orange-900">{commitment.name}</div>
+                              <span className="px-3 py-1 bg-orange-200 text-orange-800 rounded-full text-sm font-medium">
                                 {commitment.horizon}
                               </span>
                             </div>
-                            <div className="text-gray-700 mb-1">{commitment.description}</div>
-                            <div className="text-xs text-purple-700">Driver: {driver?.name}</div>
+                            <div className="text-gray-700 leading-relaxed">
+                              {commitment.description}
+                            </div>
+                            {commitment.target_date && (
+                              <div className="mt-2 text-sm text-gray-600">
+                                Target: {new Date(commitment.target_date).toLocaleDateString()}
+                              </div>
+                            )}
+                            {commitment.owner && (
+                              <div className="mt-1 text-sm text-gray-600">
+                                Owner: {commitment.owner}
+                              </div>
+                            )}
                           </div>
-                          <div className="flex gap-1 ml-3 flex-shrink-0">
-                            <button
-                              onClick={() => startEdit(commitment.id, "commitment", commitment)}
-                              className="p-2 text-blue-600 hover:bg-blue-100 rounded transition-colors"
-                              title="Edit commitment"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteCommitment(commitment.id)}
-                              className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
-                              title="Delete commitment"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+                        </TierCard>
+                      );
+                    })}
 
-              {pyramid.strategic_drivers.length > 0 ? (
-                <form onSubmit={handleAddCommitment} className="space-y-3">
-                  <Input
-                    label="Commitment Name"
-                    value={commitmentName}
-                    onChange={(e) => setCommitmentName(e.target.value)}
-                    placeholder="e.g., Launch New Platform"
-                  />
-                  <Textarea
-                    label="Description"
-                    value={commitmentDescription}
-                    onChange={(e) => setCommitmentDescription(e.target.value)}
-                    placeholder="What will be delivered..."
-                    rows={3}
-                  />
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Primary Driver
-                      </label>
-                      <select
-                        className="input"
-                        value={selectedDriver}
-                        onChange={(e) => setSelectedDriver(e.target.value)}
-                        required
-                      >
-                        <option value="">Select a driver...</option>
-                        {pyramid.strategic_drivers.map((driver) => (
-                          <option key={driver.id} value={driver.id}>
-                            {driver.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Horizon
-                      </label>
-                      <select
-                        className="input"
-                        value={commitmentHorizon}
-                        onChange={(e) => setCommitmentHorizon(e.target.value as Horizon)}
-                      >
-                        <option value={Horizon.H1}>H1 (0-12 months)</option>
-                        <option value={Horizon.H2}>H2 (12-24 months)</option>
-                        <option value={Horizon.H3}>H3 (24-36 months)</option>
-                      </select>
-                    </div>
+                    {pyramid.iconic_commitments.length === 0 && (
+                      <div className="text-center py-12 bg-orange-50 rounded-xl border-2 border-dashed border-orange-200">
+                        <div className="text-4xl mb-3">🎯</div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No iconic commitments yet</h3>
+                        <p className="text-gray-600 mb-4">Define time-bound milestones that bring your strategy to life</p>
+                        <Button onClick={() => openAddModal('commitment')}>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add First Commitment
+                        </Button>
+                      </div>
+                    )}
                   </div>
-                  <Button type="submit">Add Commitment</Button>
-                </form>
-              ) : (
-                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800">
-                  Add Strategic Drivers first before adding Commitments.
-                </div>
-              )}
-            </div>
+                ) : (
+                  <div className="p-6 bg-yellow-50 border-2 border-yellow-200 rounded-xl text-center">
+                    <div className="text-4xl mb-3">⚠️</div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Strategic Drivers Required</h3>
+                    <p className="text-yellow-800">Add Strategic Drivers first before adding Commitments.</p>
+                    <Button
+                      onClick={() => setActiveTier('drivers')}
+                      variant="secondary"
+                      className="mt-4"
+                    >
+                      Go to Drivers
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
 
             {/* Team Objectives Content */}
             {activeTier === "team" && (
-            <div id="tier-team" className="card scroll-mt-6">
-              <h2 className="text-2xl font-bold mb-4">Tier 8: Team Objectives</h2>
-              <p className="text-gray-600 mb-4">What each team will deliver - cascaded from commitments</p>
+              <>
+                <TierHeader
+                  tierName="Team Objectives"
+                  tierDescription="Team-level goals that break down iconic commitments. Each objective should be specific, measurable, and owned by a team."
+                  itemCount={pyramid.team_objectives?.length || 0}
+                  variant="orange"
+                  onAddNew={() => openAddModal('team_objective')}
+                  onBack={() => setActiveTier(undefined)}
+                />
 
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
-                <p className="text-sm text-orange-900">
-                  <strong>💡 Guidance:</strong> Team objectives break down iconic commitments into team-level goals.
-                  Each objective should be specific, measurable, and owned by a team. Objectives can link to
-                  commitments to show the cascade from strategy to execution.
-                </p>
-              </div>
+                <div className="space-y-4">
+                  {pyramid.team_objectives?.map((objective) => {
+                    // Upstream: commitment
+                    const commitment = pyramid.iconic_commitments.find((c) => c.id === objective.primary_commitment_id);
+                    const upstreamConnections = commitment ? [{
+                      id: commitment.id,
+                      name: commitment.name,
+                      type: 'upstream' as const,
+                    }] : [];
 
-              <div className="space-y-3 mb-4">
-                {pyramid.team_objectives?.map((objective) => {
-                  const commitment = pyramid.iconic_commitments.find(
-                    (c) => c.id === objective.primary_commitment_id
-                  );
-                  return (
-                    <div key={objective.id} className="p-4 bg-orange-50 rounded-lg">
-                      {editingId === objective.id && editType === "team_objective" ? (
-                        // Edit mode
-                        <div className="space-y-3">
-                          <Input
-                            label="Objective Name"
-                            value={editFormData.name || ""}
-                            onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                          />
-                          <Textarea
-                            label="Description"
-                            value={editFormData.description || ""}
-                            onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
-                            rows={3}
-                          />
-                          <Input
-                            label="Team Name"
-                            value={editFormData.team_name || ""}
-                            onChange={(e) => setEditFormData({ ...editFormData, team_name: e.target.value })}
-                            placeholder="e.g., Product Team, Engineering"
-                          />
-                          {pyramid.iconic_commitments.length > 0 && (
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Link to Commitment (Optional)
-                              </label>
-                              <select
-                                className="input"
-                                value={editFormData.primary_commitment_id || ""}
-                                onChange={(e) => setEditFormData({ ...editFormData, primary_commitment_id: e.target.value })}
-                              >
-                                <option value="">Select a commitment...</option>
-                                {pyramid.iconic_commitments.map((commitment) => (
-                                  <option key={commitment.id} value={commitment.id}>
-                                    {commitment.name}
-                                  </option>
-                                ))}
-                              </select>
+                    // Downstream: individual objectives linked to this team objective
+                    const downstreamConnections = pyramid.individual_objectives
+                      ?.filter((ind) => ind.team_objective_ids?.includes(objective.id))
+                      .map((ind) => ({
+                        id: ind.id,
+                        name: `${ind.individual_name}: ${ind.name}`,
+                        type: 'downstream' as const,
+                      })) || [];
+
+                    return (
+                      <TierCard
+                        key={objective.id}
+                        variant="orange"
+                        connections={[...upstreamConnections, ...downstreamConnections]}
+                        onEdit={() => openEditModal('team_objective', objective.id, objective)}
+                        onDelete={() => handleDeleteTeamObjective(objective.id)}
+                      >
+                        <div>
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="text-lg font-bold text-orange-900">{objective.name}</div>
+                            <span className="px-3 py-1 bg-orange-200 text-orange-800 rounded-full text-xs font-medium">
+                              {objective.team_name}
+                            </span>
+                          </div>
+                          <div className="text-gray-700 leading-relaxed">
+                            {objective.description}
+                          </div>
+                          {objective.metrics && (
+                            <div className="mt-2 text-sm text-gray-600">
+                              Metrics: {objective.metrics}
                             </div>
                           )}
-                          <Input
-                            label="Owner (Optional)"
-                            value={editFormData.owner || ""}
-                            onChange={(e) => setEditFormData({ ...editFormData, owner: e.target.value })}
-                            placeholder="Person responsible"
-                          />
-                          <Textarea
-                            label="Metrics (Optional)"
-                            value={editFormData.metrics || ""}
-                            onChange={(e) => setEditFormData({ ...editFormData, metrics: e.target.value })}
-                            rows={2}
-                            placeholder="How success will be measured"
-                          />
-                          <div className="flex gap-2">
-                            <Button onClick={() => handleSaveEdit("team_objective")} size="sm">
-                              <Save className="w-4 h-4 mr-1" />
-                              Save
-                            </Button>
-                            <Button onClick={cancelEdit} variant="ghost" size="sm">
-                              Cancel
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        // Display mode
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-start justify-between mb-2">
-                              <div className="font-bold text-orange-900">{objective.name}</div>
-                              <span className="px-2 py-1 bg-orange-200 text-orange-800 rounded text-xs">
-                                {objective.team_name}
-                              </span>
+                          {objective.owner && (
+                            <div className="mt-1 text-sm text-gray-600">
+                              Owner: {objective.owner}
                             </div>
-                            <div className="text-gray-700 mb-1">{objective.description}</div>
-                            {commitment && (
-                              <div className="text-xs text-orange-700 mt-2">
-                                Commitment: {commitment.name}
-                              </div>
-                            )}
-                            {objective.owner && (
-                              <div className="text-xs text-gray-600 mt-1">Owner: {objective.owner}</div>
-                            )}
-                          </div>
-                          <div className="flex gap-1 ml-3 flex-shrink-0">
-                            <button
-                              onClick={() => startEdit(objective.id, "team_objective", objective)}
-                              className="p-2 text-blue-600 hover:bg-blue-100 rounded transition-colors"
-                              title="Edit team objective"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteTeamObjective(objective.id)}
-                              className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
-                              title="Delete team objective"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+                      </TierCard>
+                    );
+                  })}
 
-              <form onSubmit={handleAddTeamObjective} className="space-y-3">
-                <Input
-                  label="Objective Name"
-                  value={teamObjectiveName}
-                  onChange={(e) => setTeamObjectiveName(e.target.value)}
-                  placeholder="e.g., Launch MVP in Q2"
-                  required
-                />
-                <Textarea
-                  label="Description"
-                  value={teamObjectiveDescription}
-                  onChange={(e) => setTeamObjectiveDescription(e.target.value)}
-                  placeholder="What will be achieved..."
-                  rows={3}
-                  required
-                />
-                <Input
-                  label="Team Name"
-                  value={teamName}
-                  onChange={(e) => setTeamName(e.target.value)}
-                  placeholder="e.g., Product Team, Engineering"
-                  required
-                />
-                {pyramid.iconic_commitments.length > 0 && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Link to Commitment (Optional)
-                    </label>
-                    <select
-                      className="input"
-                      value={selectedCommitment}
-                      onChange={(e) => setSelectedCommitment(e.target.value)}
-                    >
-                      <option value="">Select a commitment...</option>
-                      {pyramid.iconic_commitments.map((commitment) => (
-                        <option key={commitment.id} value={commitment.id}>
-                          {commitment.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-                <Button type="submit">Add Team Objective</Button>
-              </form>
-            </div>
+                  {(!pyramid.team_objectives || pyramid.team_objectives.length === 0) && (
+                    <div className="text-center py-12 bg-orange-50 rounded-xl border-2 border-dashed border-orange-200">
+                      <div className="text-4xl mb-3">👥</div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No team objectives yet</h3>
+                      <p className="text-gray-600 mb-4">Define team-level goals that cascade from your commitments</p>
+                      <Button onClick={() => openAddModal('team_objective')}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add First Team Objective
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
 
             {/* Individual Objectives Content */}
             {activeTier === "individual" && (
-            <div id="tier-individual" className="card scroll-mt-6">
-              <h2 className="text-2xl font-bold mb-4">Tier 9: Individual Objectives</h2>
-              <p className="text-gray-600 mb-4">Personal goals that support team objectives</p>
+              <>
+                <TierHeader
+                  tierName="Individual Objectives"
+                  tierDescription="Personal goals that connect individual work to team objectives. Each objective should be clear, achievable, and show direct contribution."
+                  itemCount={pyramid.individual_objectives?.length || 0}
+                  variant="teal"
+                  onAddNew={() => openAddModal('individual_objective')}
+                  onBack={() => setActiveTier(undefined)}
+                />
 
-              <div className="bg-teal-50 border border-teal-200 rounded-lg p-4 mb-6">
-                <p className="text-sm text-teal-900">
-                  <strong>💡 Guidance:</strong> Individual objectives are personal commitments that connect people's
-                  work to team goals. They should be clear, achievable, and directly contribute to team success.
-                  Link individual objectives to team objectives to show alignment.
-                </p>
-              </div>
+                <div className="space-y-4">
+                  {pyramid.individual_objectives?.map((objective) => {
+                    // Upstream: team objectives
+                    const upstreamConnections = objective.team_objective_ids
+                      ?.map((teamObjId) => {
+                        const teamObj = pyramid.team_objectives?.find((t) => t.id === teamObjId);
+                        return teamObj ? {
+                          id: teamObj.id,
+                          name: `${teamObj.team_name}: ${teamObj.name}`,
+                          type: 'upstream' as const,
+                        } : null;
+                      })
+                      .filter((conn): conn is NonNullable<typeof conn> => conn !== null) || [];
 
-              <div className="space-y-3 mb-4">
-                {pyramid.individual_objectives?.map((objective) => (
-                  <div key={objective.id} className="p-4 bg-teal-50 rounded-lg">
-                    {editingId === objective.id && editType === "individual_objective" ? (
-                      // Edit mode
-                      <div className="space-y-3">
-                        <Input
-                          label="Objective Name"
-                          value={editFormData.name || ""}
-                          onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                        />
-                        <Textarea
-                          label="Description"
-                          value={editFormData.description || ""}
-                          onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
-                          rows={3}
-                        />
-                        <Input
-                          label="Individual Name"
-                          value={editFormData.individual_name || ""}
-                          onChange={(e) => setEditFormData({ ...editFormData, individual_name: e.target.value })}
-                          placeholder="e.g., John Smith"
-                        />
-                        {pyramid.team_objectives && pyramid.team_objectives.length > 0 && (
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Link to Team Objectives (optional)
-                            </label>
-                            <div className="grid md:grid-cols-2 gap-2 max-h-48 overflow-y-auto">
-                              {pyramid.team_objectives.map((teamObj) => (
-                                <label key={teamObj.id} className="flex items-center gap-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
-                                  <input
-                                    type="checkbox"
-                                    checked={(editFormData.team_objective_ids || []).includes(teamObj.id)}
-                                    onChange={(e) => {
-                                      const currentIds = editFormData.team_objective_ids || [];
-                                      const newIds = e.target.checked
-                                        ? [...currentIds, teamObj.id]
-                                        : currentIds.filter((id: string) => id !== teamObj.id);
-                                      setEditFormData({ ...editFormData, team_objective_ids: newIds });
-                                    }}
-                                    className="rounded"
-                                  />
-                                  <span className="text-sm font-medium">{teamObj.name}</span>
-                                </label>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        <Textarea
-                          label="Success Criteria (Optional)"
-                          value={editFormData.success_criteria || ""}
-                          onChange={(e) => setEditFormData({ ...editFormData, success_criteria: e.target.value })}
-                          rows={2}
-                          placeholder="How success will be measured"
-                        />
-                        <div className="flex gap-2">
-                          <Button onClick={() => handleSaveEdit("individual_objective")} size="sm">
-                            <Save className="w-4 h-4 mr-1" />
-                            Save
-                          </Button>
-                          <Button onClick={cancelEdit} variant="ghost" size="sm">
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      // Display mode
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
+                    return (
+                      <TierCard
+                        key={objective.id}
+                        variant="teal"
+                        connections={upstreamConnections}
+                        onEdit={() => openEditModal('individual_objective', objective.id, objective)}
+                        onDelete={() => handleDeleteIndividualObjective(objective.id)}
+                      >
+                        <div>
                           <div className="flex items-start justify-between mb-2">
-                            <div className="font-bold text-teal-900">{objective.name}</div>
-                            <span className="px-2 py-1 bg-teal-200 text-teal-800 rounded text-xs">
+                            <div className="text-lg font-bold text-teal-900">{objective.name}</div>
+                            <span className="px-3 py-1 bg-teal-200 text-teal-800 rounded-full text-xs font-medium">
                               {objective.individual_name}
                             </span>
                           </div>
-                          <div className="text-gray-700 mb-2">{objective.description}</div>
-                          {objective.team_objective_ids && objective.team_objective_ids.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                              {objective.team_objective_ids.map((teamObjId) => {
-                                const teamObj = pyramid.team_objectives?.find((t) => t.id === teamObjId);
-                                return teamObj ? (
-                                  <span
-                                    key={teamObjId}
-                                    className="px-2 py-1 bg-teal-200 text-teal-800 rounded text-xs"
-                                  >
-                                    {teamObj.name}
-                                  </span>
-                                ) : null;
-                              })}
+                          <div className="text-gray-700 leading-relaxed">
+                            {objective.description}
+                          </div>
+                          {objective.success_criteria && (
+                            <div className="mt-2 text-sm text-gray-600">
+                              Success criteria: {objective.success_criteria}
                             </div>
                           )}
                         </div>
-                        <div className="flex gap-1 ml-3 flex-shrink-0">
-                          <button
-                            onClick={() => startEdit(objective.id, "individual_objective", objective)}
-                            className="p-2 text-blue-600 hover:bg-blue-100 rounded transition-colors"
-                            title="Edit individual objective"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteIndividualObjective(objective.id)}
-                            className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
-                            title="Delete individual objective"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+                      </TierCard>
+                    );
+                  })}
 
-              <form onSubmit={handleAddIndividualObjective} className="space-y-3">
-                <Input
-                  label="Objective Name"
-                  value={individualObjectiveName}
-                  onChange={(e) => setIndividualObjectiveName(e.target.value)}
-                  placeholder="e.g., Complete certification in Q1"
-                  required
-                />
-                <Textarea
-                  label="Description"
-                  value={individualObjectiveDescription}
-                  onChange={(e) => setIndividualObjectiveDescription(e.target.value)}
-                  placeholder="What will be achieved and how it contributes..."
-                  rows={3}
-                  required
-                />
-                <Input
-                  label="Individual Name"
-                  value={individualName}
-                  onChange={(e) => setIndividualName(e.target.value)}
-                  placeholder="e.g., John Smith"
-                  required
-                />
-                {pyramid.team_objectives && pyramid.team_objectives.length > 0 && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Link to Team Objectives (optional, select one or more)
-                    </label>
-                    <div className="grid md:grid-cols-2 gap-2 max-h-48 overflow-y-auto">
-                      {pyramid.team_objectives.map((teamObj) => (
-                        <label key={teamObj.id} className="flex items-center gap-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={selectedTeamObjectiveIds.includes(teamObj.id)}
-                            onChange={() => toggleTeamObjectiveSelection(teamObj.id)}
-                            className="rounded"
-                          />
-                          <span className="text-sm font-medium">{teamObj.name}</span>
-                        </label>
-                      ))}
+                  {(!pyramid.individual_objectives || pyramid.individual_objectives.length === 0) && (
+                    <div className="text-center py-12 bg-teal-50 rounded-xl border-2 border-dashed border-teal-200">
+                      <div className="text-4xl mb-3">👤</div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No individual objectives yet</h3>
+                      <p className="text-gray-600 mb-4">Define personal goals that connect to team objectives</p>
+                      <Button onClick={() => openAddModal('individual_objective')}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add First Individual Objective
+                      </Button>
                     </div>
-                  </div>
-                )}
-                <Button type="submit">Add Individual Objective</Button>
-              </form>
-            </div>
+                  )}
+                </div>
+              </>
             )}
 
           </div>
@@ -1953,6 +1670,300 @@ export default function BuilderPage() {
               </Button>
               <Button type="submit">
                 {modalMode === 'add' ? 'Add Enabler' : 'Save Changes'}
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {/* Commitment Form */}
+        {modalItemType === 'commitment' && (
+          <form onSubmit={modalMode === 'add' ? handleAddCommitment : (e) => { e.preventDefault(); handleSaveEdit('commitment'); }} className="space-y-4">
+            <Input
+              label="Commitment Name"
+              value={modalMode === 'edit' ? editFormData.name : commitmentName}
+              onChange={(e) => {
+                if (modalMode === 'edit') {
+                  setEditFormData({ ...editFormData, name: e.target.value });
+                } else {
+                  setCommitmentName(e.target.value);
+                }
+              }}
+              placeholder="e.g., Launch New Platform"
+              required
+            />
+            <Textarea
+              label="Description"
+              value={modalMode === 'edit' ? editFormData.description : commitmentDescription}
+              onChange={(e) => {
+                if (modalMode === 'edit') {
+                  setEditFormData({ ...editFormData, description: e.target.value });
+                } else {
+                  setCommitmentDescription(e.target.value);
+                }
+              }}
+              placeholder="What will be delivered..."
+              rows={3}
+              required
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Primary Driver
+                </label>
+                <select
+                  className="input"
+                  value={modalMode === 'edit' ? editFormData.primary_driver_id : selectedDriver}
+                  onChange={(e) => {
+                    if (modalMode === 'edit') {
+                      setEditFormData({ ...editFormData, primary_driver_id: e.target.value });
+                    } else {
+                      setSelectedDriver(e.target.value);
+                    }
+                  }}
+                  required
+                >
+                  <option value="">Select a driver...</option>
+                  {pyramid.strategic_drivers.map((driver) => (
+                    <option key={driver.id} value={driver.id}>
+                      {driver.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Horizon
+                </label>
+                <select
+                  className="input"
+                  value={modalMode === 'edit' ? editFormData.horizon : commitmentHorizon}
+                  onChange={(e) => {
+                    if (modalMode === 'edit') {
+                      setEditFormData({ ...editFormData, horizon: e.target.value as Horizon });
+                    } else {
+                      setCommitmentHorizon(e.target.value as Horizon);
+                    }
+                  }}
+                >
+                  <option value={Horizon.H1}>H1 (0-12 months)</option>
+                  <option value={Horizon.H2}>H2 (12-24 months)</option>
+                  <option value={Horizon.H3}>H3 (24-36 months)</option>
+                </select>
+              </div>
+            </div>
+            {modalMode === 'edit' && (
+              <>
+                <Input
+                  label="Owner (Optional)"
+                  value={editFormData.owner || ''}
+                  onChange={(e) => setEditFormData({ ...editFormData, owner: e.target.value })}
+                  placeholder="Person or team responsible"
+                />
+                <Input
+                  label="Target Date (Optional)"
+                  type="date"
+                  value={editFormData.target_date || ''}
+                  onChange={(e) => setEditFormData({ ...editFormData, target_date: e.target.value })}
+                />
+              </>
+            )}
+            <div className="flex gap-3 justify-end pt-4 border-t">
+              <Button type="button" variant="ghost" onClick={closeModal}>
+                Cancel
+              </Button>
+              <Button type="submit">
+                {modalMode === 'add' ? 'Add Commitment' : 'Save Changes'}
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {/* Team Objective Form */}
+        {modalItemType === 'team_objective' && (
+          <form onSubmit={modalMode === 'add' ? handleAddTeamObjective : (e) => { e.preventDefault(); handleSaveEdit('team_objective'); }} className="space-y-4">
+            <Input
+              label="Objective Name"
+              value={modalMode === 'edit' ? editFormData.name : teamObjectiveName}
+              onChange={(e) => {
+                if (modalMode === 'edit') {
+                  setEditFormData({ ...editFormData, name: e.target.value });
+                } else {
+                  setTeamObjectiveName(e.target.value);
+                }
+              }}
+              placeholder="e.g., Launch MVP in Q2"
+              required
+            />
+            <Textarea
+              label="Description"
+              value={modalMode === 'edit' ? editFormData.description : teamObjectiveDescription}
+              onChange={(e) => {
+                if (modalMode === 'edit') {
+                  setEditFormData({ ...editFormData, description: e.target.value });
+                } else {
+                  setTeamObjectiveDescription(e.target.value);
+                }
+              }}
+              placeholder="What will be achieved..."
+              rows={3}
+              required
+            />
+            <Input
+              label="Team Name"
+              value={modalMode === 'edit' ? editFormData.team_name : teamName}
+              onChange={(e) => {
+                if (modalMode === 'edit') {
+                  setEditFormData({ ...editFormData, team_name: e.target.value });
+                } else {
+                  setTeamName(e.target.value);
+                }
+              }}
+              placeholder="e.g., Product Team, Engineering"
+              required
+            />
+            {pyramid.iconic_commitments.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Link to Commitment (Optional)
+                </label>
+                <select
+                  className="input"
+                  value={modalMode === 'edit' ? editFormData.primary_commitment_id : selectedCommitment}
+                  onChange={(e) => {
+                    if (modalMode === 'edit') {
+                      setEditFormData({ ...editFormData, primary_commitment_id: e.target.value });
+                    } else {
+                      setSelectedCommitment(e.target.value);
+                    }
+                  }}
+                >
+                  <option value="">Select a commitment...</option>
+                  {pyramid.iconic_commitments.map((commitment) => (
+                    <option key={commitment.id} value={commitment.id}>
+                      {commitment.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {modalMode === 'edit' && (
+              <>
+                <Input
+                  label="Owner (Optional)"
+                  value={editFormData.owner || ''}
+                  onChange={(e) => setEditFormData({ ...editFormData, owner: e.target.value })}
+                  placeholder="Person responsible"
+                />
+                <Textarea
+                  label="Metrics (Optional)"
+                  value={editFormData.metrics || ''}
+                  onChange={(e) => setEditFormData({ ...editFormData, metrics: e.target.value })}
+                  rows={2}
+                  placeholder="How success will be measured"
+                />
+              </>
+            )}
+            <div className="flex gap-3 justify-end pt-4 border-t">
+              <Button type="button" variant="ghost" onClick={closeModal}>
+                Cancel
+              </Button>
+              <Button type="submit">
+                {modalMode === 'add' ? 'Add Team Objective' : 'Save Changes'}
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {/* Individual Objective Form */}
+        {modalItemType === 'individual_objective' && (
+          <form onSubmit={modalMode === 'add' ? handleAddIndividualObjective : (e) => { e.preventDefault(); handleSaveEdit('individual_objective'); }} className="space-y-4">
+            <Input
+              label="Objective Name"
+              value={modalMode === 'edit' ? editFormData.name : individualObjectiveName}
+              onChange={(e) => {
+                if (modalMode === 'edit') {
+                  setEditFormData({ ...editFormData, name: e.target.value });
+                } else {
+                  setIndividualObjectiveName(e.target.value);
+                }
+              }}
+              placeholder="e.g., Complete certification in Q1"
+              required
+            />
+            <Textarea
+              label="Description"
+              value={modalMode === 'edit' ? editFormData.description : individualObjectiveDescription}
+              onChange={(e) => {
+                if (modalMode === 'edit') {
+                  setEditFormData({ ...editFormData, description: e.target.value });
+                } else {
+                  setIndividualObjectiveDescription(e.target.value);
+                }
+              }}
+              placeholder="What will be achieved and how it contributes..."
+              rows={3}
+              required
+            />
+            <Input
+              label="Individual Name"
+              value={modalMode === 'edit' ? editFormData.individual_name : individualName}
+              onChange={(e) => {
+                if (modalMode === 'edit') {
+                  setEditFormData({ ...editFormData, individual_name: e.target.value });
+                } else {
+                  setIndividualName(e.target.value);
+                }
+              }}
+              placeholder="e.g., John Smith"
+              required
+            />
+            {pyramid.team_objectives && pyramid.team_objectives.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Link to Team Objectives (optional)
+                </label>
+                <div className="grid md:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                  {pyramid.team_objectives.map((teamObj) => (
+                    <label key={teamObj.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={modalMode === 'edit'
+                          ? (editFormData.team_objective_ids || []).includes(teamObj.id)
+                          : selectedTeamObjectiveIds.includes(teamObj.id)}
+                        onChange={() => {
+                          if (modalMode === 'edit') {
+                            const currentIds = editFormData.team_objective_ids || [];
+                            const newIds = currentIds.includes(teamObj.id)
+                              ? currentIds.filter((id: string) => id !== teamObj.id)
+                              : [...currentIds, teamObj.id];
+                            setEditFormData({ ...editFormData, team_objective_ids: newIds });
+                          } else {
+                            toggleTeamObjectiveSelection(teamObj.id);
+                          }
+                        }}
+                        className="rounded"
+                      />
+                      <span className="text-sm font-medium">{teamObj.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+            {modalMode === 'edit' && (
+              <Textarea
+                label="Success Criteria (Optional)"
+                value={editFormData.success_criteria || ''}
+                onChange={(e) => setEditFormData({ ...editFormData, success_criteria: e.target.value })}
+                rows={2}
+                placeholder="How success will be measured"
+              />
+            )}
+            <div className="flex gap-3 justify-end pt-4 border-t">
+              <Button type="button" variant="ghost" onClick={closeModal}>
+                Cancel
+              </Button>
+              <Button type="submit">
+                {modalMode === 'add' ? 'Add Individual Objective' : 'Save Changes'}
               </Button>
             </div>
           </form>
