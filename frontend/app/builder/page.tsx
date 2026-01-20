@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import PyramidVisualization from "@/components/visualizations/PyramidVisualization";
+import ConnectionThreads from "@/components/visualizations/ConnectionThreads";
 import { StatementType, Horizon } from "@/types/pyramid";
 import { Save, Home, CheckCircle, FileDown, Eye, Trash2, Edit } from "lucide-react";
 
@@ -582,15 +583,22 @@ export default function BuilderPage() {
       <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar - Fixed Pyramid */}
         <div className="w-96 bg-gradient-to-b from-gray-50 to-white border-r border-gray-200 overflow-y-auto">
-          <div className="sticky top-0 p-4">
-            <h2 className="text-lg font-bold text-gray-800 mb-2">Strategic Pyramid</h2>
-            <p className="text-xs text-gray-600 mb-4">Click any tier to view and edit</p>
-            <PyramidVisualization
-              pyramid={pyramid}
-              onTierClick={handleTierClick}
-              activeTier={activeTier}
-              compact={true}
-            />
+          <div className="sticky top-0 bg-gradient-to-b from-gray-50 to-white z-10 border-b border-gray-200">
+            <div className="p-4">
+              <h2 className="text-lg font-bold text-gray-800 mb-2">Strategic Pyramid</h2>
+              <p className="text-xs text-gray-600 mb-4">Click any tier to view and edit</p>
+              <PyramidVisualization
+                pyramid={pyramid}
+                onTierClick={handleTierClick}
+                activeTier={activeTier}
+                compact={true}
+              />
+            </div>
+          </div>
+
+          {/* Connection Threads - Scrollable */}
+          <div className="p-4">
+            <ConnectionThreads pyramid={pyramid} showAllConnections={true} />
           </div>
         </div>
 
