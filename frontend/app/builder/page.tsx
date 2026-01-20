@@ -445,6 +445,7 @@ export default function BuilderPage() {
       setDriverDescription("");
       await refreshPyramid();
       showToast("Strategic driver added successfully", "success");
+      closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add driver", "error");
     } finally {
@@ -462,6 +463,7 @@ export default function BuilderPage() {
       setIntentStatement("");
       await refreshPyramid();
       showToast("Strategic intent added successfully", "success");
+      closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add intent", "error");
     } finally {
@@ -486,6 +488,7 @@ export default function BuilderPage() {
       setCommitmentDescription("");
       await refreshPyramid();
       showToast("Iconic commitment added successfully", "success");
+      closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add commitment", "error");
     } finally {
@@ -512,6 +515,7 @@ export default function BuilderPage() {
       setSelectedDriverIds([]);
       await refreshPyramid();
       showToast("Enabler added successfully", "success");
+      closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add enabler", "error");
     } finally {
@@ -544,6 +548,7 @@ export default function BuilderPage() {
       setSelectedCommitment("");
       await refreshPyramid();
       showToast("Team objective added successfully", "success");
+      closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add team objective", "error");
     } finally {
@@ -570,6 +575,7 @@ export default function BuilderPage() {
       setSelectedTeamObjectiveIds([]);
       await refreshPyramid();
       showToast("Individual objective added successfully", "success");
+      closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add individual objective", "error");
     } finally {
@@ -834,96 +840,79 @@ export default function BuilderPage() {
 
             {/* Strategic Drivers Content */}
             {activeTier === "drivers" && (
-            <div id="tier-drivers" className="card scroll-mt-6">
-              <h2 className="text-2xl font-bold mb-4">Tier 5: Strategic Drivers</h2>
-              <p className="text-gray-600 mb-4">Where we focus - 3-5 major themes/pillars</p>
-
-              <div className="space-y-3 mb-4">
-                {pyramid.strategic_drivers.map((driver) => (
-                  <div key={driver.id} className="p-4 bg-blue-50 rounded-lg">
-                    {editingId === driver.id && editType === "driver" ? (
-                      // Edit mode
-                      <div className="space-y-3">
-                        <Input
-                          label="Driver Name"
-                          value={editFormData.name || ""}
-                          onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                        />
-                        <Textarea
-                          label="Description"
-                          value={editFormData.description || ""}
-                          onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
-                          rows={3}
-                        />
-                        <Textarea
-                          label="Rationale (Optional)"
-                          value={editFormData.rationale || ""}
-                          onChange={(e) => setEditFormData({ ...editFormData, rationale: e.target.value })}
-                          rows={2}
-                        />
-                        <div className="flex gap-2">
-                          <Button onClick={() => handleSaveEdit("driver")} size="sm">
-                            <Save className="w-4 h-4 mr-1" />
-                            Save
-                          </Button>
-                          <Button onClick={cancelEdit} variant="ghost" size="sm">
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      // Display mode
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="font-bold text-blue-900 text-lg">{driver.name}</div>
-                          <div className="text-gray-700 mt-1">{driver.description}</div>
-                        </div>
-                        <div className="flex gap-1 ml-3 flex-shrink-0">
-                          <button
-                            onClick={() => startEdit(driver.id, "driver", driver)}
-                            className="p-2 text-blue-600 hover:bg-blue-100 rounded transition-colors"
-                            title="Edit driver"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteDriver(driver.id)}
-                            className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
-                            title="Delete driver"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <form onSubmit={handleAddDriver} className="space-y-3">
-                <Input
-                  label="Driver Name (1-3 words recommended)"
-                  value={driverName}
-                  onChange={(e) => setDriverName(e.target.value)}
-                  placeholder="e.g., Customer Experience, Innovation"
-                  required
+              <>
+                <TierHeader
+                  tierName="Strategic Drivers"
+                  tierDescription="3-5 major themes or pillars where you'll focus your strategic efforts."
+                  itemCount={pyramid.strategic_drivers.length}
+                  variant="purple"
+                  onAddNew={() => openAddModal('driver')}
+                  onBack={() => setActiveTier(undefined)}
                 />
-                <Textarea
-                  label="Description (minimum 10 characters)"
-                  value={driverDescription}
-                  onChange={(e) => setDriverDescription(e.target.value)}
-                  placeholder="What this driver means and why it matters..."
-                  rows={3}
-                  required
-                />
-                <div className="text-sm text-gray-600">
-                  {driverDescription.length}/10 characters (minimum)
+
+                <div className="space-y-4">
+                  {pyramid.strategic_drivers.map((driver) => {
+                    // Calculate downstream connections
+                    const intents = pyramid.strategic_intents.filter((intent) => intent.driver_id === driver.id);
+                    const enablers = pyramid.enablers?.filter((enabler) => enabler.driver_ids?.includes(driver.id)) || [];
+                    const commitments = pyramid.iconic_commitments.filter((c) => c.primary_driver_id === driver.id);
+
+                    const downstreamConnections = [
+                      ...intents.map((intent) => ({
+                        id: intent.id,
+                        name: `Intent: ${intent.statement.substring(0, 40)}...`,
+                        type: 'downstream' as const,
+                      })),
+                      ...enablers.map((enabler) => ({
+                        id: enabler.id,
+                        name: `Enabler: ${enabler.name}`,
+                        type: 'downstream' as const,
+                      })),
+                      ...commitments.map((commitment) => ({
+                        id: commitment.id,
+                        name: `Commitment: ${commitment.name}`,
+                        type: 'downstream' as const,
+                      })),
+                    ];
+
+                    return (
+                      <TierCard
+                        key={driver.id}
+                        variant="purple"
+                        connections={downstreamConnections}
+                        onEdit={() => openEditModal('driver', driver.id, driver)}
+                        onDelete={() => handleDeleteDriver(driver.id)}
+                      >
+                        <div>
+                          <div className="text-xl font-bold text-purple-900 mb-2">
+                            {driver.name}
+                          </div>
+                          <div className="text-gray-700 leading-relaxed">
+                            {driver.description}
+                          </div>
+                          {driver.rationale && (
+                            <div className="mt-2 text-sm text-gray-600 italic">
+                              Rationale: {driver.rationale}
+                            </div>
+                          )}
+                        </div>
+                      </TierCard>
+                    );
+                  })}
+
+                  {pyramid.strategic_drivers.length === 0 && (
+                    <div className="text-center py-12 bg-purple-50 rounded-xl border-2 border-dashed border-purple-200">
+                      <div className="text-4xl mb-3">🎯</div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No strategic drivers yet</h3>
+                      <p className="text-gray-600 mb-4">Define 3-5 major themes where you'll focus your strategic efforts</p>
+                      <Button onClick={() => openAddModal('driver')}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add First Driver
+                      </Button>
+                    </div>
+                  )}
                 </div>
-                <Button type="submit" disabled={!driverName.trim() || driverDescription.length < 10}>
-                  Add Strategic Driver
-                </Button>
-              </form>
-            </div>
+              </>
             )}
 
             {/* Strategic Intents Content */}
@@ -1938,6 +1927,56 @@ export default function BuilderPage() {
               </Button>
               <Button type="submit">
                 {modalMode === 'add' ? 'Add Behaviour' : 'Save Changes'}
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {/* Driver Form */}
+        {modalItemType === 'driver' && (
+          <form onSubmit={modalMode === 'add' ? handleAddDriver : (e) => { e.preventDefault(); handleSaveEdit('driver'); }} className="space-y-4">
+            <Input
+              label="Driver Name (1-3 words recommended)"
+              value={modalMode === 'edit' ? editFormData.name : driverName}
+              onChange={(e) => {
+                if (modalMode === 'edit') {
+                  setEditFormData({ ...editFormData, name: e.target.value });
+                } else {
+                  setDriverName(e.target.value);
+                }
+              }}
+              placeholder="e.g., Customer Experience, Innovation"
+              required
+            />
+            <Textarea
+              label="Description"
+              value={modalMode === 'edit' ? editFormData.description : driverDescription}
+              onChange={(e) => {
+                if (modalMode === 'edit') {
+                  setEditFormData({ ...editFormData, description: e.target.value });
+                } else {
+                  setDriverDescription(e.target.value);
+                }
+              }}
+              placeholder="What this driver means and why it matters..."
+              rows={3}
+              required
+            />
+            {modalMode === 'edit' && (
+              <Textarea
+                label="Rationale (Optional)"
+                value={editFormData.rationale || ''}
+                onChange={(e) => setEditFormData({ ...editFormData, rationale: e.target.value })}
+                placeholder="Why this driver was chosen..."
+                rows={2}
+              />
+            )}
+            <div className="flex gap-3 justify-end pt-4 border-t">
+              <Button type="button" variant="ghost" onClick={closeModal}>
+                Cancel
+              </Button>
+              <Button type="submit">
+                {modalMode === 'add' ? 'Add Driver' : 'Save Changes'}
               </Button>
             </div>
           </form>
