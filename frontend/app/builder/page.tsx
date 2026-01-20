@@ -25,7 +25,6 @@ import { Save, Home, CheckCircle, FileDown, Eye, Trash2, Edit } from "lucide-rea
 export default function BuilderPage() {
   const router = useRouter();
   const { sessionId, pyramid, setPyramid, setLoading, setError, showToast, isLoading } = usePyramidStore();
-  const [activeTab, setActiveTab] = useState<"purpose" | "strategy" | "execution">("purpose");
   const [activeTier, setActiveTier] = useState<string | undefined>(undefined);
 
   // Form states
@@ -77,34 +76,8 @@ export default function BuilderPage() {
   };
 
   const handleTierClick = (tierId: string) => {
+    // Simply set the active tier - content will appear in the right panel
     setActiveTier(tierId);
-
-    // Map tier IDs to appropriate tabs
-    const tierToTab: Record<string, "purpose" | "strategy" | "execution"> = {
-      vision: "purpose",
-      values: "purpose",
-      behaviours: "purpose",
-      drivers: "strategy",
-      intents: "strategy",
-      enablers: "strategy",
-      commitments: "execution",
-      team: "execution",
-      individual: "execution",
-    };
-
-    // Set the appropriate tab
-    const tab = tierToTab[tierId];
-    if (tab) {
-      setActiveTab(tab);
-    }
-
-    // Smooth scroll to the tier section
-    setTimeout(() => {
-      const element = document.getElementById(`tier-${tierId}`);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    }, 100);
   };
 
   const handleDeleteVisionStatement = async (statementId: string) => {
@@ -578,14 +551,14 @@ export default function BuilderPage() {
   }
 
   return (
-    <div className="min-h-screen p-4">
+    <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <div className="max-w-7xl mx-auto mb-6">
-        <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-full mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800">{pyramid.metadata.project_name}</h1>
-              <p className="text-gray-600">{pyramid.metadata.organization}</p>
+              <h1 className="text-2xl font-bold text-gray-800">{pyramid.metadata.project_name}</h1>
+              <p className="text-sm text-gray-600">{pyramid.metadata.organization}</p>
             </div>
             <div className="flex gap-3">
               <Button variant="ghost" onClick={() => router.push("/")}>
@@ -602,87 +575,44 @@ export default function BuilderPage() {
               </Button>
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-6 gap-3 mt-6">
-            <div className="text-center p-3 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{pyramid.values.length}</div>
-              <div className="text-sm text-gray-600">Values</div>
-            </div>
-            <div className="text-center p-3 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{pyramid.behaviours?.length || 0}</div>
-              <div className="text-sm text-gray-600">Behaviours</div>
-            </div>
-            <div className="text-center p-3 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{pyramid.strategic_drivers.length}</div>
-              <div className="text-sm text-gray-600">Drivers</div>
-            </div>
-            <div className="text-center p-3 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{pyramid.strategic_intents.length}</div>
-              <div className="text-sm text-gray-600">Intents</div>
-            </div>
-            <div className="text-center p-3 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{pyramid.iconic_commitments.length}</div>
-              <div className="text-sm text-gray-600">Commitments</div>
-            </div>
-            <div className="text-center p-3 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{pyramid.team_objectives?.length || 0}</div>
-              <div className="text-sm text-gray-600">Team Obj.</div>
-            </div>
+      {/* Main Content Area - Side by Side */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Sidebar - Fixed Pyramid */}
+        <div className="w-96 bg-gradient-to-b from-gray-50 to-white border-r border-gray-200 overflow-y-auto">
+          <div className="sticky top-0 p-4">
+            <h2 className="text-lg font-bold text-gray-800 mb-2">Strategic Pyramid</h2>
+            <p className="text-xs text-gray-600 mb-4">Click any tier to view and edit</p>
+            <PyramidVisualization
+              pyramid={pyramid}
+              onTierClick={handleTierClick}
+              activeTier={activeTier}
+              compact={true}
+            />
           </div>
         </div>
-      </div>
 
-      {/* Pyramid Visualization */}
-      <div className="max-w-7xl mx-auto mb-6">
-        <div className="bg-white rounded-lg shadow-md">
-          <PyramidVisualization
-            pyramid={pyramid}
-            onTierClick={handleTierClick}
-            activeTier={activeTier}
-          />
-        </div>
-      </div>
+        {/* Right Content Area - Scrollable */}
+        <div className="flex-1 overflow-y-auto bg-gray-50">
+          <div className="max-w-5xl mx-auto p-6">
 
-      {/* Tabs */}
-      <div className="max-w-7xl mx-auto mb-6">
-        <div className="flex gap-2 bg-white rounded-lg shadow-md p-2">
-          <button
-            className={`flex-1 py-3 px-6 rounded-lg font-medium transition-colors ${
-              activeTab === "purpose"
-                ? "bg-primary text-white"
-                : "text-gray-600 hover:bg-gray-100"
-            }`}
-            onClick={() => setActiveTab("purpose")}
-          >
-            PURPOSE (The Why)
-          </button>
-          <button
-            className={`flex-1 py-3 px-6 rounded-lg font-medium transition-colors ${
-              activeTab === "strategy"
-                ? "bg-primary text-white"
-                : "text-gray-600 hover:bg-gray-100"
-            }`}
-            onClick={() => setActiveTab("strategy")}
-          >
-            STRATEGY (The How)
-          </button>
-          <button
-            className={`flex-1 py-3 px-6 rounded-lg font-medium transition-colors ${
-              activeTab === "execution"
-                ? "bg-primary text-white"
-                : "text-gray-600 hover:bg-gray-100"
-            }`}
-            onClick={() => setActiveTab("execution")}
-          >
-            EXECUTION (The What)
-          </button>
-        </div>
-      </div>
+            {/* Welcome message when no tier selected */}
+            {!activeTier && (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                  <div className="text-6xl mb-4">👈</div>
+                  <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome to Your Strategic Pyramid</h2>
+                  <p className="text-gray-600 max-w-md">
+                    Click any tier on the left to start building your strategy. Gray tiers are empty and waiting to be filled!
+                  </p>
+                </div>
+              </div>
+            )}
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto">
-        {activeTab === "purpose" && (
+            {/* Vision Content */}
+            {activeTier === "vision" && (
           <div className="space-y-6">
             {/* Vision */}
             <div id="tier-vision" className="card scroll-mt-6">
@@ -798,8 +728,10 @@ export default function BuilderPage() {
                 </Button>
               </form>
             </div>
+            )}
 
-            {/* Values */}
+            {/* Values Content */}
+            {activeTier === "values" && (
             <div id="tier-values" className="card scroll-mt-6">
               <h2 className="text-2xl font-bold mb-4">Tier 2: Values</h2>
               <p className="text-gray-600 mb-4">What matters to us - 3-5 core principles</p>
@@ -886,8 +818,10 @@ export default function BuilderPage() {
                 <Button type="submit">Add Value</Button>
               </form>
             </div>
+            )}
 
-            {/* Behaviours */}
+            {/* Behaviours Content */}
+            {activeTier === "behaviours" && (
             <div id="tier-behaviours" className="card scroll-mt-6">
               <h2 className="text-2xl font-bold mb-4">Tier 3: Behaviours</h2>
               <p className="text-gray-600 mb-4">How we live our values - observable actions</p>
@@ -1025,12 +959,10 @@ export default function BuilderPage() {
                 </div>
               )}
             </div>
-          </div>
-        )}
+            )}
 
-        {activeTab === "strategy" && (
-          <div className="space-y-6">
-            {/* Strategic Drivers */}
+            {/* Strategic Drivers Content */}
+            {activeTier === "drivers" && (
             <div id="tier-drivers" className="card scroll-mt-6">
               <h2 className="text-2xl font-bold mb-4">Tier 5: Strategic Drivers</h2>
               <p className="text-gray-600 mb-4">Where we focus - 3-5 major themes/pillars</p>
@@ -1121,8 +1053,10 @@ export default function BuilderPage() {
                 </Button>
               </form>
             </div>
+            )}
 
-            {/* Strategic Intents */}
+            {/* Strategic Intents Content */}
+            {activeTier === "intents" && (
             <div id="tier-intents" className="card scroll-mt-6">
               <h2 className="text-2xl font-bold mb-4">Tier 4: Strategic Intent</h2>
               <p className="text-gray-600 mb-4">What success looks like - aspirational statements</p>
@@ -1241,8 +1175,10 @@ export default function BuilderPage() {
                 </div>
               )}
             </div>
+            )}
 
-            {/* Enablers */}
+            {/* Enablers Content */}
+            {activeTier === "enablers" && (
             <div id="tier-enablers" className="card scroll-mt-6">
               <h2 className="text-2xl font-bold mb-4">Tier 6: Enablers</h2>
               <p className="text-gray-600 mb-4">What capabilities we need - people, processes, technology</p>
@@ -1430,12 +1366,10 @@ export default function BuilderPage() {
                 <Button type="submit">Add Enabler</Button>
               </form>
             </div>
-          </div>
-        )}
+            )}
 
-        {activeTab === "execution" && (
-          <div className="space-y-6">
-            {/* Iconic Commitments */}
+            {/* Iconic Commitments Content */}
+            {activeTier === "commitments" && (
             <div id="tier-commitments" className="card scroll-mt-6">
               <h2 className="text-2xl font-bold mb-4">Tier 7: Iconic Commitments</h2>
               <p className="text-gray-600 mb-4">Time-bound milestones that bring strategy to life</p>
@@ -1607,8 +1541,10 @@ export default function BuilderPage() {
                 </div>
               )}
             </div>
+            )}
 
-            {/* Team Objectives */}
+            {/* Team Objectives Content */}
+            {activeTier === "team" && (
             <div id="tier-team" className="card scroll-mt-6">
               <h2 className="text-2xl font-bold mb-4">Tier 8: Team Objectives</h2>
               <p className="text-gray-600 mb-4">What each team will deliver - cascaded from commitments</p>
@@ -1778,8 +1714,10 @@ export default function BuilderPage() {
                 <Button type="submit">Add Team Objective</Button>
               </form>
             </div>
+            )}
 
-            {/* Individual Objectives */}
+            {/* Individual Objectives Content */}
+            {activeTier === "individual" && (
             <div id="tier-individual" className="card scroll-mt-6">
               <h2 className="text-2xl font-bold mb-4">Tier 9: Individual Objectives</h2>
               <p className="text-gray-600 mb-4">Personal goals that support team objectives</p>
@@ -1955,6 +1893,8 @@ export default function BuilderPage() {
             </div>
           </div>
         )}
+          </div>
+        </div>
       </div>
     </div>
   );
