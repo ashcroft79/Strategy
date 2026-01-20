@@ -72,7 +72,14 @@ st.markdown("""
     .block-container {
         padding-top: 3rem;
         padding-bottom: 3rem;
-        max-width: 1400px;
+        padding-left: 4rem;
+        padding-right: 4rem;
+        max-width: 1600px;
+    }
+
+    /* Increased spacing between major sections */
+    .element-container {
+        margin-bottom: 1.5rem;
     }
 
     /* ========== TYPOGRAPHY ========== */
@@ -376,6 +383,16 @@ st.markdown("""
     [data-testid="stSidebar"] .stButton>button[kind="primary"]:hover {
         background: linear-gradient(135deg, var(--gold-500) 0%, var(--gold-600) 100%);
         transform: translateY(-1px);
+    }
+
+    /* ========== FORMS ========== */
+    [data-testid="stForm"] {
+        background: var(--card-bg);
+        padding: 2rem;
+        border-radius: 16px;
+        border: 2px solid var(--cream-300);
+        box-shadow: 0 2px 8px var(--card-shadow);
+        margin: 1.5rem 0;
     }
 
     /* ========== EXPANDERS ========== */
