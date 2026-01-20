@@ -595,11 +595,6 @@ export default function BuilderPage() {
               />
             </div>
           </div>
-
-          {/* Connection Threads - Scrollable */}
-          <div className="p-4">
-            <ConnectionThreads pyramid={pyramid} showAllConnections={true} />
-          </div>
         </div>
 
         {/* Right Content Area - Scrollable */}
