@@ -20,13 +20,15 @@ import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import PyramidVisualization from "@/components/visualizations/PyramidVisualization";
 import ConnectionThreads from "@/components/visualizations/ConnectionThreads";
+import SankeyDiagram from "@/components/visualizations/SankeyDiagram";
 import { StatementType, Horizon } from "@/types/pyramid";
-import { Save, Home, CheckCircle, FileDown, Eye, Trash2, Edit } from "lucide-react";
+import { Save, Home, CheckCircle, FileDown, Eye, Trash2, Edit, Network } from "lucide-react";
 
 export default function BuilderPage() {
   const router = useRouter();
   const { sessionId, pyramid, setPyramid, setLoading, setError, showToast, isLoading } = usePyramidStore();
   const [activeTier, setActiveTier] = useState<string | undefined>(undefined);
+  const [viewMode, setViewMode] = useState<'edit' | 'flow'>('edit');
 
   // Form states
   const [visionStatementType, setVisionStatementType] = useState<StatementType>(StatementType.VISION);
@@ -562,6 +564,13 @@ export default function BuilderPage() {
               <p className="text-sm text-gray-600">{pyramid.metadata.organization}</p>
             </div>
             <div className="flex gap-3">
+              <Button
+                variant={viewMode === 'flow' ? 'primary' : 'secondary'}
+                onClick={() => setViewMode(viewMode === 'edit' ? 'flow' : 'edit')}
+              >
+                <Network className="w-4 h-4 mr-2" />
+                {viewMode === 'edit' ? 'View Flow' : 'Edit Mode'}
+              </Button>
               <Button variant="ghost" onClick={() => router.push("/")}>
                 <Home className="w-4 h-4 mr-2" />
                 Home
@@ -581,6 +590,14 @@ export default function BuilderPage() {
 
       {/* Main Content Area - Side by Side */}
       <div className="flex-1 flex overflow-hidden">
+        {viewMode === 'flow' ? (
+          /* Flow View - Full width Sankey diagram */
+          <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
+            <SankeyDiagram pyramid={pyramid} />
+          </div>
+        ) : (
+          /* Edit View - Pyramid + Content */
+          <>
         {/* Left Sidebar - Fixed Pyramid */}
         <div className="w-96 bg-gradient-to-b from-gray-50 to-white border-r border-gray-200 overflow-y-auto">
           <div className="sticky top-0 bg-gradient-to-b from-gray-50 to-white z-10 border-b border-gray-200">
@@ -1899,6 +1916,8 @@ export default function BuilderPage() {
 
           </div>
         </div>
+          </>
+        )}
       </div>
     </div>
   );
