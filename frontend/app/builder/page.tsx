@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
+import PyramidVisualization from "@/components/visualizations/PyramidVisualization";
 import { StatementType, Horizon } from "@/types/pyramid";
 import { Save, Home, CheckCircle, FileDown, Eye, Trash2, Edit } from "lucide-react";
 
@@ -25,6 +26,7 @@ export default function BuilderPage() {
   const router = useRouter();
   const { sessionId, pyramid, setPyramid, setLoading, setError, showToast, isLoading } = usePyramidStore();
   const [activeTab, setActiveTab] = useState<"purpose" | "strategy" | "execution">("purpose");
+  const [activeTier, setActiveTier] = useState<string | undefined>(undefined);
 
   // Form states
   const [visionStatementType, setVisionStatementType] = useState<StatementType>(StatementType.VISION);
@@ -72,6 +74,37 @@ export default function BuilderPage() {
     } catch (err: any) {
       setError(err.response?.data?.detail || "Failed to refresh pyramid");
     }
+  };
+
+  const handleTierClick = (tierId: string) => {
+    setActiveTier(tierId);
+
+    // Map tier IDs to appropriate tabs
+    const tierToTab: Record<string, "purpose" | "strategy" | "execution"> = {
+      vision: "purpose",
+      values: "purpose",
+      behaviours: "purpose",
+      drivers: "strategy",
+      intents: "strategy",
+      enablers: "strategy",
+      commitments: "execution",
+      team: "execution",
+      individual: "execution",
+    };
+
+    // Set the appropriate tab
+    const tab = tierToTab[tierId];
+    if (tab) {
+      setActiveTab(tab);
+    }
+
+    // Smooth scroll to the tier section
+    setTimeout(() => {
+      const element = document.getElementById(`tier-${tierId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 100);
   };
 
   const handleDeleteVisionStatement = async (statementId: string) => {
@@ -600,6 +633,17 @@ export default function BuilderPage() {
         </div>
       </div>
 
+      {/* Pyramid Visualization */}
+      <div className="max-w-7xl mx-auto mb-6">
+        <div className="bg-white rounded-lg shadow-md">
+          <PyramidVisualization
+            pyramid={pyramid}
+            onTierClick={handleTierClick}
+            activeTier={activeTier}
+          />
+        </div>
+      </div>
+
       {/* Tabs */}
       <div className="max-w-7xl mx-auto mb-6">
         <div className="flex gap-2 bg-white rounded-lg shadow-md p-2">
@@ -641,7 +685,7 @@ export default function BuilderPage() {
         {activeTab === "purpose" && (
           <div className="space-y-6">
             {/* Vision */}
-            <div className="card">
+            <div id="tier-vision" className="card scroll-mt-6">
               <h2 className="text-2xl font-bold mb-2">Tier 1: Vision / Mission / Belief / Passion</h2>
               <p className="text-gray-600 mb-4">Your fundamental purpose statements - why you exist</p>
 
@@ -756,7 +800,7 @@ export default function BuilderPage() {
             </div>
 
             {/* Values */}
-            <div className="card">
+            <div id="tier-values" className="card scroll-mt-6">
               <h2 className="text-2xl font-bold mb-4">Tier 2: Values</h2>
               <p className="text-gray-600 mb-4">What matters to us - 3-5 core principles</p>
 
@@ -844,7 +888,7 @@ export default function BuilderPage() {
             </div>
 
             {/* Behaviours */}
-            <div className="card">
+            <div id="tier-behaviours" className="card scroll-mt-6">
               <h2 className="text-2xl font-bold mb-4">Tier 3: Behaviours</h2>
               <p className="text-gray-600 mb-4">How we live our values - observable actions</p>
 
@@ -987,7 +1031,7 @@ export default function BuilderPage() {
         {activeTab === "strategy" && (
           <div className="space-y-6">
             {/* Strategic Drivers */}
-            <div className="card">
+            <div id="tier-drivers" className="card scroll-mt-6">
               <h2 className="text-2xl font-bold mb-4">Tier 5: Strategic Drivers</h2>
               <p className="text-gray-600 mb-4">Where we focus - 3-5 major themes/pillars</p>
 
@@ -1079,7 +1123,7 @@ export default function BuilderPage() {
             </div>
 
             {/* Strategic Intents */}
-            <div className="card">
+            <div id="tier-intents" className="card scroll-mt-6">
               <h2 className="text-2xl font-bold mb-4">Tier 4: Strategic Intent</h2>
               <p className="text-gray-600 mb-4">What success looks like - aspirational statements</p>
 
@@ -1199,7 +1243,7 @@ export default function BuilderPage() {
             </div>
 
             {/* Enablers */}
-            <div className="card">
+            <div id="tier-enablers" className="card scroll-mt-6">
               <h2 className="text-2xl font-bold mb-4">Tier 6: Enablers</h2>
               <p className="text-gray-600 mb-4">What capabilities we need - people, processes, technology</p>
 
@@ -1392,7 +1436,7 @@ export default function BuilderPage() {
         {activeTab === "execution" && (
           <div className="space-y-6">
             {/* Iconic Commitments */}
-            <div className="card">
+            <div id="tier-commitments" className="card scroll-mt-6">
               <h2 className="text-2xl font-bold mb-4">Tier 7: Iconic Commitments</h2>
               <p className="text-gray-600 mb-4">Time-bound milestones that bring strategy to life</p>
 
@@ -1565,7 +1609,7 @@ export default function BuilderPage() {
             </div>
 
             {/* Team Objectives */}
-            <div className="card">
+            <div id="tier-team" className="card scroll-mt-6">
               <h2 className="text-2xl font-bold mb-4">Tier 8: Team Objectives</h2>
               <p className="text-gray-600 mb-4">What each team will deliver - cascaded from commitments</p>
 
@@ -1736,7 +1780,7 @@ export default function BuilderPage() {
             </div>
 
             {/* Individual Objectives */}
-            <div className="card">
+            <div id="tier-individual" className="card scroll-mt-6">
               <h2 className="text-2xl font-bold mb-4">Tier 9: Individual Objectives</h2>
               <p className="text-gray-600 mb-4">Personal goals that support team objectives</p>
 
