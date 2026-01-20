@@ -9,7 +9,7 @@ import { Upload, Plus } from "lucide-react";
 
 export default function HomePage() {
   const router = useRouter();
-  const { sessionId, setPyramid, setLoading, setError } = usePyramidStore();
+  const { sessionId, setPyramid, setLoading, setError, error } = usePyramidStore();
 
   const [projectName, setProjectName] = useState("");
   const [organization, setOrganization] = useState("");
@@ -198,9 +198,9 @@ export default function HomePage() {
         </div>
 
         {/* Error Display */}
-        {usePyramidStore((state) => state.error) && (
+        {error && (
           <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-            {usePyramidStore((state) => state.error)}
+            {error}
           </div>
         )}
 

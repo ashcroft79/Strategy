@@ -24,7 +24,7 @@
         "notes": null,
         "statement_type": "vision",
         "statement": "To be the most trusted digital transformation partner, empowering businesses worldwide to thrive in the digital age",
-        "order": 1
+        "order": 0
       },
       {
         "id": "v2-a1b2c3d4-e5f6-7890-abcd-ef1234567890",
@@ -34,7 +34,7 @@
         "notes": null,
         "statement_type": "mission",
         "statement": "We deliver innovative technology solutions that drive measurable business outcomes through expert consulting, cutting-edge platforms, and continuous innovation",
-        "order": 2
+        "order": 1
       },
       {
         "id": "v3-a1b2c3d4-e5f6-7890-abcd-ef1234567890",
@@ -44,7 +44,7 @@
         "notes": null,
         "statement_type": "purpose",
         "statement": "To accelerate human progress by democratizing access to transformative technology",
-        "order": 3
+        "order": 2
       }
     ]
   },
