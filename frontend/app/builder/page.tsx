@@ -114,6 +114,8 @@ export default function BuilderPage() {
 
   // Navigate to a specific item by ID across all tiers
   const handleConnectionClick = (connectionId: string, connectionType: 'upstream' | 'downstream') => {
+    if (!pyramid) return;
+
     // Search through all tiers to find the item
     if (pyramid.vision?.statements.find(s => s.id === connectionId)) {
       setActiveTier('vision');
