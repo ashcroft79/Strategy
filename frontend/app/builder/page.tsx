@@ -870,17 +870,19 @@ export default function BuilderPage() {
                         .filter((conn): conn is NonNullable<typeof conn> => conn !== null) || [];
 
                       return (
-                        <TierCard
-                          key={behaviour.id}
-                          variant="green"
-                          connections={upstreamConnections}
-                          onEdit={() => openEditModal('behaviour', behaviour.id, behaviour)}
-                          onDelete={() => handleDeleteBehaviour(behaviour.id)}
-                        >
-                          <div className="text-gray-900 leading-relaxed">
-                            {behaviour.statement}
-                          </div>
-                        </TierCard>
+                        <div key={behaviour.id} id={`item-${behaviour.id}`}>
+                          <TierCard
+                            variant="green"
+                            connections={upstreamConnections}
+                            onEdit={() => openEditModal('behaviour', behaviour.id, behaviour)}
+                            onDelete={() => handleDeleteBehaviour(behaviour.id)}
+                            onConnectionClick={handleConnectionClick}
+                          >
+                            <div className="text-gray-900 leading-relaxed">
+                              {behaviour.statement}
+                            </div>
+                          </TierCard>
+                        </div>
                       );
                     })}
 
@@ -951,27 +953,29 @@ export default function BuilderPage() {
                     ];
 
                     return (
-                      <TierCard
-                        key={driver.id}
-                        variant="purple"
-                        connections={downstreamConnections}
-                        onEdit={() => openEditModal('driver', driver.id, driver)}
-                        onDelete={() => handleDeleteDriver(driver.id)}
-                      >
-                        <div>
-                          <div className="text-xl font-bold text-purple-900 mb-2">
-                            {driver.name}
-                          </div>
-                          <div className="text-gray-700 leading-relaxed">
-                            {driver.description}
-                          </div>
-                          {driver.rationale && (
-                            <div className="mt-2 text-sm text-gray-600 italic">
-                              Rationale: {driver.rationale}
+                      <div key={driver.id} id={`item-${driver.id}`}>
+                        <TierCard
+                          variant="purple"
+                          connections={downstreamConnections}
+                          onEdit={() => openEditModal('driver', driver.id, driver)}
+                          onDelete={() => handleDeleteDriver(driver.id)}
+                          onConnectionClick={handleConnectionClick}
+                        >
+                          <div>
+                            <div className="text-xl font-bold text-purple-900 mb-2">
+                              {driver.name}
                             </div>
-                          )}
-                        </div>
-                      </TierCard>
+                            <div className="text-gray-700 leading-relaxed">
+                              {driver.description}
+                            </div>
+                            {driver.rationale && (
+                              <div className="mt-2 text-sm text-gray-600 italic">
+                                Rationale: {driver.rationale}
+                              </div>
+                            )}
+                          </div>
+                        </TierCard>
+                      </div>
                     );
                   })}
 
@@ -1023,17 +1027,19 @@ export default function BuilderPage() {
                         }));
 
                       return (
-                        <TierCard
-                          key={intent.id}
-                          variant="purple"
-                          connections={[...upstreamConnections, ...downstreamConnections]}
-                          onEdit={() => openEditModal('intent', intent.id, intent)}
-                          onDelete={() => handleDeleteIntent(intent.id)}
-                        >
-                          <div className="text-gray-900 leading-relaxed">
-                            {intent.statement}
-                          </div>
-                        </TierCard>
+                        <div key={intent.id} id={`item-${intent.id}`}>
+                          <TierCard
+                            variant="purple"
+                            onConnectionClick={handleConnectionClick}
+                            connections={[...upstreamConnections, ...downstreamConnections]}
+                            onEdit={() => openEditModal('intent', intent.id, intent)}
+                            onDelete={() => handleDeleteIntent(intent.id)}
+                          >
+                            <div className="text-gray-900 leading-relaxed">
+                              {intent.statement}
+                            </div>
+                          </TierCard>
+                        </div>
                       );
                     })}
 
@@ -1093,27 +1099,29 @@ export default function BuilderPage() {
                       .filter((conn): conn is NonNullable<typeof conn> => conn !== null) || [];
 
                     return (
-                      <TierCard
-                        key={enabler.id}
-                        variant="purple"
-                        connections={upstreamConnections}
-                        onEdit={() => openEditModal('enabler', enabler.id, enabler)}
-                        onDelete={() => handleDeleteEnabler(enabler.id)}
-                      >
-                        <div>
-                          <div className="flex items-start justify-between mb-2">
-                            <div className="text-lg font-bold text-purple-900">{enabler.name}</div>
-                            {enabler.enabler_type && (
-                              <span className="px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-xs font-medium">
-                                {enabler.enabler_type}
-                              </span>
-                            )}
+                      <div key={enabler.id} id={`item-${enabler.id}`}>
+                        <TierCard
+                          variant="purple"
+                          connections={upstreamConnections}
+                          onEdit={() => openEditModal('enabler', enabler.id, enabler)}
+                          onDelete={() => handleDeleteEnabler(enabler.id)}
+                          onConnectionClick={handleConnectionClick}
+                        >
+                          <div>
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="text-lg font-bold text-purple-900">{enabler.name}</div>
+                              {enabler.enabler_type && (
+                                <span className="px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-xs font-medium">
+                                  {enabler.enabler_type}
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-gray-700 leading-relaxed">
+                              {enabler.description}
+                            </div>
                           </div>
-                          <div className="text-gray-700 leading-relaxed">
-                            {enabler.description}
-                          </div>
-                        </div>
-                      </TierCard>
+                        </TierCard>
+                      </div>
                     );
                   })}
 
@@ -1165,35 +1173,37 @@ export default function BuilderPage() {
                         })) || [];
 
                       return (
-                        <TierCard
-                          key={commitment.id}
-                          variant="orange"
-                          connections={[...upstreamConnections, ...downstreamConnections]}
-                          onEdit={() => openEditModal('commitment', commitment.id, commitment)}
-                          onDelete={() => handleDeleteCommitment(commitment.id)}
-                        >
-                          <div>
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="text-lg font-bold text-orange-900">{commitment.name}</div>
-                              <span className="px-3 py-1 bg-orange-200 text-orange-800 rounded-full text-sm font-medium">
-                                {commitment.horizon}
-                              </span>
-                            </div>
-                            <div className="text-gray-700 leading-relaxed">
-                              {commitment.description}
-                            </div>
-                            {commitment.target_date && (
-                              <div className="mt-2 text-sm text-gray-600">
-                                Target: {new Date(commitment.target_date).toLocaleDateString()}
+                        <div key={commitment.id} id={`item-${commitment.id}`}>
+                          <TierCard
+                            variant="orange"
+                            connections={[...upstreamConnections, ...downstreamConnections]}
+                            onEdit={() => openEditModal('commitment', commitment.id, commitment)}
+                            onDelete={() => handleDeleteCommitment(commitment.id)}
+                            onConnectionClick={handleConnectionClick}
+                          >
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="text-lg font-bold text-orange-900">{commitment.name}</div>
+                                <span className="px-3 py-1 bg-orange-200 text-orange-800 rounded-full text-sm font-medium">
+                                  {commitment.horizon}
+                                </span>
                               </div>
-                            )}
-                            {commitment.owner && (
-                              <div className="mt-1 text-sm text-gray-600">
-                                Owner: {commitment.owner}
+                              <div className="text-gray-700 leading-relaxed">
+                                {commitment.description}
                               </div>
-                            )}
-                          </div>
-                        </TierCard>
+                              {commitment.target_date && (
+                                <div className="mt-2 text-sm text-gray-600">
+                                  Target: {new Date(commitment.target_date).toLocaleDateString()}
+                                </div>
+                              )}
+                              {commitment.owner && (
+                                <div className="mt-1 text-sm text-gray-600">
+                                  Owner: {commitment.owner}
+                                </div>
+                              )}
+                            </div>
+                          </TierCard>
+                        </div>
                       );
                     })}
 
@@ -1258,35 +1268,37 @@ export default function BuilderPage() {
                       })) || [];
 
                     return (
-                      <TierCard
-                        key={objective.id}
-                        variant="orange"
-                        connections={[...upstreamConnections, ...downstreamConnections]}
-                        onEdit={() => openEditModal('team_objective', objective.id, objective)}
-                        onDelete={() => handleDeleteTeamObjective(objective.id)}
-                      >
-                        <div>
-                          <div className="flex items-start justify-between mb-2">
-                            <div className="text-lg font-bold text-orange-900">{objective.name}</div>
-                            <span className="px-3 py-1 bg-orange-200 text-orange-800 rounded-full text-xs font-medium">
-                              {objective.team_name}
-                            </span>
-                          </div>
-                          <div className="text-gray-700 leading-relaxed">
-                            {objective.description}
-                          </div>
-                          {objective.metrics && (
-                            <div className="mt-2 text-sm text-gray-600">
-                              Metrics: {objective.metrics}
+                      <div key={objective.id} id={`item-${objective.id}`}>
+                        <TierCard
+                          variant="orange"
+                          connections={[...upstreamConnections, ...downstreamConnections]}
+                          onEdit={() => openEditModal('team_objective', objective.id, objective)}
+                          onDelete={() => handleDeleteTeamObjective(objective.id)}
+                          onConnectionClick={handleConnectionClick}
+                        >
+                          <div>
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="text-lg font-bold text-orange-900">{objective.name}</div>
+                              <span className="px-3 py-1 bg-orange-200 text-orange-800 rounded-full text-xs font-medium">
+                                {objective.team_name}
+                              </span>
                             </div>
-                          )}
-                          {objective.owner && (
-                            <div className="mt-1 text-sm text-gray-600">
-                              Owner: {objective.owner}
+                            <div className="text-gray-700 leading-relaxed">
+                              {objective.description}
                             </div>
-                          )}
-                        </div>
-                      </TierCard>
+                            {objective.metrics && (
+                              <div className="mt-2 text-sm text-gray-600">
+                                Metrics: {objective.metrics}
+                              </div>
+                            )}
+                            {objective.owner && (
+                              <div className="mt-1 text-sm text-gray-600">
+                                Owner: {objective.owner}
+                              </div>
+                            )}
+                          </div>
+                        </TierCard>
+                      </div>
                     );
                   })}
 
@@ -1332,30 +1344,32 @@ export default function BuilderPage() {
                       .filter((conn): conn is NonNullable<typeof conn> => conn !== null) || [];
 
                     return (
-                      <TierCard
-                        key={objective.id}
-                        variant="teal"
-                        connections={upstreamConnections}
-                        onEdit={() => openEditModal('individual_objective', objective.id, objective)}
-                        onDelete={() => handleDeleteIndividualObjective(objective.id)}
-                      >
-                        <div>
-                          <div className="flex items-start justify-between mb-2">
-                            <div className="text-lg font-bold text-teal-900">{objective.name}</div>
-                            <span className="px-3 py-1 bg-teal-200 text-teal-800 rounded-full text-xs font-medium">
-                              {objective.individual_name}
-                            </span>
-                          </div>
-                          <div className="text-gray-700 leading-relaxed">
-                            {objective.description}
-                          </div>
-                          {objective.success_criteria && (
-                            <div className="mt-2 text-sm text-gray-600">
-                              Success criteria: {objective.success_criteria}
+                      <div key={objective.id} id={`item-${objective.id}`}>
+                        <TierCard
+                          variant="teal"
+                          connections={upstreamConnections}
+                          onEdit={() => openEditModal('individual_objective', objective.id, objective)}
+                          onDelete={() => handleDeleteIndividualObjective(objective.id)}
+                          onConnectionClick={handleConnectionClick}
+                        >
+                          <div>
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="text-lg font-bold text-teal-900">{objective.name}</div>
+                              <span className="px-3 py-1 bg-teal-200 text-teal-800 rounded-full text-xs font-medium">
+                                {objective.individual_name}
+                              </span>
                             </div>
-                          )}
-                        </div>
-                      </TierCard>
+                            <div className="text-gray-700 leading-relaxed">
+                              {objective.description}
+                            </div>
+                            {objective.success_criteria && (
+                              <div className="mt-2 text-sm text-gray-600">
+                                Success criteria: {objective.success_criteria}
+                              </div>
+                            )}
+                          </div>
+                        </TierCard>
+                      </div>
                     );
                   })}
 
