@@ -329,6 +329,16 @@ def show_pyramid_loaded():
 
     pyramid = st.session_state.pyramid
 
+    # Build description HTML if it exists
+    description_html = ""
+    if pyramid.metadata.description:
+        description_html = f"""
+            <div style="margin-top: 0.75rem;">
+                <span style="color: var(--text-secondary); font-weight: 600; font-size: 0.875rem;">DESCRIPTION</span>
+                <div style="color: var(--text-primary); margin-top: 0.25rem;">{pyramid.metadata.description}</div>
+            </div>
+        """
+
     # Project info card
     st.markdown(f"""
     <div style="
@@ -370,7 +380,7 @@ def show_pyramid_loaded():
                 </div>
             </div>
 
-            {"<div style='margin-top: 0.75rem;'><span style='color: var(--text-secondary); font-weight: 600; font-size: 0.875rem;'>DESCRIPTION</span><div style='color: var(--text-primary); margin-top: 0.25rem;'>" + pyramid.metadata.description + "</div></div>" if pyramid.metadata.description else ""}
+            {description_html}
 
             <div style="margin-top: 0.75rem;">
                 <span style="color: var(--text-secondary); font-weight: 600; font-size: 0.875rem;">LAST MODIFIED</span>

@@ -345,6 +345,39 @@ st.markdown("""
         margin: 1.5rem 0;
     }
 
+    /* Sidebar buttons - more subtle, card-like */
+    [data-testid="stSidebar"] .stButton>button {
+        background: var(--card-bg);
+        color: var(--text-primary);
+        border: 2px solid var(--cream-300);
+        box-shadow: 0 2px 4px var(--card-shadow);
+        padding: 0.875rem 1rem;
+        text-align: left;
+        font-weight: 600;
+        justify-content: flex-start;
+    }
+
+    [data-testid="stSidebar"] .stButton>button:hover {
+        background: var(--hover-bg);
+        border-color: var(--gold-400);
+        box-shadow: 0 4px 8px var(--card-shadow);
+        transform: translateY(-1px);
+    }
+
+    /* Active navigation button in sidebar */
+    [data-testid="stSidebar"] .stButton>button[kind="primary"] {
+        background: linear-gradient(135deg, var(--gold-400) 0%, var(--gold-500) 100%);
+        color: var(--text-primary);
+        border-color: var(--gold-500);
+        font-weight: 700;
+        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+    }
+
+    [data-testid="stSidebar"] .stButton>button[kind="primary"]:hover {
+        background: linear-gradient(135deg, var(--gold-500) 0%, var(--gold-600) 100%);
+        transform: translateY(-1px);
+    }
+
     /* ========== EXPANDERS ========== */
     .streamlit-expanderHeader {
         border-radius: 12px;
@@ -540,45 +573,72 @@ if 'current_file' not in st.session_state:
     st.session_state.current_file = None
 if 'step' not in st.session_state:
     st.session_state.step = 'home'
+if 'page' not in st.session_state:
+    st.session_state.page = '🏠 Home'
 
 # Sidebar navigation
 with st.sidebar:
-    st.markdown("### 🏛️ Strategic Pyramid Builder")
-    st.markdown("---")
+    # App branding header
+    st.markdown("""
+    <div style="
+        padding: 1.5rem 0 1rem 0;
+        text-align: center;
+        border-bottom: 2px solid var(--cream-300);
+        margin-bottom: 1.5rem;
+    ">
+        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🏛️</div>
+        <h2 style="
+            color: var(--text-primary);
+            font-weight: 800;
+            font-size: 1.25rem;
+            margin: 0;
+            line-height: 1.3;
+        ">Strategic Pyramid<br/>Builder</h2>
+        <div style="
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            font-weight: 600;
+        ">v0.4.0</div>
+    </div>
+    """, unsafe_allow_html=True)
 
     # Show current pyramid info if loaded
     if st.session_state.pyramid:
         # Modern project card
         st.markdown(f"""
         <div style="
-            background: linear-gradient(135deg, var(--cream-100) 0%, var(--card-bg) 100%);
+            background: linear-gradient(135deg, var(--gold-400) 0%, var(--gold-500) 100%);
             padding: 1.25rem;
             border-radius: 12px;
-            border: 2px solid var(--gold-400);
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
         ">
             <div style="
-                font-size: 0.75rem;
-                color: var(--text-secondary);
-                font-weight: 600;
+                font-size: 0.7rem;
+                color: var(--text-primary);
+                font-weight: 700;
                 text-transform: uppercase;
-                letter-spacing: 0.5px;
+                letter-spacing: 1px;
                 margin-bottom: 0.5rem;
-            ">✓ Active Project</div>
+                opacity: 0.8;
+            ">● ACTIVE PROJECT</div>
             <div style="
                 color: var(--text-primary);
                 font-weight: 700;
                 font-size: 1rem;
-                margin-bottom: 0.25rem;
+                margin-bottom: 0.35rem;
+                line-height: 1.3;
             ">{st.session_state.pyramid.metadata.project_name}</div>
             <div style="
-                color: var(--text-secondary);
-                font-size: 0.875rem;
+                color: var(--text-primary);
+                font-size: 0.85rem;
+                opacity: 0.9;
             ">{st.session_state.pyramid.metadata.organization}</div>
         </div>
         """, unsafe_allow_html=True)
 
-        # Compact progress indicator
+        # Compact progress indicator with ring style
         pyramid = st.session_state.pyramid
         total_tiers = 9
         completed = sum([
@@ -595,51 +655,116 @@ with st.sidebar:
         percentage = (completed / total_tiers) * 100
 
         st.markdown(f"""
-        <div style="margin-bottom: 1rem;">
+        <div style="
+            background: var(--card-bg);
+            padding: 1rem;
+            border-radius: 12px;
+            border: 2px solid var(--cream-300);
+            margin-bottom: 1.5rem;
+        ">
             <div style="
                 display: flex;
                 justify-content: space-between;
-                margin-bottom: 0.25rem;
+                align-items: center;
+                margin-bottom: 0.5rem;
+            ">
+                <span style="
+                    font-size: 0.75rem;
+                    color: var(--text-secondary);
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                ">Progress</span>
+                <span style="
+                    font-size: 0.875rem;
+                    color: var(--text-primary);
+                    font-weight: 700;
+                ">{completed}/{total_tiers} tiers</span>
+            </div>
+            <div style="
+                background: var(--cream-200);
+                height: 10px;
+                border-radius: 10px;
+                overflow: hidden;
+                margin-bottom: 0.5rem;
+            ">
+                <div style="
+                    background: linear-gradient(90deg, var(--gold-400) 0%, var(--gold-500) 100%);
+                    height: 100%;
+                    width: {percentage}%;
+                    transition: width 0.3s ease;
+                    box-shadow: 0 0 8px rgba(255, 193, 7, 0.4);
+                "></div>
+            </div>
+            <div style="
                 font-size: 0.75rem;
                 color: var(--text-secondary);
-                font-weight: 600;
-            ">
-                <span>Completion</span>
-                <span>{completed}/{total_tiers}</span>
-            </div>
-            <div class="progress-container" style="height: 8px; margin: 0;">
-                <div class="progress-bar" style="width: {percentage}%"></div>
-            </div>
+                text-align: center;
+            ">{percentage:.0f}% Complete</div>
         </div>
         """, unsafe_allow_html=True)
 
-        st.markdown("---")
+    # Navigation with card-style buttons
+    st.markdown('<div style="margin-bottom: 0.75rem; font-size: 0.7rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Navigation</div>', unsafe_allow_html=True)
 
-    # Navigation
-    page = st.radio(
-        "Navigation",
-        ["🏠 Home", "🔨 Build Pyramid", "✓ Validate", "📤 Export", "ℹ️ About"],
-        label_visibility="collapsed"
-    )
+    nav_items = [
+        ("🏠 Home", "🏠", "Home", "Start here"),
+        ("🔨 Build Pyramid", "🔨", "Build Pyramid", "Create your strategy"),
+        ("✓ Validate", "✓", "Validate", "Check quality"),
+        ("📤 Export", "📤", "Export", "Generate documents"),
+        ("ℹ️ About", "ℹ️", "About", "Learn more")
+    ]
 
-    st.markdown("---")
-
-    # Quick actions
-    if st.session_state.pyramid:
-        st.markdown("### Quick Actions")
-        if st.button("💾 Save"):
-            st.session_state.save_requested = True
-        if st.button("📊 View Summary"):
-            st.session_state.show_summary = True
-        if st.button("🔄 New Pyramid"):
-            st.session_state.step = 'home'
-            st.session_state.pyramid = None
-            st.session_state.builder = None
+    for full_name, icon, short_name, description in nav_items:
+        is_current = st.session_state.page == full_name
+        if st.button(
+            f"{icon} {short_name}",
+            key=f"nav_{short_name}",
+            use_container_width=True,
+            type="primary" if is_current else "secondary"
+        ):
+            st.session_state.page = full_name
             st.rerun()
 
-    st.markdown("---")
-    st.caption("**Version 0.4.0** - Enhanced Editing & Relationships")
-    st.caption("Built with ❤️ for strategic clarity")
+    # Set page variable for routing
+    page = st.session_state.page
+
+    # Quick actions section
+    if st.session_state.pyramid:
+        st.markdown('<div style="margin: 2rem 0 0.75rem 0; font-size: 0.7rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Quick Actions</div>', unsafe_allow_html=True)
+
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("💾", key="save_btn", use_container_width=True, help="Save pyramid"):
+                st.session_state.save_requested = True
+        with col2:
+            if st.button("🔄", key="new_btn", use_container_width=True, help="New pyramid"):
+                st.session_state.step = 'home'
+                st.session_state.pyramid = None
+                st.session_state.builder = None
+                st.rerun()
+
+    # Footer
+    st.markdown("""
+    <div style="
+        position: fixed;
+        bottom: 1rem;
+        width: calc(100% - 3rem);
+        padding: 1rem;
+        background: var(--card-bg);
+        border-radius: 8px;
+        border: 1px solid var(--cream-300);
+        text-align: center;
+    ">
+        <div style="
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        ">
+            Built with ❤️ for<br/>strategic clarity
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # Route to appropriate page
 if page == "🏠 Home":
