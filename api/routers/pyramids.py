@@ -314,6 +314,21 @@ async def update_behaviour(session_id: str, request: UpdateBehaviourRequest):
     return {"success": True}
 
 
+@router.delete("/{session_id}/behaviours/{behaviour_id}")
+async def remove_behaviour(session_id: str, behaviour_id: UUID):
+    """Remove a behaviour."""
+    if session_id not in active_pyramids:
+        raise HTTPException(status_code=404, detail="Pyramid not found")
+
+    manager = active_pyramids[session_id]
+    success = manager.remove_behaviour(behaviour_id)
+
+    if not success:
+        raise HTTPException(status_code=404, detail="Behaviour not found")
+
+    return {"success": True}
+
+
 # ============================================================================
 # TIER 5: STRATEGIC DRIVERS
 # ============================================================================
@@ -385,6 +400,21 @@ async def update_strategic_driver(session_id: str, request: UpdateDriverRequest)
     return {"success": True}
 
 
+@router.delete("/{session_id}/drivers/{driver_id}")
+async def remove_strategic_driver(session_id: str, driver_id: UUID):
+    """Remove a strategic driver."""
+    if session_id not in active_pyramids:
+        raise HTTPException(status_code=404, detail="Pyramid not found")
+
+    manager = active_pyramids[session_id]
+    success = manager.remove_strategic_driver(driver_id)
+
+    if not success:
+        raise HTTPException(status_code=404, detail="Driver not found")
+
+    return {"success": True}
+
+
 # ============================================================================
 # TIER 4: STRATEGIC INTENTS
 # ============================================================================
@@ -445,6 +475,21 @@ async def update_strategic_intent(session_id: str, request: UpdateIntentRequest)
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.delete("/{session_id}/intents/{intent_id}")
+async def remove_strategic_intent(session_id: str, intent_id: UUID):
+    """Remove a strategic intent."""
+    if session_id not in active_pyramids:
+        raise HTTPException(status_code=404, detail="Pyramid not found")
+
+    manager = active_pyramids[session_id]
+    success = manager.remove_strategic_intent(intent_id)
+
+    if not success:
+        raise HTTPException(status_code=404, detail="Intent not found")
+
+    return {"success": True}
+
+
 # ============================================================================
 # TIER 6: ENABLERS
 # ============================================================================
@@ -497,6 +542,21 @@ async def update_enabler(session_id: str, request: UpdateEnablerRequest):
         driver_ids=request.driver_ids,
         enabler_type=request.enabler_type,
     )
+
+    if not success:
+        raise HTTPException(status_code=404, detail="Enabler not found")
+
+    return {"success": True}
+
+
+@router.delete("/{session_id}/enablers/{enabler_id}")
+async def remove_enabler(session_id: str, enabler_id: UUID):
+    """Remove an enabler."""
+    if session_id not in active_pyramids:
+        raise HTTPException(status_code=404, detail="Pyramid not found")
+
+    manager = active_pyramids[session_id]
+    success = manager.remove_enabler(enabler_id)
 
     if not success:
         raise HTTPException(status_code=404, detail="Enabler not found")
@@ -578,6 +638,21 @@ async def update_iconic_commitment(session_id: str, request: UpdateCommitmentReq
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.delete("/{session_id}/commitments/{commitment_id}")
+async def remove_iconic_commitment(session_id: str, commitment_id: UUID):
+    """Remove an iconic commitment."""
+    if session_id not in active_pyramids:
+        raise HTTPException(status_code=404, detail="Pyramid not found")
+
+    manager = active_pyramids[session_id]
+    success = manager.remove_iconic_commitment(commitment_id)
+
+    if not success:
+        raise HTTPException(status_code=404, detail="Commitment not found")
+
+    return {"success": True}
+
+
 # ============================================================================
 # TIER 8: TEAM OBJECTIVES
 # ============================================================================
@@ -645,6 +720,21 @@ async def update_team_objective(session_id: str, request: UpdateTeamObjectiveReq
     return {"success": True}
 
 
+@router.delete("/{session_id}/team-objectives/{objective_id}")
+async def remove_team_objective(session_id: str, objective_id: UUID):
+    """Remove a team objective."""
+    if session_id not in active_pyramids:
+        raise HTTPException(status_code=404, detail="Pyramid not found")
+
+    manager = active_pyramids[session_id]
+    success = manager.remove_team_objective(objective_id)
+
+    if not success:
+        raise HTTPException(status_code=404, detail="Team objective not found")
+
+    return {"success": True}
+
+
 # ============================================================================
 # TIER 9: INDIVIDUAL OBJECTIVES
 # ============================================================================
@@ -701,6 +791,21 @@ async def update_individual_objective(session_id: str, request: UpdateIndividual
         team_objective_ids=request.team_objective_ids,
         success_criteria=request.success_criteria,
     )
+
+    if not success:
+        raise HTTPException(status_code=404, detail="Individual objective not found")
+
+    return {"success": True}
+
+
+@router.delete("/{session_id}/individual-objectives/{objective_id}")
+async def remove_individual_objective(session_id: str, objective_id: UUID):
+    """Remove an individual objective."""
+    if session_id not in active_pyramids:
+        raise HTTPException(status_code=404, detail="Pyramid not found")
+
+    manager = active_pyramids[session_id]
+    success = manager.remove_individual_objective(objective_id)
 
     if not success:
         raise HTTPException(status_code=404, detail="Individual objective not found")

@@ -99,6 +99,111 @@ export default function BuilderPage() {
     }
   };
 
+  const handleDeleteBehaviour = async (behaviourId: string) => {
+    if (!confirm("Are you sure you want to delete this behaviour?")) return;
+
+    try {
+      setLoading(true);
+      await behavioursApi.remove(sessionId, behaviourId);
+      await refreshPyramid();
+      showToast("Behaviour deleted", "success");
+    } catch (err: any) {
+      showToast(err.response?.data?.detail || "Failed to delete behaviour", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteDriver = async (driverId: string) => {
+    if (!confirm("Are you sure you want to delete this driver?")) return;
+
+    try {
+      setLoading(true);
+      await driversApi.remove(sessionId, driverId);
+      await refreshPyramid();
+      showToast("Driver deleted", "success");
+    } catch (err: any) {
+      showToast(err.response?.data?.detail || "Failed to delete driver", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteIntent = async (intentId: string) => {
+    if (!confirm("Are you sure you want to delete this intent?")) return;
+
+    try {
+      setLoading(true);
+      await intentsApi.remove(sessionId, intentId);
+      await refreshPyramid();
+      showToast("Intent deleted", "success");
+    } catch (err: any) {
+      showToast(err.response?.data?.detail || "Failed to delete intent", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteEnabler = async (enablerId: string) => {
+    if (!confirm("Are you sure you want to delete this enabler?")) return;
+
+    try {
+      setLoading(true);
+      await enablersApi.remove(sessionId, enablerId);
+      await refreshPyramid();
+      showToast("Enabler deleted", "success");
+    } catch (err: any) {
+      showToast(err.response?.data?.detail || "Failed to delete enabler", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteCommitment = async (commitmentId: string) => {
+    if (!confirm("Are you sure you want to delete this commitment?")) return;
+
+    try {
+      setLoading(true);
+      await commitmentsApi.remove(sessionId, commitmentId);
+      await refreshPyramid();
+      showToast("Commitment deleted", "success");
+    } catch (err: any) {
+      showToast(err.response?.data?.detail || "Failed to delete commitment", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteTeamObjective = async (objectiveId: string) => {
+    if (!confirm("Are you sure you want to delete this team objective?")) return;
+
+    try {
+      setLoading(true);
+      await teamObjectivesApi.remove(sessionId, objectiveId);
+      await refreshPyramid();
+      showToast("Team objective deleted", "success");
+    } catch (err: any) {
+      showToast(err.response?.data?.detail || "Failed to delete team objective", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteIndividualObjective = async (objectiveId: string) => {
+    if (!confirm("Are you sure you want to delete this individual objective?")) return;
+
+    try {
+      setLoading(true);
+      await individualObjectivesApi.remove(sessionId, objectiveId);
+      await refreshPyramid();
+      showToast("Individual objective deleted", "success");
+    } catch (err: any) {
+      showToast(err.response?.data?.detail || "Failed to delete individual objective", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAddVision = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!visionStatement.trim()) return;
