@@ -345,6 +345,15 @@ class PyramidManager:
 
         return False
 
+    def remove_behaviour(self, behaviour_id: UUID) -> bool:
+        """Remove a behaviour by ID."""
+        if not self.pyramid:
+            return False
+
+        initial_count = len(self.pyramid.behaviours)
+        self.pyramid.behaviours = [b for b in self.pyramid.behaviours if b.id != behaviour_id]
+        return len(self.pyramid.behaviours) < initial_count
+
     def add_strategic_driver(
         self,
         name: str,
@@ -410,6 +419,15 @@ class PyramidManager:
                 return True
 
         return False
+
+    def remove_strategic_driver(self, driver_id: UUID) -> bool:
+        """Remove a strategic driver by ID."""
+        if not self.pyramid:
+            return False
+
+        initial_count = len(self.pyramid.strategic_drivers)
+        self.pyramid.strategic_drivers = [d for d in self.pyramid.strategic_drivers if d.id != driver_id]
+        return len(self.pyramid.strategic_drivers) < initial_count
 
     def add_strategic_intent(
         self,
@@ -485,6 +503,15 @@ class PyramidManager:
                 return True
 
         return False
+
+    def remove_strategic_intent(self, intent_id: UUID) -> bool:
+        """Remove a strategic intent by ID."""
+        if not self.pyramid:
+            return False
+
+        initial_count = len(self.pyramid.strategic_intents)
+        self.pyramid.strategic_intents = [i for i in self.pyramid.strategic_intents if i.id != intent_id]
+        return len(self.pyramid.strategic_intents) < initial_count
 
     def add_enabler(
         self,
@@ -738,6 +765,15 @@ class PyramidManager:
 
         return False
 
+    def remove_enabler(self, enabler_id: UUID) -> bool:
+        """Remove an enabler by ID."""
+        if not self.pyramid:
+            return False
+
+        initial_count = len(self.pyramid.enablers)
+        self.pyramid.enablers = [e for e in self.pyramid.enablers if e.id != enabler_id]
+        return len(self.pyramid.enablers) < initial_count
+
     def update_iconic_commitment(
         self,
         commitment_id: UUID,
@@ -788,6 +824,15 @@ class PyramidManager:
                 return True
 
         return False
+
+    def remove_iconic_commitment(self, commitment_id: UUID) -> bool:
+        """Remove an iconic commitment by ID."""
+        if not self.pyramid:
+            return False
+
+        initial_count = len(self.pyramid.iconic_commitments)
+        self.pyramid.iconic_commitments = [c for c in self.pyramid.iconic_commitments if c.id != commitment_id]
+        return len(self.pyramid.iconic_commitments) < initial_count
 
     def update_team_objective(
         self,
@@ -840,6 +885,15 @@ class PyramidManager:
 
         return False
 
+    def remove_team_objective(self, objective_id: UUID) -> bool:
+        """Remove a team objective by ID."""
+        if not self.pyramid:
+            return False
+
+        initial_count = len(self.pyramid.team_objectives)
+        self.pyramid.team_objectives = [o for o in self.pyramid.team_objectives if o.id != objective_id]
+        return len(self.pyramid.team_objectives) < initial_count
+
     def update_individual_objective(
         self,
         objective_id: UUID,
@@ -882,6 +936,15 @@ class PyramidManager:
                 return True
 
         return False
+
+    def remove_individual_objective(self, objective_id: UUID) -> bool:
+        """Remove an individual objective by ID."""
+        if not self.pyramid:
+            return False
+
+        initial_count = len(self.pyramid.individual_objectives)
+        self.pyramid.individual_objectives = [o for o in self.pyramid.individual_objectives if o.id != objective_id]
+        return len(self.pyramid.individual_objectives) < initial_count
 
     # ========================================================================
     # QUERY METHODS
