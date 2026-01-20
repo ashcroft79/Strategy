@@ -736,6 +736,7 @@ export default function BuilderPage() {
                 </Button>
               </form>
             </div>
+          </div>
             )}
 
             {/* Values Content */}
@@ -1899,8 +1900,8 @@ export default function BuilderPage() {
                 <Button type="submit">Add Individual Objective</Button>
               </form>
             </div>
-          </div>
-        )}
+            )}
+
           </div>
         </div>
       </div>
