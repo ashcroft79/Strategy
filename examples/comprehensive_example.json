@@ -7,7 +7,11 @@
     "last_modified": "2026-01-20T10:00:00.000000",
     "version": "2.0",
     "description": "Comprehensive 3-year digital transformation strategy with complete 9-tier pyramid coverage",
-    "tags": ["digital-transformation", "technology", "innovation"]
+    "tags": [
+      "digital-transformation",
+      "technology",
+      "innovation"
+    ]
   },
   "vision": {
     "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
@@ -17,7 +21,7 @@
     "notes": null,
     "statements": [
       {
-        "id": "v1-a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         "created_at": "2026-01-20T10:00:00.000000",
         "updated_at": "2026-01-20T10:00:00.000000",
         "created_by": "Strategy Team",
@@ -27,7 +31,7 @@
         "order": 0
       },
       {
-        "id": "v2-a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         "created_at": "2026-01-20T10:00:00.000000",
         "updated_at": "2026-01-20T10:00:00.000000",
         "created_by": "Strategy Team",
@@ -37,7 +41,7 @@
         "order": 1
       },
       {
-        "id": "v3-a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         "created_at": "2026-01-20T10:00:00.000000",
         "updated_at": "2026-01-20T10:00:00.000000",
         "created_by": "Strategy Team",
@@ -50,7 +54,7 @@
   },
   "values": [
     {
-      "id": "val1-8e12654d-f8ba-4c71-8c11-2891d539a5a7",
+      "id": "8e12654d-f8ba-4c71-8c11-2891d539a5a7",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Leadership Team",
@@ -59,7 +63,7 @@
       "description": "We start with the customer and work backwards, never settling until we exceed their expectations"
     },
     {
-      "id": "val2-d5d79e48-0689-4381-8241-4f2e26cac9ae",
+      "id": "d5d79e48-0689-4381-8241-4f2e26cac9ae",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Leadership Team",
@@ -68,7 +72,7 @@
       "description": "We continuously push boundaries, experiment boldly, and turn cutting-edge ideas into practical solutions"
     },
     {
-      "id": "val3-268bdf4b-e04c-4c9a-98d9-0094d694582a",
+      "id": "268bdf4b-e04c-4c9a-98d9-0094d694582a",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Leadership Team",
@@ -77,7 +81,7 @@
       "description": "We communicate openly, admit mistakes quickly, and build lasting relationships through radical honesty"
     },
     {
-      "id": "val4-8361a225-a836-472c-8b5b-c371dfee56f4",
+      "id": "8361a225-a836-472c-8b5b-c371dfee56f4",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Leadership Team",
@@ -86,7 +90,7 @@
       "description": "We achieve more together, breaking down silos and celebrating team success over individual glory"
     },
     {
-      "id": "val5-9471b336-b947-4d8d-9c62-e482e5d67f95",
+      "id": "9471b336-b947-4d8d-9c62-e482e5d67f95",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Leadership Team",
@@ -97,54 +101,66 @@
   ],
   "behaviours": [
     {
-      "id": "beh1-9a6800f7-b078-48a5-83d7-643e1933de3f",
+      "id": "9a6800f7-b078-48a5-83d7-643e1933de3f",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Culture Team",
       "notes": null,
       "statement": "We speak in customer language, not technical jargon, ensuring every stakeholder understands the value we deliver",
-      "value_ids": ["val1-8e12654d-f8ba-4c71-8c11-2891d539a5a7"]
+      "value_ids": [
+        "8e12654d-f8ba-4c71-8c11-2891d539a5a7"
+      ]
     },
     {
-      "id": "beh2-074cf7b1-f342-404a-9d0a-f9317a6e7dd3",
+      "id": "074cf7b1-f342-404a-9d0a-f9317a6e7dd3",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Culture Team",
       "notes": null,
       "statement": "We dedicate 20% of our time to experimenting with emerging technologies and sharing our learnings",
-      "value_ids": ["val2-d5d79e48-0689-4381-8241-4f2e26cac9ae"]
+      "value_ids": [
+        "d5d79e48-0689-4381-8241-4f2e26cac9ae"
+      ]
     },
     {
-      "id": "beh3-4b4c241f-c2a8-46dd-be36-6495cde94d2c",
+      "id": "4b4c241f-c2a8-46dd-be36-6495cde94d2c",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Culture Team",
       "notes": null,
       "statement": "We share project data openly with clients and teams, celebrating failures as learning opportunities",
-      "value_ids": ["val3-268bdf4b-e04c-4c9a-98d9-0094d694582a", "val2-d5d79e48-0689-4381-8241-4f2e26cac9ae"]
+      "value_ids": [
+        "268bdf4b-e04c-4c9a-98d9-0094d694582a",
+        "d5d79e48-0689-4381-8241-4f2e26cac9ae"
+      ]
     },
     {
-      "id": "beh4-513caa77-6b12-4ae0-9659-39944f4340ce",
+      "id": "513caa77-6b12-4ae0-9659-39944f4340ce",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Culture Team",
       "notes": null,
       "statement": "We actively seek diverse perspectives from all disciplines before making significant decisions",
-      "value_ids": ["val4-9471b336-b947-4d8d-9c62-e482e5d67f95"]
+      "value_ids": [
+        "9471b336-b947-4d8d-9c62-e482e5d67f95"
+      ]
     },
     {
-      "id": "beh5-cddb6082-ee24-44f0-b090-cb00a4bea37a",
+      "id": "cddb6082-ee24-44f0-b090-cb00a4bea37a",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Culture Team",
       "notes": null,
       "statement": "We measure and report on our carbon footprint and social impact with every major project",
-      "value_ids": ["val5-9471b336-b947-4d8d-9c62-e482e5d67f95", "val3-268bdf4b-e04c-4c9a-98d9-0094d694582a"]
+      "value_ids": [
+        "9471b336-b947-4d8d-9c62-e482e5d67f95",
+        "268bdf4b-e04c-4c9a-98d9-0094d694582a"
+      ]
     }
   ],
   "strategic_drivers": [
     {
-      "id": "drv1-6d34d427-1fea-4530-8496-f4efdd02757f",
+      "id": "6d34d427-1fea-4530-8496-f4efdd02757f",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Strategy Team",
@@ -154,7 +170,7 @@
       "rationale": "Customer retention and advocacy are the strongest predictors of sustainable growth in our market"
     },
     {
-      "id": "drv2-2328bfde-a0da-43f5-ab24-071d37b3d1a6",
+      "id": "2328bfde-a0da-43f5-ab24-071d37b3d1a6",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Strategy Team",
@@ -164,7 +180,7 @@
       "rationale": "Platform businesses scale faster and create more value than services alone"
     },
     {
-      "id": "drv3-8486b7a3-9653-4ac9-a62d-d3ee4687812c",
+      "id": "8486b7a3-9653-4ac9-a62d-d3ee4687812c",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Strategy Team",
@@ -174,7 +190,7 @@
       "rationale": "Our people are our product - investing in talent directly translates to client success"
     },
     {
-      "id": "drv4-a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Strategy Team",
@@ -186,121 +202,132 @@
   ],
   "strategic_intents": [
     {
-      "id": "int1-ab7d8eb9-d117-4350-9876-e7dd7a7f553b",
+      "id": "ab7d8eb9-d117-4350-9876-e7dd7a7f553b",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Strategy Team",
       "notes": null,
       "statement": "Clients tell their peers that our solutions feel like magic - simple on the surface, powerful underneath",
-      "driver_id": "drv1-6d34d427-1fea-4530-8496-f4efdd02757f",
+      "driver_id": "6d34d427-1fea-4530-8496-f4efdd02757f",
       "is_stakeholder_voice": true,
       "boldness_score": null
     },
     {
-      "id": "int2-54988ac9-27a8-44a7-949a-6e566ee0e81f",
+      "id": "54988ac9-27a8-44a7-949a-6e566ee0e81f",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Strategy Team",
       "notes": null,
       "statement": "C-suite executives say we understand their business better than they do and trust us with their most critical challenges",
-      "driver_id": "drv1-6d34d427-1fea-4530-8496-f4efdd02757f",
+      "driver_id": "6d34d427-1fea-4530-8496-f4efdd02757f",
       "is_stakeholder_voice": true,
       "boldness_score": null
     },
     {
-      "id": "int3-e6f0c601-379e-402f-be45-fe669ddcd8b0",
+      "id": "e6f0c601-379e-402f-be45-fe669ddcd8b0",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Strategy Team",
       "notes": null,
       "statement": "Developers choose our platform over competitors because it's 10x faster to build with and just works",
-      "driver_id": "drv2-2328bfde-a0da-43f5-ab24-071d37b3d1a6",
+      "driver_id": "2328bfde-a0da-43f5-ab24-071d37b3d1a6",
       "is_stakeholder_voice": true,
       "boldness_score": null
     },
     {
-      "id": "int4-4bfeef2d-0497-44d9-a8f9-6d5e40755b64",
+      "id": "4bfeef2d-0497-44d9-a8f9-6d5e40755b64",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Strategy Team",
       "notes": null,
       "statement": "Our platform is referenced in university courses as the gold standard for cloud-native architecture",
-      "driver_id": "drv2-2328bfde-a0da-43f5-ab24-071d37b3d1a6",
+      "driver_id": "2328bfde-a0da-43f5-ab24-071d37b3d1a6",
       "is_stakeholder_voice": true,
       "boldness_score": null
     },
     {
-      "id": "int5-933bf88a-e20d-488e-9322-f9af83c0649d",
+      "id": "933bf88a-e20d-488e-9322-f9af83c0649d",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Strategy Team",
       "notes": null,
       "statement": "Top graduates from leading tech schools list us as their dream employer above FAANG companies",
-      "driver_id": "drv3-8486b7a3-9653-4ac9-a62d-d3ee4687812c",
+      "driver_id": "8486b7a3-9653-4ac9-a62d-d3ee4687812c",
       "is_stakeholder_voice": true,
       "boldness_score": null
     },
     {
-      "id": "int6-d43eba32-38e8-4ce3-9e2c-eed59e390a8a",
+      "id": "d43eba32-38e8-4ce3-9e2c-eed59e390a8a",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Strategy Team",
       "notes": null,
       "statement": "Industry analysts name us as a visionary leader in three separate Gartner Magic Quadrants",
-      "driver_id": "drv4-a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "driver_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       "is_stakeholder_voice": true,
       "boldness_score": null
     }
   ],
   "enablers": [
     {
-      "id": "enb1-8e849176-c83a-41f0-adba-a11752f16edf",
+      "id": "8e849176-c83a-41f0-adba-a11752f16edf",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Strategy Team",
       "notes": null,
       "name": "AI-Powered Development Platform",
       "description": "Next-generation low-code/no-code platform with AI assistance for rapid application development",
-      "driver_ids": ["drv2-2328bfde-a0da-43f5-ab24-071d37b3d1a6", "drv1-6d34d427-1fea-4530-8496-f4efdd02757f"],
+      "driver_ids": [
+        "2328bfde-a0da-43f5-ab24-071d37b3d1a6",
+        "6d34d427-1fea-4530-8496-f4efdd02757f"
+      ],
       "enabler_type": "Technology & Data"
     },
     {
-      "id": "enb2-31ab541f-c5e6-4f6a-acac-0373ea231bf4",
+      "id": "31ab541f-c5e6-4f6a-acac-0373ea231bf4",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Strategy Team",
       "notes": null,
       "name": "Innovation Labs Network",
       "description": "Global network of innovation labs in 5 cities for co-creation with clients and technology partners",
-      "driver_ids": ["drv1-6d34d427-1fea-4530-8496-f4efdd02757f", "drv4-a1b2c3d4-e5f6-7890-abcd-ef1234567890"],
+      "driver_ids": [
+        "6d34d427-1fea-4530-8496-f4efdd02757f",
+        "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+      ],
       "enabler_type": "Partnerships & Resources"
     },
     {
-      "id": "enb3-9817fac0-fb96-4f58-80cd-0c8a8910a524",
+      "id": "9817fac0-fb96-4f58-80cd-0c8a8910a524",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Strategy Team",
       "notes": null,
       "name": "Academy of Excellence",
       "description": "Internal university offering 200+ courses, certifications, and personalized learning paths",
-      "driver_ids": ["drv3-8486b7a3-9653-4ac9-a62d-d3ee4687812c"],
+      "driver_ids": [
+        "8486b7a3-9653-4ac9-a62d-d3ee4687812c"
+      ],
       "enabler_type": "People & Culture"
     },
     {
-      "id": "enb4-c1d2e3f4-a5b6-7890-c1d2-e3f456789012",
+      "id": "c1d2e3f4-a5b6-7890-c1d2-e3f456789012",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Strategy Team",
       "notes": null,
       "name": "Agile@Scale Framework",
       "description": "Standardized agile delivery methodology optimized for distributed teams and complex projects",
-      "driver_ids": ["drv1-6d34d427-1fea-4530-8496-f4efdd02757f", "drv2-2328bfde-a0da-43f5-ab24-071d37b3d1a6"],
+      "driver_ids": [
+        "6d34d427-1fea-4530-8496-f4efdd02757f",
+        "2328bfde-a0da-43f5-ab24-071d37b3d1a6"
+      ],
       "enabler_type": "Process & Operations"
     }
   ],
   "iconic_commitments": [
     {
-      "id": "cmt1-de596549-a0d8-4bfd-9b9d-16b3e7bae721",
+      "id": "de596549-a0d8-4bfd-9b9d-16b3e7bae721",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Executive Team",
@@ -309,8 +336,11 @@
       "description": "Release next-generation AI development platform with natural language programming and auto-scaling",
       "horizon": "H1",
       "target_date": "Q3 2026",
-      "primary_driver_id": "drv2-2328bfde-a0da-43f5-ab24-071d37b3d1a6",
-      "primary_intent_ids": ["int3-e6f0c601-379e-402f-be45-fe669ddcd8b0", "int4-4bfeef2d-0497-44d9-a8f9-6d5e40755b64"],
+      "primary_driver_id": "2328bfde-a0da-43f5-ab24-071d37b3d1a6",
+      "primary_intent_ids": [
+        "e6f0c601-379e-402f-be45-fe669ddcd8b0",
+        "4bfeef2d-0497-44d9-a8f9-6d5e40755b64"
+      ],
       "secondary_alignments": [],
       "is_time_bound": true,
       "is_tangible": true,
@@ -318,7 +348,7 @@
       "owner": "Chief Product Officer"
     },
     {
-      "id": "cmt2-2d3f514f-da80-4e43-b6c1-1aba013d7a38",
+      "id": "2d3f514f-da80-4e43-b6c1-1aba013d7a38",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Executive Team",
@@ -327,8 +357,11 @@
       "description": "Reach and maintain 95%+ Net Promoter Score across all client accounts",
       "horizon": "H1",
       "target_date": "Q4 2026",
-      "primary_driver_id": "drv1-6d34d427-1fea-4530-8496-f4efdd02757f",
-      "primary_intent_ids": ["int1-ab7d8eb9-d117-4350-9876-e7dd7a7f553b", "int2-54988ac9-27a8-44a7-949a-6e566ee0e81f"],
+      "primary_driver_id": "6d34d427-1fea-4530-8496-f4efdd02757f",
+      "primary_intent_ids": [
+        "ab7d8eb9-d117-4350-9876-e7dd7a7f553b",
+        "54988ac9-27a8-44a7-949a-6e566ee0e81f"
+      ],
       "secondary_alignments": [],
       "is_time_bound": true,
       "is_tangible": true,
@@ -336,7 +369,7 @@
       "owner": "Chief Customer Officer"
     },
     {
-      "id": "cmt3-8466e2f9-4c4f-49ce-8619-e4f9d10e533b",
+      "id": "8466e2f9-4c4f-49ce-8619-e4f9d10e533b",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Executive Team",
@@ -345,8 +378,10 @@
       "description": "Establish 3 innovation labs in Singapore, Tokyo, and Sydney with full R&D capabilities",
       "horizon": "H2",
       "target_date": "Q2 2027",
-      "primary_driver_id": "drv4-a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "primary_intent_ids": ["int6-d43eba32-38e8-4ce3-9e2c-eed59e390a8a"],
+      "primary_driver_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "primary_intent_ids": [
+        "d43eba32-38e8-4ce3-9e2c-eed59e390a8a"
+      ],
       "secondary_alignments": [],
       "is_time_bound": true,
       "is_tangible": true,
@@ -354,7 +389,7 @@
       "owner": "SVP Global Expansion"
     },
     {
-      "id": "cmt4-cbb455ad-c54f-43e6-ac12-e0848031fe41",
+      "id": "cbb455ad-c54f-43e6-ac12-e0848031fe41",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Executive Team",
@@ -363,8 +398,10 @@
       "description": "Grow engineering headcount from 200 to 500 with 40%+ from underrepresented groups",
       "horizon": "H2",
       "target_date": "Q4 2027",
-      "primary_driver_id": "drv3-8486b7a3-9653-4ac9-a62d-d3ee4687812c",
-      "primary_intent_ids": ["int5-933bf88a-e20d-488e-9322-f9af83c0649d"],
+      "primary_driver_id": "8486b7a3-9653-4ac9-a62d-d3ee4687812c",
+      "primary_intent_ids": [
+        "933bf88a-e20d-488e-9322-f9af83c0649d"
+      ],
       "secondary_alignments": [],
       "is_time_bound": true,
       "is_tangible": true,
@@ -372,7 +409,7 @@
       "owner": "Chief People Officer"
     },
     {
-      "id": "cmt5-42783472-56d3-4803-8c43-6ab3f33a261b",
+      "id": "42783472-56d3-4803-8c43-6ab3f33a261b",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Executive Team",
@@ -381,8 +418,10 @@
       "description": "Reach net-zero carbon emissions across all operations and offset 100% of client project emissions",
       "horizon": "H3",
       "target_date": "Q4 2028",
-      "primary_driver_id": "drv1-6d34d427-1fea-4530-8496-f4efdd02757f",
-      "primary_intent_ids": ["int1-ab7d8eb9-d117-4350-9876-e7dd7a7f553b"],
+      "primary_driver_id": "6d34d427-1fea-4530-8496-f4efdd02757f",
+      "primary_intent_ids": [
+        "ab7d8eb9-d117-4350-9876-e7dd7a7f553b"
+      ],
       "secondary_alignments": [],
       "is_time_bound": true,
       "is_tangible": true,
@@ -392,7 +431,7 @@
   ],
   "team_objectives": [
     {
-      "id": "tobj1-4e0143f8-7807-439b-9033-6c35e314bec1",
+      "id": "4e0143f8-7807-439b-9033-6c35e314bec1",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Product Team",
@@ -400,13 +439,17 @@
       "name": "Deliver AI Platform Beta",
       "description": "Complete beta version with 50+ early access customers and 90% feature completeness",
       "team_name": "Platform Engineering",
-      "primary_commitment_id": "cmt1-de596549-a0d8-4bfd-9b9d-16b3e7bae721",
+      "primary_commitment_id": "de596549-a0d8-4bfd-9b9d-16b3e7bae721",
       "secondary_commitment_ids": [],
-      "metrics": ["Feature completeness %", "Beta user count", "Platform stability score"],
+      "metrics": [
+        "Feature completeness %",
+        "Beta user count",
+        "Platform stability score"
+      ],
       "owner": "VP Engineering"
     },
     {
-      "id": "tobj2-5715a9c9-4cba-45fc-b200-72ecf18dea9e",
+      "id": "5715a9c9-4cba-45fc-b200-72ecf18dea9e",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Customer Success Team",
@@ -414,13 +457,17 @@
       "name": "Launch Quarterly Business Reviews",
       "description": "Implement data-driven QBRs with all enterprise clients showcasing ROI and expansion opportunities",
       "team_name": "Customer Success",
-      "primary_commitment_id": "cmt2-2d3f514f-da80-4e43-b6c1-1aba013d7a38",
+      "primary_commitment_id": "2d3f514f-da80-4e43-b6c1-1aba013d7a38",
       "secondary_commitment_ids": [],
-      "metrics": ["QBR completion rate", "NPS score", "Upsell conversion %"],
+      "metrics": [
+        "QBR completion rate",
+        "NPS score",
+        "Upsell conversion %"
+      ],
       "owner": "Director of Customer Success"
     },
     {
-      "id": "tobj3-a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Global Expansion Team",
@@ -428,13 +475,17 @@
       "name": "Establish Singapore Lab",
       "description": "Open and staff Singapore innovation lab with 20 team members and 5 pilot clients",
       "team_name": "APAC Expansion",
-      "primary_commitment_id": "cmt3-8466e2f9-4c4f-49ce-8619-e4f9d10e533b",
+      "primary_commitment_id": "8466e2f9-4c4f-49ce-8619-e4f9d10e533b",
       "secondary_commitment_ids": [],
-      "metrics": ["Lab operational status", "Team headcount", "Pilot client count"],
+      "metrics": [
+        "Lab operational status",
+        "Team headcount",
+        "Pilot client count"
+      ],
       "owner": "APAC Regional Director"
     },
     {
-      "id": "tobj4-b2c3d4e5-f6a7-8901-bcde-f2345678901a",
+      "id": "b2c3d4e5-f6a7-8901-bcde-f2345678901a",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Talent Team",
@@ -442,15 +493,19 @@
       "name": "Hire 150 Engineers in H1",
       "description": "Recruit 150 senior and mid-level engineers with focus on diverse talent pipeline",
       "team_name": "Talent Acquisition",
-      "primary_commitment_id": "cmt4-cbb455ad-c54f-43e6-ac12-e0848031fe41",
+      "primary_commitment_id": "cbb455ad-c54f-43e6-ac12-e0848031fe41",
       "secondary_commitment_ids": [],
-      "metrics": ["Headcount growth", "Diversity %", "Time to hire"],
+      "metrics": [
+        "Headcount growth",
+        "Diversity %",
+        "Time to hire"
+      ],
       "owner": "Head of Talent Acquisition"
     }
   ],
   "individual_objectives": [
     {
-      "id": "iobj1-f1e2d3c4-b5a6-9807-fedc-ba9876543210",
+      "id": "f1e2d3c4-b5a6-9807-fedc-ba9876543210",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "John Chen",
@@ -458,7 +513,9 @@
       "name": "Lead Natural Language Interface Development",
       "description": "Design and implement the NLP engine for natural language programming feature in AI Platform v2.0",
       "individual_name": "John Chen - Senior ML Engineer",
-      "team_objective_ids": ["tobj1-4e0143f8-7807-439b-9033-6c35e314bec1"],
+      "team_objective_ids": [
+        "4e0143f8-7807-439b-9033-6c35e314bec1"
+      ],
       "success_criteria": [
         "NLP engine processes 95%+ of common programming requests accurately",
         "Integration completed 2 weeks before beta launch",
@@ -466,7 +523,7 @@
       ]
     },
     {
-      "id": "iobj2-e2d3c4f5-a6b7-9018-edcb-a98765432109",
+      "id": "e2d3c4f5-a6b7-9018-edcb-a98765432109",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Sarah Martinez",
@@ -474,7 +531,9 @@
       "name": "Design Enterprise Client QBR Template",
       "description": "Create standardized, data-driven QBR template and train all CSMs on delivery",
       "individual_name": "Sarah Martinez - Customer Success Manager",
-      "team_objective_ids": ["tobj2-5715a9c9-4cba-45fc-b200-72ecf18dea9e"],
+      "team_objective_ids": [
+        "5715a9c9-4cba-45fc-b200-72ecf18dea9e"
+      ],
       "success_criteria": [
         "Template adopted by 100% of enterprise accounts",
         "Average QBR rating of 4.5/5 from clients",
@@ -482,7 +541,7 @@
       ]
     },
     {
-      "id": "iobj3-d3c4f5a6-b798-0129-dcba-987654321098",
+      "id": "d3c4f5a6-b798-0129-dcba-987654321098",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Raj Patel",
@@ -490,7 +549,9 @@
       "name": "Secure Singapore Lab Location and Permits",
       "description": "Negotiate lease for Singapore lab space and obtain all necessary business permits",
       "individual_name": "Raj Patel - Regional Operations Manager",
-      "team_objective_ids": ["tobj3-a1b2c3d4-e5f6-7890-abcd-ef1234567890"],
+      "team_objective_ids": [
+        "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+      ],
       "success_criteria": [
         "Lease signed by end of Q1 2027",
         "All permits secured within 45 days of lease signing",
@@ -498,7 +559,7 @@
       ]
     },
     {
-      "id": "iobj4-c4f5a6b7-9801-2aed-cba9-876543210987",
+      "id": "c4f5a6b7-9801-2aed-cba9-876543210987",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Michelle Kim",
@@ -506,7 +567,9 @@
       "name": "Build University Partnership Program",
       "description": "Establish partnerships with 10 top CS programs for campus recruiting and internships",
       "individual_name": "Michelle Kim - University Relations Lead",
-      "team_objective_ids": ["tobj4-b2c3d4e5-f6a7-8901-bcde-f2345678901a"],
+      "team_objective_ids": [
+        "b2c3d4e5-f6a7-8901-bcde-f2345678901a"
+      ],
       "success_criteria": [
         "Partnerships signed with 10 universities",
         "50+ intern applications received per semester",
@@ -514,7 +577,7 @@
       ]
     },
     {
-      "id": "iobj5-f5a6b798-0123-bedc-a987-654321098765",
+      "id": "f5a6b798-0123-bedc-a987-654321098765",
       "created_at": "2026-01-20T10:00:00.000000",
       "updated_at": "2026-01-20T10:00:00.000000",
       "created_by": "Alex Thompson",
@@ -522,7 +585,9 @@
       "name": "Onboard 25 Beta Platform Users",
       "description": "Recruit, onboard, and support 25 enterprise beta users for AI Platform v2.0",
       "individual_name": "Alex Thompson - Developer Advocate",
-      "team_objective_ids": ["tobj1-4e0143f8-7807-439b-9033-6c35e314bec1"],
+      "team_objective_ids": [
+        "4e0143f8-7807-439b-9033-6c35e314bec1"
+      ],
       "success_criteria": [
         "25 qualified beta users actively using platform",
         "Collect 100+ pieces of structured feedback",
