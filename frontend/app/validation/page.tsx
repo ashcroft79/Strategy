@@ -76,7 +76,7 @@ export default function ValidationPage() {
   const groupIssuesByCategory = () => {
     if (!validationResult) return {};
 
-    const grouped: Record<string, typeof validationResult.issues> = {};
+    const grouped: Record<string, ValidationResult["issues"]> = {};
     validationResult.issues.forEach((issue) => {
       const category = issue.category || "Other";
       if (!grouped[category]) {
@@ -87,7 +87,7 @@ export default function ValidationPage() {
     return grouped;
   };
 
-  const getFilteredIssues = (issues: typeof validationResult.issues) => {
+  const getFilteredIssues = (issues: ValidationResult["issues"]) => {
     if (filterLevel === "all") return issues;
     return issues.filter((issue) => issue.level === filterLevel);
   };
