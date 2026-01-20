@@ -511,6 +511,13 @@ export const exportsApi = {
     });
     return data;
   },
+
+  async downloadAIGuide(): Promise<Blob> {
+    const { data } = await api.get(`/api/exports/ai-guide`, {
+      responseType: "blob",
+    });
+    return data;
+  },
 };
 
 // ============================================================================
