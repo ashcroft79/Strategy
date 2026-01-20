@@ -993,193 +993,68 @@ export default function BuilderPage() {
 
             {/* Enablers Content */}
             {activeTier === "enablers" && (
-            <div id="tier-enablers" className="card scroll-mt-6">
-              <h2 className="text-2xl font-bold mb-4">Tier 6: Enablers</h2>
-              <p className="text-gray-600 mb-4">What capabilities we need - people, processes, technology</p>
+              <>
+                <TierHeader
+                  tierName="Enablers"
+                  tierDescription="Foundational capabilities required to execute your strategy - people, processes, technology, and partnerships."
+                  itemCount={pyramid.enablers?.length || 0}
+                  variant="purple"
+                  onAddNew={() => openAddModal('enabler')}
+                  onBack={() => setActiveTier(undefined)}
+                />
 
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
-                <p className="text-sm text-purple-900">
-                  <strong>💡 Guidance:</strong> Enablers are the foundational capabilities required to execute your strategy.
-                  They typically fall into categories like People & Culture, Processes & Operations, Technology & Data,
-                  or Partnerships & Resources. Link enablers to the strategic drivers they support.
-                </p>
-              </div>
+                <div className="space-y-4">
+                  {pyramid.enablers?.map((enabler) => {
+                    // Upstream connections to drivers
+                    const upstreamConnections = enabler.driver_ids
+                      ?.map((driverId) => {
+                        const driver = pyramid.strategic_drivers.find((d) => d.id === driverId);
+                        return driver ? {
+                          id: driver.id,
+                          name: driver.name,
+                          type: 'upstream' as const,
+                        } : null;
+                      })
+                      .filter((conn): conn is NonNullable<typeof conn> => conn !== null) || [];
 
-              <div className="space-y-3 mb-4">
-                {pyramid.enablers?.map((enabler) => (
-                  <div key={enabler.id} className="p-4 bg-purple-50 rounded-lg">
-                    {editingId === enabler.id && editType === "enabler" ? (
-                      // Edit mode
-                      <div className="space-y-3">
-                        <Input
-                          label="Enabler Name"
-                          value={editFormData.name || ""}
-                          onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                        />
-                        <Textarea
-                          label="Description"
-                          value={editFormData.description || ""}
-                          onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
-                          rows={3}
-                        />
+                    return (
+                      <TierCard
+                        key={enabler.id}
+                        variant="purple"
+                        connections={upstreamConnections}
+                        onEdit={() => openEditModal('enabler', enabler.id, enabler)}
+                        onDelete={() => handleDeleteEnabler(enabler.id)}
+                      >
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Enabler Type (Optional)
-                          </label>
-                          <select
-                            className="input"
-                            value={editFormData.enabler_type || ""}
-                            onChange={(e) => setEditFormData({ ...editFormData, enabler_type: e.target.value })}
-                          >
-                            <option value="">Select type...</option>
-                            <option value="People & Culture">People & Culture</option>
-                            <option value="Process & Operations">Process & Operations</option>
-                            <option value="Technology & Data">Technology & Data</option>
-                            <option value="Partnerships & Resources">Partnerships & Resources</option>
-                          </select>
-                        </div>
-                        {pyramid.strategic_drivers.length > 0 && (
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Link to Strategic Drivers (optional)
-                            </label>
-                            <div className="grid md:grid-cols-2 gap-2">
-                              {pyramid.strategic_drivers.map((driver) => (
-                                <label key={driver.id} className="flex items-center gap-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
-                                  <input
-                                    type="checkbox"
-                                    checked={(editFormData.driver_ids || []).includes(driver.id)}
-                                    onChange={(e) => {
-                                      const currentIds = editFormData.driver_ids || [];
-                                      const newIds = e.target.checked
-                                        ? [...currentIds, driver.id]
-                                        : currentIds.filter((id: string) => id !== driver.id);
-                                      setEditFormData({ ...editFormData, driver_ids: newIds });
-                                    }}
-                                    className="rounded"
-                                  />
-                                  <span className="text-sm font-medium">{driver.name}</span>
-                                </label>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        <div className="flex gap-2">
-                          <Button onClick={() => handleSaveEdit("enabler")} size="sm">
-                            <Save className="w-4 h-4 mr-1" />
-                            Save
-                          </Button>
-                          <Button onClick={cancelEdit} variant="ghost" size="sm">
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      // Display mode
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
                           <div className="flex items-start justify-between mb-2">
-                            <div className="font-bold text-purple-900">{enabler.name}</div>
+                            <div className="text-lg font-bold text-purple-900">{enabler.name}</div>
                             {enabler.enabler_type && (
-                              <span className="px-2 py-1 bg-purple-200 text-purple-800 rounded text-xs">
+                              <span className="px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-xs font-medium">
                                 {enabler.enabler_type}
                               </span>
                             )}
                           </div>
-                          <div className="text-gray-700 mb-2">{enabler.description}</div>
-                          {enabler.driver_ids && enabler.driver_ids.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                              {enabler.driver_ids.map((driverId) => {
-                                const driver = pyramid.strategic_drivers.find((d) => d.id === driverId);
-                                return driver ? (
-                                  <span
-                                    key={driverId}
-                                    className="px-2 py-1 bg-purple-200 text-purple-800 rounded text-xs"
-                                  >
-                                    {driver.name}
-                                  </span>
-                                ) : null;
-                              })}
-                            </div>
-                          )}
+                          <div className="text-gray-700 leading-relaxed">
+                            {enabler.description}
+                          </div>
                         </div>
-                        <div className="flex gap-1 ml-3 flex-shrink-0">
-                          <button
-                            onClick={() => startEdit(enabler.id, "enabler", enabler)}
-                            className="p-2 text-blue-600 hover:bg-blue-100 rounded transition-colors"
-                            title="Edit enabler"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteEnabler(enabler.id)}
-                            className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
-                            title="Delete enabler"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+                      </TierCard>
+                    );
+                  })}
 
-              <form onSubmit={handleAddEnabler} className="space-y-3">
-                <Input
-                  label="Enabler Name"
-                  value={enablerName}
-                  onChange={(e) => setEnablerName(e.target.value)}
-                  placeholder="e.g., Advanced Analytics Platform"
-                  required
-                />
-                <Textarea
-                  label="Description"
-                  value={enablerDescription}
-                  onChange={(e) => setEnablerDescription(e.target.value)}
-                  placeholder="What this enabler provides and why it's needed..."
-                  rows={3}
-                  required
-                />
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Enabler Type (Optional)
-                  </label>
-                  <select
-                    className="input"
-                    value={enablerType}
-                    onChange={(e) => setEnablerType(e.target.value)}
-                  >
-                    <option value="">Select type...</option>
-                    <option value="People & Culture">People & Culture</option>
-                    <option value="Process & Operations">Process & Operations</option>
-                    <option value="Technology & Data">Technology & Data</option>
-                    <option value="Partnerships & Resources">Partnerships & Resources</option>
-                  </select>
-                </div>
-                {pyramid.strategic_drivers.length > 0 && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Link to Strategic Drivers (optional, select one or more)
-                    </label>
-                    <div className="grid md:grid-cols-2 gap-2">
-                      {pyramid.strategic_drivers.map((driver) => (
-                        <label key={driver.id} className="flex items-center gap-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={selectedDriverIds.includes(driver.id)}
-                            onChange={() => toggleDriverSelection(driver.id)}
-                            className="rounded"
-                          />
-                          <span className="text-sm font-medium">{driver.name}</span>
-                        </label>
-                      ))}
+                  {(!pyramid.enablers || pyramid.enablers.length === 0) && (
+                    <div className="text-center py-12 bg-purple-50 rounded-xl border-2 border-dashed border-purple-200">
+                      <div className="text-4xl mb-3">🛠️</div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No enablers yet</h3>
+                      <p className="text-gray-600 mb-4">Define the capabilities needed to execute your strategy</p>
+                      <Button onClick={() => openAddModal('enabler')}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add First Enabler
+                      </Button>
                     </div>
-                  </div>
-                )}
-                <Button type="submit">Add Enabler</Button>
-              </form>
-            </div>
+                  )}
+                </div>
+              </>
             )}
 
             {/* Iconic Commitments Content */}
@@ -1983,6 +1858,101 @@ export default function BuilderPage() {
               </Button>
               <Button type="submit">
                 {modalMode === 'add' ? 'Add Intent' : 'Save Changes'}
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {/* Enabler Form */}
+        {modalItemType === 'enabler' && (
+          <form onSubmit={modalMode === 'add' ? handleAddEnabler : (e) => { e.preventDefault(); handleSaveEdit('enabler'); }} className="space-y-4">
+            <Input
+              label="Enabler Name"
+              value={modalMode === 'edit' ? editFormData.name : enablerName}
+              onChange={(e) => {
+                if (modalMode === 'edit') {
+                  setEditFormData({ ...editFormData, name: e.target.value });
+                } else {
+                  setEnablerName(e.target.value);
+                }
+              }}
+              placeholder="e.g., Advanced Analytics Platform"
+              required
+            />
+            <Textarea
+              label="Description"
+              value={modalMode === 'edit' ? editFormData.description : enablerDescription}
+              onChange={(e) => {
+                if (modalMode === 'edit') {
+                  setEditFormData({ ...editFormData, description: e.target.value });
+                } else {
+                  setEnablerDescription(e.target.value);
+                }
+              }}
+              placeholder="What this enabler provides and why it's needed..."
+              rows={3}
+              required
+            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Enabler Type (Optional)
+              </label>
+              <select
+                className="input"
+                value={modalMode === 'edit' ? editFormData.enabler_type : enablerType}
+                onChange={(e) => {
+                  if (modalMode === 'edit') {
+                    setEditFormData({ ...editFormData, enabler_type: e.target.value });
+                  } else {
+                    setEnablerType(e.target.value);
+                  }
+                }}
+              >
+                <option value="">Select type...</option>
+                <option value="People & Culture">People & Culture</option>
+                <option value="Process & Operations">Process & Operations</option>
+                <option value="Technology & Data">Technology & Data</option>
+                <option value="Partnerships & Resources">Partnerships & Resources</option>
+              </select>
+            </div>
+            {pyramid.strategic_drivers.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Link to Strategic Drivers (optional)
+                </label>
+                <div className="grid md:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                  {pyramid.strategic_drivers.map((driver) => (
+                    <label key={driver.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={modalMode === 'edit'
+                          ? (editFormData.driver_ids || []).includes(driver.id)
+                          : selectedDriverIds.includes(driver.id)}
+                        onChange={() => {
+                          if (modalMode === 'edit') {
+                            const currentIds = editFormData.driver_ids || [];
+                            const newIds = currentIds.includes(driver.id)
+                              ? currentIds.filter((id: string) => id !== driver.id)
+                              : [...currentIds, driver.id];
+                            setEditFormData({ ...editFormData, driver_ids: newIds });
+                          } else {
+                            toggleDriverSelection(driver.id);
+                          }
+                        }}
+                        className="rounded"
+                      />
+                      <span className="text-sm font-medium">{driver.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="flex gap-3 justify-end pt-4 border-t">
+              <Button type="button" variant="ghost" onClick={closeModal}>
+                Cancel
+              </Button>
+              <Button type="submit">
+                {modalMode === 'add' ? 'Add Enabler' : 'Save Changes'}
               </Button>
             </div>
           </form>
