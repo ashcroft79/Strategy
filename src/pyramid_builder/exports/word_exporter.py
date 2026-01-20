@@ -272,6 +272,89 @@ class WordExporter:
 
                         self.doc.add_paragraph()  # Spacing
 
+        # Add team objectives if present (NEW in v0.4.0)
+        if self.pyramid.team_objectives:
+            self.doc.add_page_break()
+            self.doc.add_heading('Team Objectives', level=1)
+            self.doc.add_paragraph('Departmental goals that cascade from our commitments and intents').italic = True
+
+            # Group by team
+            teams = {}
+            for obj in self.pyramid.team_objectives:
+                if obj.team_name not in teams:
+                    teams[obj.team_name] = []
+                teams[obj.team_name].append(obj)
+
+            for team_name, objectives in teams.items():
+                self.doc.add_heading(team_name, level=2)
+
+                for obj in objectives:
+                    self.doc.add_heading(obj.name, level=3)
+                    self.doc.add_paragraph(obj.description)
+
+                    if obj.metrics:
+                        self.doc.add_paragraph('Success Metrics:').bold = True
+                        for metric in obj.metrics:
+                            self.doc.add_paragraph(metric, style='List Bullet')
+
+                    # Show relationships
+                    relationships = []
+                    if obj.primary_commitment_id:
+                        commitment = self.pyramid.get_commitment_by_id(obj.primary_commitment_id)
+                        if commitment:
+                            relationships.append(f"Commitment: {commitment.name}")
+
+                    if obj.primary_intent_id:
+                        intent = self.pyramid.get_intent_by_id(obj.primary_intent_id)
+                        if intent:
+                            relationships.append(f"Intent: {intent.statement[:50]}...")
+
+                    if relationships:
+                        p = self.doc.add_paragraph()
+                        p.add_run(f"Supports: {' | '.join(relationships)}").italic = True
+
+                    self.doc.add_paragraph()  # Spacing
+
+        # Add individual objectives if present (NEW in v0.4.0)
+        if self.pyramid.individual_objectives:
+            self.doc.add_page_break()
+            self.doc.add_heading('Individual Objectives', level=1)
+            self.doc.add_paragraph('Personal contributions that support team objectives').italic = True
+
+            # Group by individual
+            individuals = {}
+            for obj in self.pyramid.individual_objectives:
+                if obj.individual_name not in individuals:
+                    individuals[obj.individual_name] = []
+                individuals[obj.individual_name].append(obj)
+
+            for individual_name, objectives in individuals.items():
+                self.doc.add_heading(individual_name, level=2)
+
+                for obj in objectives:
+                    self.doc.add_heading(obj.name, level=3)
+                    self.doc.add_paragraph(obj.description)
+
+                    if obj.success_criteria:
+                        self.doc.add_paragraph('Success Criteria:').bold = True
+                        for criterion in obj.success_criteria:
+                            self.doc.add_paragraph(criterion, style='List Bullet')
+
+                    # Show which team objectives this supports
+                    if obj.team_objective_ids:
+                        team_objs = []
+                        for team_id in obj.team_objective_ids:
+                            team_obj = next((to for to in self.pyramid.team_objectives if to.id == team_id), None)
+                            if team_obj:
+                                team_objs.append(f"{team_obj.team_name}: {team_obj.name}")
+
+                        if team_objs:
+                            p = self.doc.add_paragraph()
+                            p.add_run('Supports Team Objectives: ').bold = True
+                            p.add_run(' | '.join(team_objs)).italic = True
+
+                    self.doc.add_paragraph()  # Spacing
+
         # Distribution Analysis
         if self.pyramid.iconic_commitments:
             self.doc.add_page_break()
@@ -406,6 +489,16 @@ class WordExporter:
                     p = self.doc.add_paragraph(style='List Bullet')
                     p.add_run(intent.statement).italic = True
 
+                    # Show related team objectives linked to this intent (NEW in v0.4.0)
+                    related_objectives = [
+                        obj for obj in self.pyramid.team_objectives
+                        if obj.primary_intent_id == intent.id
+                    ]
+                    if related_objectives:
+                        for obj in related_objectives:
+                            sub_p = self.doc.add_paragraph(style='List Bullet 3')
+                            sub_p.add_run(f"{obj.team_name}: {obj.name}")
+
             # Commitments
             commitments = self.pyramid.get_commitments_by_driver(driver.id, primary_only=True)
             if commitments:
@@ -416,7 +509,7 @@ class WordExporter:
                     if commitment.target_date:
                         p.add_run(f" ({commitment.target_date})")
 
-                    # Show related team objectives
+                    # Show related team objectives linked to this commitment
                     related_objectives = [
                         obj for obj in self.pyramid.team_objectives
                         if obj.primary_commitment_id == commitment.id
@@ -425,3 +518,26 @@ class WordExporter:
                         for obj in related_objectives:
                             sub_p = self.doc.add_paragraph(style='List Bullet 3')
                             sub_p.add_run(f"{obj.team_name}: {obj.name}")
+
+        # Add individual objectives at the end (NEW in v0.4.0)
+        if self.pyramid.individual_objectives:
+            self.doc.add_page_break()
+            self.doc.add_heading('Individual Objectives', level=1)
+            self.doc.add_paragraph('Personal contributions to team objectives').italic = True
+
+            # Group by team objective
+            team_objectives_map = {}
+            for obj in self.pyramid.individual_objectives:
+                for team_id in obj.team_objective_ids:
+                    if team_id not in team_objectives_map:
+                        team_objectives_map[team_id] = []
+                    team_objectives_map[team_id].append(obj)
+
+            for team_id, individuals in team_objectives_map.items():
+                team_obj = next((to for to in self.pyramid.team_objectives if to.id == team_id), None)
+                if team_obj:
+                    self.doc.add_heading(f"Team: {team_obj.team_name} - {team_obj.name}", level=2)
+
+                    for ind_obj in individuals:
+                        p = self.doc.add_paragraph(style='List Bullet')
+                        p.add_run(f"{ind_obj.individual_name}: {ind_obj.name}").bold = True

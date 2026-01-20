@@ -334,6 +334,86 @@ class PowerPointExporter:
                 p.font.size = Pt(18)
                 p.level = 0
 
+        # Add team objectives if present (NEW in v0.4.0)
+        if self.pyramid.team_objectives:
+            self._add_section_divider("Team Objectives", "Departmental goals")
+
+            # Group by team
+            teams = {}
+            for obj in self.pyramid.team_objectives:
+                if obj.team_name not in teams:
+                    teams[obj.team_name] = []
+                teams[obj.team_name].append(obj)
+
+            for team_name, objectives in teams.items():
+                slide = self._add_content_slide(f"{team_name} Objectives")
+                text_frame = slide.placeholders[1].text_frame
+                text_frame.clear()
+
+                for obj in objectives[:4]:  # Max 4 per slide
+                    p = text_frame.add_paragraph()
+                    p.text = obj.name
+                    p.font.size = Pt(16)
+                    p.font.bold = True
+                    p.level = 0
+
+                    # Show relationships
+                    relationships = []
+                    if obj.primary_commitment_id:
+                        commitment = self.pyramid.get_commitment_by_id(obj.primary_commitment_id)
+                        if commitment:
+                            relationships.append(f"→ {commitment.name}")
+
+                    if obj.primary_intent_id:
+                        intent = self.pyramid.get_intent_by_id(obj.primary_intent_id)
+                        if intent:
+                            relationships.append(f"→ {intent.statement[:40]}...")
+
+                    if relationships:
+                        p2 = text_frame.add_paragraph()
+                        p2.text = f"Supports: {' | '.join(relationships)}"
+                        p2.font.size = Pt(11)
+                        p2.font.italic = True
+                        p2.level = 1
+
+        # Add individual objectives if present (NEW in v0.4.0)
+        if self.pyramid.individual_objectives:
+            self._add_section_divider("Individual Objectives", "Personal contributions")
+
+            # Group by individual
+            individuals = {}
+            for obj in self.pyramid.individual_objectives:
+                if obj.individual_name not in individuals:
+                    individuals[obj.individual_name] = []
+                individuals[obj.individual_name].append(obj)
+
+            for individual_name, objectives in individuals.items():
+                slide = self._add_content_slide(f"{individual_name}'s Objectives")
+                text_frame = slide.placeholders[1].text_frame
+                text_frame.clear()
+
+                for obj in objectives[:3]:  # Max 3 per slide
+                    p = text_frame.add_paragraph()
+                    p.text = obj.name
+                    p.font.size = Pt(16)
+                    p.font.bold = True
+                    p.level = 0
+
+                    # Show which team objectives this supports
+                    if obj.team_objective_ids:
+                        team_objs = []
+                        for team_id in obj.team_objective_ids[:2]:  # Max 2
+                            team_obj = next((to for to in self.pyramid.team_objectives if to.id == team_id), None)
+                            if team_obj:
+                                team_objs.append(f"→ {team_obj.name}")
+
+                        if team_objs:
+                            p2 = text_frame.add_paragraph()
+                            p2.text = f"Supports: {' | '.join(team_objs)}"
+                            p2.font.size = Pt(11)
+                            p2.font.italic = True
+                            p2.level = 1
+
     def _generate_detailed_presentation(self):
         """Generate detailed presentation (25-30 slides)."""
         # Start with leadership presentation

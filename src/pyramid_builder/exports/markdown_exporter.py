@@ -266,6 +266,94 @@ class MarkdownExporter:
                                 lines.append(f"*Also contributes to: {', '.join(secondary_drivers)}*")
                                 lines.append("")
 
+        # Team objectives if present (NEW in v0.4.0)
+        if self.pyramid.team_objectives:
+            lines.append("---")
+            lines.append("")
+            lines.append("## Team Objectives")
+            lines.append("*Departmental goals that cascade from our commitments and intents*")
+            lines.append("")
+
+            # Group by team
+            teams = {}
+            for obj in self.pyramid.team_objectives:
+                if obj.team_name not in teams:
+                    teams[obj.team_name] = []
+                teams[obj.team_name].append(obj)
+
+            for team_name, objectives in teams.items():
+                lines.append(f"### {team_name}")
+                lines.append("")
+
+                for obj in objectives:
+                    lines.append(f"**{obj.name}**")
+                    lines.append("")
+                    lines.append(obj.description)
+                    lines.append("")
+
+                    if obj.metrics:
+                        lines.append("*Metrics:* " + " | ".join(obj.metrics))
+                        lines.append("")
+
+                    # Show relationships
+                    relationships = []
+                    if obj.primary_commitment_id:
+                        commitment = self.pyramid.get_commitment_by_id(obj.primary_commitment_id)
+                        if commitment:
+                            relationships.append(f"Commitment: {commitment.name}")
+
+                    if obj.primary_intent_id:
+                        intent = self.pyramid.get_intent_by_id(obj.primary_intent_id)
+                        if intent:
+                            relationships.append(f"Intent: {intent.statement[:50]}...")
+
+                    if relationships:
+                        lines.append(f"*Supports: {' | '.join(relationships)}*")
+                        lines.append("")
+
+        # Individual objectives if present (NEW in v0.4.0)
+        if self.pyramid.individual_objectives:
+            lines.append("---")
+            lines.append("")
+            lines.append("## Individual Objectives")
+            lines.append("*Personal contributions that support team objectives*")
+            lines.append("")
+
+            # Group by individual
+            individuals = {}
+            for obj in self.pyramid.individual_objectives:
+                if obj.individual_name not in individuals:
+                    individuals[obj.individual_name] = []
+                individuals[obj.individual_name].append(obj)
+
+            for individual_name, objectives in individuals.items():
+                lines.append(f"### {individual_name}")
+                lines.append("")
+
+                for obj in objectives:
+                    lines.append(f"**{obj.name}**")
+                    lines.append("")
+                    lines.append(obj.description)
+                    lines.append("")
+
+                    # Show which team objectives this supports
+                    if obj.team_objective_ids:
+                        team_objs = []
+                        for team_id in obj.team_objective_ids:
+                            team_obj = next((to for to in self.pyramid.team_objectives if to.id == team_id), None)
+                            if team_obj:
+                                team_objs.append(f"{team_obj.team_name}: {team_obj.name}")
+
+                        if team_objs:
+                            lines.append(f"*Supports: {' | '.join(team_objs)}*")
+                            lines.append("")
+
+                    if obj.success_criteria:
+                        lines.append("*Success Criteria:*")
+                        for criterion in obj.success_criteria:
+                            lines.append(f"- {criterion}")
+                        lines.append("")
+
         # Distribution Analysis
         if include_distribution and self.pyramid.iconic_commitments:
             lines.append("---")
@@ -405,6 +493,15 @@ class MarkdownExporter:
                 lines.append("### What Success Looks Like")
                 for intent in intents:
                     lines.append(f"- {intent.statement}")
+
+                    # Show related team objectives linked to this intent (NEW in v0.4.0)
+                    related_objectives = [
+                        obj for obj in self.pyramid.team_objectives
+                        if obj.primary_intent_id == intent.id
+                    ]
+                    if related_objectives:
+                        for obj in related_objectives:
+                            lines.append(f"  - {obj.team_name}: {obj.name}")
                 lines.append("")
 
             # Commitments
@@ -415,7 +512,7 @@ class MarkdownExporter:
                     target = f" ({commitment.target_date})" if commitment.target_date else ""
                     lines.append(f"- **{commitment.name}**{target}")
 
-                    # Show related team objectives
+                    # Show related team objectives linked to this commitment
                     related_objectives = [
                         obj for obj in self.pyramid.team_objectives
                         if obj.primary_commitment_id == commitment.id
@@ -425,6 +522,31 @@ class MarkdownExporter:
                             lines.append(f"  - {obj.team_name}: {obj.name}")
 
                 lines.append("")
+
+        # Add individual objectives at the end (NEW in v0.4.0)
+        if self.pyramid.individual_objectives:
+            lines.append("---")
+            lines.append("")
+            lines.append("## Individual Objectives")
+            lines.append("*Personal contributions to team objectives*")
+            lines.append("")
+
+            # Group by team objective
+            team_objectives_map = {}
+            for obj in self.pyramid.individual_objectives:
+                for team_id in obj.team_objective_ids:
+                    if team_id not in team_objectives_map:
+                        team_objectives_map[team_id] = []
+                    team_objectives_map[team_id].append(obj)
+
+            for team_id, individuals in team_objectives_map.items():
+                team_obj = next((to for to in self.pyramid.team_objectives if to.id == team_id), None)
+                if team_obj:
+                    lines.append(f"### Team: {team_obj.team_name} - {team_obj.name}")
+                    lines.append("")
+                    for ind_obj in individuals:
+                        lines.append(f"- **{ind_obj.individual_name}**: {ind_obj.name}")
+                    lines.append("")
 
         return "\n".join(lines)
 

@@ -289,11 +289,23 @@ class PyramidBuilder:
 
         if not suggestions:
             suggestions.append("✓ Pyramid structure looks good! Consider:")
-            suggestions.append("  - Add behaviours that demonstrate your values")
-            suggestions.append("  - Define enablers (systems, capabilities)")
-            suggestions.append("  - Add team and individual objectives")
-            suggestions.append("  - Run validation checks")
-            suggestions.append("  - Export your strategy")
+
+            # Only suggest missing optional items
+            if len(pyramid.behaviours) == 0:
+                suggestions.append("  - Add behaviours that demonstrate your values")
+
+            if len(pyramid.enablers) == 0:
+                suggestions.append("  - Define enablers (systems, capabilities, processes)")
+
+            if len(pyramid.team_objectives) == 0:
+                suggestions.append("  - Add team objectives to show departmental goals")
+
+            if len(pyramid.individual_objectives) == 0:
+                suggestions.append("  - Add individual objectives to show personal contributions")
+
+            # Always suggest these final actions
+            suggestions.append("  - Run validation checks to ensure quality")
+            suggestions.append("  - Export your strategy for sharing")
 
         return suggestions
 
