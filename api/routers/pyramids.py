@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from typing import Optional, List, Dict, Any
 from uuid import UUID
 import json
@@ -148,6 +148,14 @@ async def add_vision_statement(session_id: str, request: AddVisionStatementReque
         return statement.model_dump(mode="json")
     except HTTPException:
         raise
+    except ValidationError as e:
+        # Extract the first validation error message
+        errors = e.errors()
+        if errors:
+            field = errors[0].get('loc', ['unknown'])[-1]
+            msg = errors[0].get('msg', 'Validation error')
+            raise HTTPException(status_code=422, detail=f"{field}: {msg}")
+        raise HTTPException(status_code=422, detail="Validation error")
     except Exception as e:
         import traceback
         print(f"Error adding vision statement: {str(e)}")
@@ -342,6 +350,14 @@ async def add_strategic_driver(session_id: str, request: AddDriverRequest):
         return driver.model_dump(mode="json")
     except HTTPException:
         raise
+    except ValidationError as e:
+        # Extract the first validation error message
+        errors = e.errors()
+        if errors:
+            field = errors[0].get('loc', ['unknown'])[-1]
+            msg = errors[0].get('msg', 'Validation error')
+            raise HTTPException(status_code=422, detail=f"{field}: {msg}")
+        raise HTTPException(status_code=422, detail="Validation error")
     except Exception as e:
         import traceback
         print(f"Error adding driver: {str(e)}")

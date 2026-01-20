@@ -246,13 +246,19 @@ export default function BuilderPage() {
 
               <form onSubmit={handleAddVision} className="space-y-3">
                 <Textarea
-                  label="Vision Statement"
+                  label="Vision Statement (minimum 10 characters)"
                   value={visionStatement}
                   onChange={(e) => setVisionStatement(e.target.value)}
-                  placeholder="Our vision is to..."
+                  placeholder="Our vision is to transform the way organizations..."
                   rows={3}
+                  required
                 />
-                <Button type="submit">Add Vision</Button>
+                <div className="text-sm text-gray-600">
+                  {visionStatement.length}/10 characters (minimum)
+                </div>
+                <Button type="submit" disabled={visionStatement.length < 10}>
+                  Add Vision Statement
+                </Button>
               </form>
             </div>
 
@@ -310,19 +316,26 @@ export default function BuilderPage() {
 
               <form onSubmit={handleAddDriver} className="space-y-3">
                 <Input
-                  label="Driver Name"
+                  label="Driver Name (1-3 words recommended)"
                   value={driverName}
                   onChange={(e) => setDriverName(e.target.value)}
                   placeholder="e.g., Customer Experience, Innovation"
+                  required
                 />
                 <Textarea
-                  label="Description"
+                  label="Description (minimum 10 characters)"
                   value={driverDescription}
                   onChange={(e) => setDriverDescription(e.target.value)}
                   placeholder="What this driver means and why it matters..."
                   rows={3}
+                  required
                 />
-                <Button type="submit">Add Strategic Driver</Button>
+                <div className="text-sm text-gray-600">
+                  {driverDescription.length}/10 characters (minimum)
+                </div>
+                <Button type="submit" disabled={!driverName.trim() || driverDescription.length < 10}>
+                  Add Strategic Driver
+                </Button>
               </form>
             </div>
 
@@ -366,13 +379,19 @@ export default function BuilderPage() {
                     </select>
                   </div>
                   <Textarea
-                    label="Intent Statement"
+                    label="Intent Statement (minimum 20 characters)"
                     value={intentStatement}
                     onChange={(e) => setIntentStatement(e.target.value)}
-                    placeholder="What does success look like for this driver?"
+                    placeholder="What does success look like for this driver? Describe the aspirational future state..."
                     rows={3}
+                    required
                   />
-                  <Button type="submit">Add Strategic Intent</Button>
+                  <div className="text-sm text-gray-600">
+                    {intentStatement.length}/20 characters (minimum)
+                  </div>
+                  <Button type="submit" disabled={!selectedDriver || intentStatement.length < 20}>
+                    Add Strategic Intent
+                  </Button>
                 </form>
               ) : (
                 <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800">
