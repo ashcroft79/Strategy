@@ -33,9 +33,9 @@ This guide enables you to use any AI tool (ChatGPT, Claude, Gemini, etc.) to gen
 The strategic pyramid consists of 9 interconnected tiers:
 
 ### Tier 1: Vision (Foundation)
-**Purpose**: Your organization's fundamental purpose
-**Components**: Vision, Mission, and Belief statements
-**Example**: "To democratize financial services for underserved communities"
+**Purpose**: Your fundamental why statements, written passionately to inspire others
+**Components**: Vision, Mission, Aspiration and Belief statements
+**Example**: "To build a world where zero children go to bed hungry"
 
 ### Tier 2: Values (Culture)
 **Purpose**: Core principles guiding behavior
@@ -48,24 +48,24 @@ The strategic pyramid consists of 9 interconnected tiers:
 **Example**: "We speak up when we see something that conflicts with our values"
 
 ### Tier 4: Strategic Drivers (Focus Areas)
-**Purpose**: Key areas driving strategic success
-**Components**: 3-5 major strategic focus areas
-**Example**: "Customer Growth - Expand our customer base in priority segments"
+**Purpose**: Key areas or themes that are driving strategic success
+**Components**: 3-5 major strategic focus areas, must be at least one word and no more than three. Ideal structure is an Adjective + Noun, alterntively Adverb + Verb
+**Example**: "Exponential Growth - Expand our customer base in priority segments"
 
 ### Tier 5: Strategic Intents (Success Definition)
 **Purpose**: What success looks like for each driver
-**Components**: Outcome-focused statements per driver
-**Example**: "Achieve 40% market share in the SMB segment by 2026"
+**Components**: Bold, aspirational, stretching outcome-focused statements per driver. Statements that can be imagined and paint an end state picture
+**Example**: "Our data tells stories so clear, decisions become obvious"
 
 ### Tier 6: Enablers (Capabilities)
 **Purpose**: What makes strategy execution possible
-**Components**: People, processes, technology, partnerships
+**Components**: People, processes, systems/technology, partnerships
 **Example**: "AI-powered underwriting platform enabling real-time decisions"
 
 ### Tier 7: Iconic Commitments (Milestones)
 **Purpose**: Time-bound initiatives bringing strategy to life
-**Components**: Major commitments across 3 horizons (H1: 0-12mo, H2: 12-24mo, H3: 24-36mo)
-**Example**: "Launch mobile app in 5 new markets by Q3 2025"
+**Components**: Short, simple yet significant commitments across 3 horizons (H1: 0-12mo, H2: 12-24mo, H3: 24-36mo)
+**Example**: "Launch New Mobile App"
 
 ### Tier 8: Team Objectives (Departmental Goals)
 **Purpose**: How teams contribute to commitments
