@@ -43,29 +43,57 @@ def show():
 def show_validation_info():
     """Show information about validation checks."""
 
-    st.markdown("### What Gets Validated?")
+    st.markdown('<div style="margin: 2rem 0 1rem 0;"><h3 style="color: var(--text-primary); font-weight: 700; font-size: 1.5rem;">🔍 What Gets Validated?</h3></div>', unsafe_allow_html=True)
 
     st.markdown("""
-    The validation engine runs 8 comprehensive checks:
-    """)
+    <div style="
+        background: var(--info-light);
+        border-left: 4px solid var(--info-main);
+        padding: 1rem 1.25rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    ">
+        The validation engine runs <strong>8 comprehensive checks</strong> to ensure your pyramid is complete, coherent, and strategically sound.
+    </div>
+    """, unsafe_allow_html=True)
 
     checks = [
-        ("✓ Completeness", "All required sections are populated"),
-        ("✓ Structure", "Valid relationships between elements"),
-        ("✓ Orphaned Items", "No items without connections"),
-        ("✓ Balance", "Distribution across strategic drivers"),
-        ("✓ Language Quality", "Detection of vanilla corporate speak"),
-        ("✓ Weighting", "Primary alignment represents genuine strategic choice"),
-        ("✓ Cascade Alignment", "Proper top-to-bottom flow"),
-        ("✓ Commitment Quality", "Time-bound, tangible, measurable")
+        ("✓ Completeness", "All required sections are populated", "🎯"),
+        ("✓ Structure", "Valid relationships between elements", "🔗"),
+        ("✓ Orphaned Items", "No items without connections", "🔍"),
+        ("✓ Balance", "Distribution across strategic drivers", "⚖️"),
+        ("✓ Language Quality", "Detection of vanilla corporate speak", "📝"),
+        ("✓ Weighting", "Primary alignment represents genuine strategic choice", "💪"),
+        ("✓ Cascade Alignment", "Proper top-to-bottom flow", "⬇️"),
+        ("✓ Commitment Quality", "Time-bound, tangible, measurable", "📊")
     ]
 
-    for check_name, check_desc in checks:
-        with st.expander(check_name):
-            st.markdown(check_desc)
+    col1, col2 = st.columns(2, gap="large")
 
-    st.markdown("---")
-    st.markdown("Click **Run Validation** above to check your pyramid.")
+    for i, (check_name, check_desc, icon) in enumerate(checks):
+        with (col1 if i % 2 == 0 else col2):
+            st.markdown(f"""
+            <div style="
+                background: var(--card-bg);
+                padding: 1.25rem;
+                border-radius: 12px;
+                border: 2px solid var(--cream-300);
+                box-shadow: 0 2px 8px var(--card-shadow);
+                margin-bottom: 1rem;
+            ">
+                <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                    <div style="font-size: 1.5rem; margin-right: 0.75rem;">{icon}</div>
+                    <h4 style="color: var(--text-primary); font-weight: 700; margin: 0;">
+                        {check_name}
+                    </h4>
+                </div>
+                <p style="color: var(--text-secondary); margin: 0; font-size: 0.9375rem;">
+                    {check_desc}
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.markdown('<div style="margin: 2rem 0;"><p style="color: var(--text-secondary); text-align: center; font-size: 1rem;">Click <strong>Run Validation</strong> above to check your pyramid.</p></div>', unsafe_allow_html=True)
 
 
 def show_validation_results():
@@ -75,13 +103,43 @@ def show_validation_results():
 
     # Overall status
     if result.passed:
-        st.success(f"✅ **VALIDATION PASSED**")
-        st.markdown(f"Found {len(result.issues)} suggestions for improvement")
+        st.markdown(f"""
+        <div style="
+            background: linear-gradient(135deg, var(--success-light) 0%, var(--card-bg) 100%);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 2px solid var(--success-main);
+            margin-bottom: 2rem;
+            text-align: center;
+        ">
+            <div style="font-size: 3rem; margin-bottom: 0.5rem;">✅</div>
+            <h2 style="color: var(--text-primary); font-weight: 700; margin-bottom: 0.5rem;">
+                VALIDATION PASSED
+            </h2>
+            <p style="color: var(--text-secondary); font-size: 1.125rem; margin: 0;">
+                Found {len(result.issues)} suggestion{'s' if len(result.issues) != 1 else ''} for improvement
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
     else:
-        st.error(f"❌ **VALIDATION FAILED**")
-        st.markdown(f"Found {len(result.get_errors())} errors and {len(result.get_warnings())} warnings")
-
-    st.markdown("---")
+        st.markdown(f"""
+        <div style="
+            background: linear-gradient(135deg, var(--error-light) 0%, var(--card-bg) 100%);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 2px solid var(--error-main);
+            margin-bottom: 2rem;
+            text-align: center;
+        ">
+            <div style="font-size: 3rem; margin-bottom: 0.5rem;">❌</div>
+            <h2 style="color: var(--text-primary); font-weight: 700; margin-bottom: 0.5rem;">
+                VALIDATION FAILED
+            </h2>
+            <p style="color: var(--text-secondary); font-size: 1.125rem; margin: 0;">
+                Found {len(result.get_errors())} error{'s' if len(result.get_errors()) != 1 else ''} and {len(result.get_warnings())} warning{'s' if len(result.get_warnings()) != 1 else ''}
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
 
     # Summary metrics
     col1, col2, col3, col4 = st.columns(4)

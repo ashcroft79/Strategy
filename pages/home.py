@@ -11,6 +11,56 @@ from pyramid_builder.core.builder import PyramidBuilder
 from pyramid_builder.visualization import PyramidDiagram
 
 
+def show_completion_progress(pyramid):
+    """Display pyramid completion progress with modern design."""
+    if not pyramid:
+        return
+
+    # Calculate completion
+    total_tiers = 9
+    completed = 0
+
+    if pyramid.vision and pyramid.vision.statements:
+        completed += 1
+    if len(pyramid.values) >= 3:
+        completed += 1
+    if len(pyramid.behaviours) > 0:
+        completed += 1
+    if len(pyramid.strategic_drivers) >= 3:
+        completed += 1
+    if len(pyramid.strategic_intents) > 0:
+        completed += 1
+    if len(pyramid.enablers) > 0:
+        completed += 1
+    if len(pyramid.iconic_commitments) > 0:
+        completed += 1
+    if len(pyramid.team_objectives) > 0:
+        completed += 1
+    if len(pyramid.individual_objectives) > 0:
+        completed += 1
+
+    percentage = (completed / total_tiers) * 100
+
+    st.markdown(f"""
+    <div style="margin: 2rem 0;">
+        <div style="
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        ">
+            <span>🎯 Pyramid Completion</span>
+            <span>{completed}/{total_tiers} tiers • {percentage:.0f}%</span>
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar" style="width: {percentage}%"></div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
 def show():
     """Display the home page."""
 
@@ -30,19 +80,54 @@ def show():
 def show_welcome():
     """Show welcome screen with options to create or load."""
 
-    col1, col2 = st.columns(2)
+    # Welcome message
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, var(--cream-100) 0%, var(--card-bg) 100%);
+        padding: 2rem;
+        border-radius: 16px;
+        border: 2px solid var(--gold-400);
+        margin-bottom: 2rem;
+        text-align: center;
+    ">
+        <h2 style="color: var(--text-primary); font-weight: 700; margin-bottom: 0.5rem;">
+            Welcome to Strategic Pyramid Builder
+        </h2>
+        <p style="color: var(--text-secondary); font-size: 1.125rem; margin: 0;">
+            Create a complete 9-tier strategy pyramid from vision to individual objectives
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2, gap="large")
 
     with col1:
-        st.markdown("### 🆕 Create New Pyramid")
         st.markdown("""
-        Start building a new strategic pyramid from scratch. You'll be guided through
-        a step-by-step process to define your:
-        - Vision and Values
-        - Strategic Drivers
-        - Strategic Intents
-        - Iconic Commitments
-        - And more...
-        """)
+        <div style="
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 2px solid var(--cream-300);
+            box-shadow: 0 4px 16px var(--card-shadow);
+            margin-bottom: 1.5rem;
+        ">
+            <div style="font-size: 2.5rem; margin-bottom: 1rem;">🆕</div>
+            <h3 style="color: var(--text-primary); font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem;">
+                Create New Pyramid
+            </h3>
+            <p style="color: var(--text-secondary); font-size: 1rem; line-height: 1.6; margin-bottom: 1rem;">
+                Start building a new strategic pyramid from scratch. You'll be guided through
+                a step-by-step process to define your:
+            </p>
+            <ul style="color: var(--text-secondary); margin-left: 1.5rem; line-height: 1.8;">
+                <li>Vision and Values</li>
+                <li>Strategic Drivers</li>
+                <li>Strategic Intents</li>
+                <li>Iconic Commitments</li>
+                <li>Team & Individual Objectives</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
 
         with st.form("new_pyramid_form"):
             project_name = st.text_input(
@@ -94,11 +179,25 @@ def show_welcome():
                     st.balloons()
 
     with col2:
-        st.markdown("### 📂 Load Existing Pyramid")
         st.markdown("""
-        Open a previously saved pyramid to continue working on it or export it
-        to different formats.
-        """)
+        <div style="
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 2px solid var(--cream-300);
+            box-shadow: 0 4px 16px var(--card-shadow);
+            margin-bottom: 1.5rem;
+        ">
+            <div style="font-size: 2.5rem; margin-bottom: 1rem;">📂</div>
+            <h3 style="color: var(--text-primary); font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem;">
+                Load Existing Pyramid
+            </h3>
+            <p style="color: var(--text-secondary); font-size: 1rem; line-height: 1.6; margin: 0;">
+                Open a previously saved pyramid to continue working on it or export it
+                to different formats.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
 
         # File uploader
         uploaded_file = st.file_uploader(
@@ -154,31 +253,75 @@ def show_welcome():
                     st.error(f"Error: {str(e)}")
 
     # Show features below
-    st.markdown("---")
-    st.markdown("## ✨ Key Features")
+    st.markdown('<div style="margin: 3rem 0 1.5rem 0;"><h2 style="color: var(--text-primary); font-weight: 700; font-size: 1.875rem;">✨ Key Features</h2></div>', unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3 = st.columns(3, gap="large")
 
     with col1:
-        st.markdown("#### 🎯 9-Tier Architecture")
         st.markdown("""
-        Complete pyramid from Vision down to Individual Objectives,
-        with proper cascade and alignment.
-        """)
+        <div style="
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 2px solid var(--cream-300);
+            box-shadow: 0 2px 8px var(--card-shadow);
+            height: 100%;
+            transition: all 0.3s ease;
+        ">
+            <div style="font-size: 2rem; margin-bottom: 0.75rem;">🎯</div>
+            <h4 style="color: var(--text-primary); font-weight: 700; margin-bottom: 0.5rem;">
+                9-Tier Architecture
+            </h4>
+            <p style="color: var(--text-secondary); line-height: 1.6; margin: 0; font-size: 0.9375rem;">
+                Complete pyramid from Vision down to Individual Objectives,
+                with proper cascade and alignment.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
 
     with col2:
-        st.markdown("#### ✓ Smart Validation")
         st.markdown("""
-        Automatic checks for structure, balance, language quality,
-        and strategic coherence.
-        """)
+        <div style="
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 2px solid var(--cream-300);
+            box-shadow: 0 2px 8px var(--card-shadow);
+            height: 100%;
+            transition: all 0.3s ease;
+        ">
+            <div style="font-size: 2rem; margin-bottom: 0.75rem;">✓</div>
+            <h4 style="color: var(--text-primary); font-weight: 700; margin-bottom: 0.5rem;">
+                Smart Validation
+            </h4>
+            <p style="color: var(--text-secondary); line-height: 1.6; margin: 0; font-size: 0.9375rem;">
+                Automatic checks for structure, balance, language quality,
+                and strategic coherence.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
 
     with col3:
-        st.markdown("#### 📊 Multiple Exports")
         st.markdown("""
-        Export for different audiences: executive summary, leadership
-        document, detailed strategy pack.
-        """)
+        <div style="
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 2px solid var(--cream-300);
+            box-shadow: 0 2px 8px var(--card-shadow);
+            height: 100%;
+            transition: all 0.3s ease;
+        ">
+            <div style="font-size: 2rem; margin-bottom: 0.75rem;">📊</div>
+            <h4 style="color: var(--text-primary); font-weight: 700; margin-bottom: 0.5rem;">
+                Multiple Exports
+            </h4>
+            <p style="color: var(--text-secondary); line-height: 1.6; margin: 0; font-size: 0.9375rem;">
+                Export for different audiences: executive summary, leadership
+                document, detailed strategy pack.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
 
 
 def show_pyramid_loaded():
@@ -186,17 +329,61 @@ def show_pyramid_loaded():
 
     pyramid = st.session_state.pyramid
 
-    st.markdown("### ✓ Pyramid Loaded")
+    # Project info card
+    st.markdown(f"""
+    <div style="
+        background: linear-gradient(135deg, var(--cream-100) 0%, var(--card-bg) 100%);
+        padding: 2rem;
+        border-radius: 16px;
+        border: 2px solid var(--gold-400);
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 16px var(--card-shadow);
+    ">
+        <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+            <div style="font-size: 2rem; margin-right: 1rem;">✓</div>
+            <h2 style="color: var(--text-primary); font-weight: 700; margin: 0;">
+                Pyramid Loaded
+            </h2>
+        </div>
 
-    # Display pyramid info
-    st.markdown(f"**Project:** {pyramid.metadata.project_name}")
-    st.markdown(f"**Organisation:** {pyramid.metadata.organization}")
-    st.markdown(f"**Created by:** {pyramid.metadata.created_by}")
-    if pyramid.metadata.description:
-        st.markdown(f"**Description:** {pyramid.metadata.description}")
-    st.markdown(f"**Last modified:** {pyramid.metadata.last_modified.strftime('%d %B %Y at %H:%M')}")
+        <div style="
+            background: rgba(255, 255, 255, 0.7);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--cream-300);
+        ">
+            <div style="margin-bottom: 0.75rem;">
+                <span style="color: var(--text-secondary); font-weight: 600; font-size: 0.875rem;">PROJECT</span>
+                <div style="color: var(--text-primary); font-size: 1.125rem; font-weight: 700; margin-top: 0.25rem;">
+                    {pyramid.metadata.project_name}
+                </div>
+            </div>
 
-    st.markdown("---")
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-top: 1rem;">
+                <div>
+                    <span style="color: var(--text-secondary); font-weight: 600; font-size: 0.875rem;">ORGANISATION</span>
+                    <div style="color: var(--text-primary); margin-top: 0.25rem;">{pyramid.metadata.organization}</div>
+                </div>
+                <div>
+                    <span style="color: var(--text-secondary); font-weight: 600; font-size: 0.875rem;">CREATED BY</span>
+                    <div style="color: var(--text-primary); margin-top: 0.25rem;">{pyramid.metadata.created_by}</div>
+                </div>
+            </div>
+
+            {"<div style='margin-top: 0.75rem;'><span style='color: var(--text-secondary); font-weight: 600; font-size: 0.875rem;'>DESCRIPTION</span><div style='color: var(--text-primary); margin-top: 0.25rem;'>" + pyramid.metadata.description + "</div></div>" if pyramid.metadata.description else ""}
+
+            <div style="margin-top: 0.75rem;">
+                <span style="color: var(--text-secondary); font-weight: 600; font-size: 0.875rem;">LAST MODIFIED</span>
+                <div style="color: var(--text-primary); margin-top: 0.25rem;">
+                    {pyramid.metadata.last_modified.strftime('%d %B %Y at %H:%M')}
+                </div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Completion progress
+    show_completion_progress(pyramid)
 
     # Visual pyramid diagram
     st.markdown("### 🏛️ Visual Pyramid Structure")
@@ -259,23 +446,50 @@ def show_pyramid_loaded():
             st.plotly_chart(network_fig, use_container_width=True)
 
     # Next steps
-    st.markdown("---")
-    st.markdown("### 🚀 Next Steps")
+    st.markdown('<div style="margin: 3rem 0 1rem 0;"><h3 style="color: var(--text-primary); font-weight: 700; font-size: 1.5rem;">🚀 Next Steps</h3></div>', unsafe_allow_html=True)
 
     for step in summary['next_steps'][:5]:  # Show top 5
         if step.startswith("✓"):
-            st.success(step)
+            st.markdown(f"""
+            <div style="
+                background: var(--success-light);
+                border-left: 4px solid var(--success-main);
+                padding: 1rem 1.25rem;
+                border-radius: 8px;
+                margin-bottom: 0.75rem;
+                color: var(--text-primary);
+            ">{step}</div>
+            """, unsafe_allow_html=True)
         elif step.startswith("⚠"):
-            st.warning(step)
+            st.markdown(f"""
+            <div style="
+                background: var(--warning-light);
+                border-left: 4px solid var(--warning-main);
+                padding: 1rem 1.25rem;
+                border-radius: 8px;
+                margin-bottom: 0.75rem;
+                color: var(--text-primary);
+            ">{step}</div>
+            """, unsafe_allow_html=True)
         else:
-            st.info(step)
+            st.markdown(f"""
+            <div style="
+                background: var(--info-light);
+                border-left: 4px solid var(--info-main);
+                padding: 1rem 1.25rem;
+                border-radius: 8px;
+                margin-bottom: 0.75rem;
+                color: var(--text-primary);
+            ">{step}</div>
+            """, unsafe_allow_html=True)
 
     # Action buttons
-    st.markdown("---")
-    col1, col2, col3 = st.columns(3)
+    st.markdown('<div style="margin: 2.5rem 0 1rem 0;"><h3 style="color: var(--text-primary); font-weight: 700; font-size: 1.5rem;">⚡ Quick Actions</h3></div>', unsafe_allow_html=True)
+
+    col1, col2, col3 = st.columns(3, gap="large")
 
     with col1:
-        if st.button("🔨 Continue Building", use_container_width=True):
+        if st.button("🔨 Continue Building", use_container_width=True, type="primary"):
             st.session_state.page = "🔨 Build Pyramid"
             st.rerun()
 

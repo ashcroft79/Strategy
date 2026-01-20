@@ -449,6 +449,88 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Helper function for progress indicators
+def show_completion_progress(pyramid):
+    """Display pyramid completion progress with modern design."""
+    if not pyramid:
+        return
+
+    # Calculate completion
+    total_tiers = 9
+    completed = 0
+
+    if pyramid.vision and pyramid.vision.statements:
+        completed += 1
+    if len(pyramid.values) >= 3:
+        completed += 1
+    if len(pyramid.behaviours) > 0:
+        completed += 1
+    if len(pyramid.strategic_drivers) >= 3:
+        completed += 1
+    if len(pyramid.strategic_intents) > 0:
+        completed += 1
+    if len(pyramid.enablers) > 0:
+        completed += 1
+    if len(pyramid.iconic_commitments) > 0:
+        completed += 1
+    if len(pyramid.team_objectives) > 0:
+        completed += 1
+    if len(pyramid.individual_objectives) > 0:
+        completed += 1
+
+    percentage = (completed / total_tiers) * 100
+
+    st.markdown(f"""
+    <div style="margin: 2rem 0;">
+        <div style="
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        ">
+            <span>🎯 Pyramid Completion</span>
+            <span>{completed}/{total_tiers} tiers • {percentage:.0f}%</span>
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar" style="width: {percentage}%"></div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# Helper function for welcome cards
+def show_welcome_card(icon, title, description):
+    """Display a modern welcome card."""
+    st.markdown(f"""
+    <div style="
+        background: var(--card-bg);
+        padding: 2rem;
+        border-radius: 16px;
+        border: 2px solid var(--cream-300);
+        box-shadow: 0 4px 16px var(--card-shadow);
+        margin-bottom: 1.5rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    ">
+        <div style="
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        ">{icon}</div>
+        <h3 style="
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        ">{title}</h3>
+        <p style="
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.6;
+            margin: 0;
+        ">{description}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
 # Initialize session state
 if 'pyramid' not in st.session_state:
     st.session_state.pyramid = None
@@ -466,9 +548,71 @@ with st.sidebar:
 
     # Show current pyramid info if loaded
     if st.session_state.pyramid:
-        st.success("✓ Pyramid Loaded")
-        st.markdown(f"**Project:** {st.session_state.pyramid.metadata.project_name}")
-        st.markdown(f"**Org:** {st.session_state.pyramid.metadata.organization}")
+        # Modern project card
+        st.markdown(f"""
+        <div style="
+            background: linear-gradient(135deg, var(--cream-100) 0%, var(--card-bg) 100%);
+            padding: 1.25rem;
+            border-radius: 12px;
+            border: 2px solid var(--gold-400);
+            margin-bottom: 1rem;
+        ">
+            <div style="
+                font-size: 0.75rem;
+                color: var(--text-secondary);
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 0.5rem;
+            ">✓ Active Project</div>
+            <div style="
+                color: var(--text-primary);
+                font-weight: 700;
+                font-size: 1rem;
+                margin-bottom: 0.25rem;
+            ">{st.session_state.pyramid.metadata.project_name}</div>
+            <div style="
+                color: var(--text-secondary);
+                font-size: 0.875rem;
+            ">{st.session_state.pyramid.metadata.organization}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Compact progress indicator
+        pyramid = st.session_state.pyramid
+        total_tiers = 9
+        completed = sum([
+            bool(pyramid.vision and pyramid.vision.statements),
+            len(pyramid.values) >= 3,
+            len(pyramid.behaviours) > 0,
+            len(pyramid.strategic_drivers) >= 3,
+            len(pyramid.strategic_intents) > 0,
+            len(pyramid.enablers) > 0,
+            len(pyramid.iconic_commitments) > 0,
+            len(pyramid.team_objectives) > 0,
+            len(pyramid.individual_objectives) > 0
+        ])
+        percentage = (completed / total_tiers) * 100
+
+        st.markdown(f"""
+        <div style="margin-bottom: 1rem;">
+            <div style="
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 0.25rem;
+                font-size: 0.75rem;
+                color: var(--text-secondary);
+                font-weight: 600;
+            ">
+                <span>Completion</span>
+                <span>{completed}/{total_tiers}</span>
+            </div>
+            <div class="progress-container" style="height: 8px; margin: 0;">
+                <div class="progress-bar" style="width: {percentage}%"></div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
         st.markdown("---")
 
     # Navigation

@@ -51,8 +51,27 @@ def show_word_export():
 
     pyramid = st.session_state.pyramid
 
-    st.markdown("### Word Document Export")
-    st.markdown("📝 Generate professional Word documents for sharing and editing")
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, var(--cream-100) 0%, var(--card-bg) 100%);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 2px solid var(--gold-400);
+        margin-bottom: 1.5rem;
+    ">
+        <div style="display: flex; align-items: center;">
+            <div style="font-size: 2.5rem; margin-right: 1rem;">📝</div>
+            <div>
+                <h3 style="color: var(--text-primary); font-weight: 700; margin: 0 0 0.25rem 0;">
+                    Word Document Export
+                </h3>
+                <p style="color: var(--text-secondary); margin: 0;">
+                    Generate professional Word documents for sharing and editing
+                </p>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     # Audience selection
     audience = st.selectbox(
@@ -189,8 +208,27 @@ def show_powerpoint_export():
 
     pyramid = st.session_state.pyramid
 
-    st.markdown("### PowerPoint Presentation Export")
-    st.markdown("📊 Generate professional presentation slides")
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, var(--cream-100) 0%, var(--card-bg) 100%);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 2px solid var(--gold-400);
+        margin-bottom: 1.5rem;
+    ">
+        <div style="display: flex; align-items: center;">
+            <div style="font-size: 2.5rem; margin-right: 1rem;">📊</div>
+            <div>
+                <h3 style="color: var(--text-primary); font-weight: 700; margin: 0 0 0.25rem 0;">
+                    PowerPoint Presentation Export
+                </h3>
+                <p style="color: var(--text-secondary); margin: 0;">
+                    Generate professional presentation slides
+                </p>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     # Audience selection
     audience = st.selectbox(
@@ -317,8 +355,27 @@ def show_markdown_export():
 
     pyramid = st.session_state.pyramid
 
-    st.markdown("### Markdown Export")
-    st.markdown("Generate clean, readable Markdown documents for different audiences")
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, var(--cream-100) 0%, var(--card-bg) 100%);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 2px solid var(--gold-400);
+        margin-bottom: 1.5rem;
+    ">
+        <div style="display: flex; align-items: center;">
+            <div style="font-size: 2.5rem; margin-right: 1rem;">📄</div>
+            <div>
+                <h3 style="color: var(--text-primary); font-weight: 700; margin: 0 0 0.25rem 0;">
+                    Markdown Export
+                </h3>
+                <p style="color: var(--text-secondary); margin: 0;">
+                    Generate clean, readable Markdown documents for different audiences
+                </p>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     # Audience selection
     audience = st.selectbox(
@@ -424,8 +481,27 @@ def show_json_export():
 
     pyramid = st.session_state.pyramid
 
-    st.markdown("### JSON Export")
-    st.markdown("Export complete pyramid data in machine-readable format")
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, var(--cream-100) 0%, var(--card-bg) 100%);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 2px solid var(--gold-400);
+        margin-bottom: 1.5rem;
+    ">
+        <div style="display: flex; align-items: center;">
+            <div style="font-size: 2.5rem; margin-right: 1rem;">💾</div>
+            <div>
+                <h3 style="color: var(--text-primary); font-weight: 700; margin: 0 0 0.25rem 0;">
+                    JSON Export
+                </h3>
+                <p style="color: var(--text-secondary); margin: 0;">
+                    Export complete pyramid data in machine-readable format
+                </p>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     st.markdown("""
     **JSON Export includes:**

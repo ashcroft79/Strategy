@@ -10,6 +10,56 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from pyramid_builder.models.pyramid import Horizon, StatementType
 
 
+def show_completion_progress(pyramid):
+    """Display pyramid completion progress with modern design."""
+    if not pyramid:
+        return
+
+    # Calculate completion
+    total_tiers = 9
+    completed = 0
+
+    if pyramid.vision and pyramid.vision.statements:
+        completed += 1
+    if len(pyramid.values) >= 3:
+        completed += 1
+    if len(pyramid.behaviours) > 0:
+        completed += 1
+    if len(pyramid.strategic_drivers) >= 3:
+        completed += 1
+    if len(pyramid.strategic_intents) > 0:
+        completed += 1
+    if len(pyramid.enablers) > 0:
+        completed += 1
+    if len(pyramid.iconic_commitments) > 0:
+        completed += 1
+    if len(pyramid.team_objectives) > 0:
+        completed += 1
+    if len(pyramid.individual_objectives) > 0:
+        completed += 1
+
+    percentage = (completed / total_tiers) * 100
+
+    st.markdown(f"""
+    <div style="margin: 2rem 0;">
+        <div style="
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        ">
+            <span>🎯 Pyramid Completion</span>
+            <span>{completed}/{total_tiers} tiers • {percentage:.0f}%</span>
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar" style="width: {percentage}%"></div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
 def show():
     """Display the builder page."""
 
@@ -22,6 +72,9 @@ def show():
         '<p class="sub-header">Add content tier by tier, following the guided workflow</p>',
         unsafe_allow_html=True
     )
+
+    # Show completion progress
+    show_completion_progress(st.session_state.pyramid)
 
     # Tabs for each section
     tabs = st.tabs([
@@ -54,15 +107,37 @@ def show():
 def show_purpose_section():
     """Show Purpose section (Vision and Values) with edit capabilities."""
 
-    st.markdown("## Section 1: Purpose (The Why)")
-    st.markdown("*Why you exist and what matters to you - the foundation of your strategy*")
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, var(--cream-100) 0%, var(--card-bg) 100%);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 2px solid var(--gold-400);
+        margin-bottom: 2rem;
+    ">
+        <h2 style="color: var(--text-primary); font-weight: 700; margin-bottom: 0.5rem;">
+            Section 1: Purpose (The Why)
+        </h2>
+        <p style="color: var(--text-secondary); font-style: italic; margin: 0;">
+            Why you exist and what matters to you - the foundation of your strategy
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.info("""
-    **Guidance:** Your purpose defines why you exist. It's permanent and enduring.
-    Take time to craft statements that inspire and provide direction.
-    You can add multiple types: Vision (where you're going), Mission (what you do),
-    Belief (what you stand for), or Passion (what drives you).
-    """)
+    st.markdown("""
+    <div style="
+        background: var(--info-light);
+        border-left: 4px solid var(--info-main);
+        padding: 1rem 1.25rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    ">
+        <strong>Guidance:</strong> Your purpose defines why you exist. It's permanent and enduring.
+        Take time to craft statements that inspire and provide direction.
+        You can add multiple types: Vision (where you're going), Mission (what you do),
+        Belief (what you stand for), or Passion (what drives you).
+    </div>
+    """, unsafe_allow_html=True)
 
     st.markdown("---")
 
@@ -257,8 +332,22 @@ def show_purpose_section():
 def show_strategy_section():
     """Show Strategy section (Behaviours, Drivers, Intents, Enablers)."""
 
-    st.markdown("## Section 2: Strategy (The How)")
-    st.markdown("*How you will succeed*")
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, var(--cream-100) 0%, var(--card-bg) 100%);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 2px solid var(--gold-400);
+        margin-bottom: 2rem;
+    ">
+        <h2 style="color: var(--text-primary); font-weight: 700; margin-bottom: 0.5rem;">
+            Section 2: Strategy (The How)
+        </h2>
+        <p style="color: var(--text-secondary); font-style: italic; margin: 0;">
+            How you will succeed
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
     strategy_tabs = st.tabs([
         "Tier 3: Behaviours",
@@ -761,8 +850,22 @@ def show_enablers():
 def show_execution_section():
     """Show Execution section (Iconic Commitments, Team Objectives, Individual Objectives)."""
 
-    st.markdown("## Section 3: Execution (The What)")
-    st.markdown("*Tangible, time-bound milestones and personal contributions*")
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, var(--cream-100) 0%, var(--card-bg) 100%);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 2px solid var(--gold-400);
+        margin-bottom: 2rem;
+    ">
+        <h2 style="color: var(--text-primary); font-weight: 700; margin-bottom: 0.5rem;">
+            Section 3: Execution (The What)
+        </h2>
+        <p style="color: var(--text-secondary); font-style: italic; margin: 0;">
+            Tangible, time-bound milestones and personal contributions
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
     st.info("""
     **Guidance:** Execution brings your strategy to life through:
