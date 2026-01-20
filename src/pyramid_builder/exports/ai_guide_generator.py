@@ -67,7 +67,7 @@ This guide enables you to use any AI tool (ChatGPT, Claude, Gemini, etc.) to gen
 - Create content tier-by-tier with AI assistance
 - Import AI-generated content back into the Strategic Pyramid Builder
 
-### What You'll Need
+### What You Will Need
 
 1. Access to an AI tool (ChatGPT, Claude, etc.)
 2. This guide with prompt templates
@@ -398,7 +398,7 @@ VISION:
 [Your vision statement]
 
 CURRENT CHALLENGES:
-[Major challenges or opportunities you're facing]
+[Major challenges or opportunities you are facing]
 
 TIME HORIZON: Next 2-3 years
 
@@ -550,7 +550,7 @@ Success Criteria: [2-3 measurable criteria]
 
 1. **Work Sequentially**: Start with Vision and work down through the tiers
 2. **Provide Context**: The more specific context you provide, the better the AI output
-3. **Iterate**: If output isn't quite right, ask AI to refine specific parts
+3. **Iterate**: If output is not quite right, ask AI to refine specific parts
 4. **Mix and Match**: Take the best from multiple AI generations
 5. **Add Your Voice**: Edit AI output to match your organization tone and language
 6. **Maintain Alignment**: Regularly reference earlier tiers to ensure strategic thread"""
@@ -794,11 +794,11 @@ Before importing, check:
 - ✅ Use specific language that reflects your organization voice
 - ✅ Include quantitative elements in intents and commitments
 - ✅ Ensure every commitment traces back to a strategic driver
-- ✅ Balance across horizons (don't front-load all in H1)
+- ✅ Balance across horizons (do not front-load all in H1)
 
-**DON'T:**
+**DO NOT:**
 - ❌ Accept generic AI output without customization
-- ❌ Skip tiers (they're designed to connect)
+- ❌ Skip tiers (they are designed to connect)
 - ❌ Create more than 5 strategic drivers (focus is power)
 - ❌ Make commitments too vague ("Improve customer experience")
 - ❌ Forget to specify owners and target dates
@@ -817,7 +817,7 @@ Before finalizing your pyramid:
 
 ### Iteration Strategy
 
-Your first AI-generated pyramid won't be perfect. Plan to:
+Your first AI-generated pyramid will not be perfect. Plan to:
 
 1. **Generate (30 min)**: Use prompts to create initial content
 2. **Review (1 hour)**: Read through and mark areas needing refinement
@@ -838,7 +838,7 @@ Get better AI output by:
 
 1. **Being Specific**: "Generate 4 strategic drivers for a B2B SaaS company in HR tech with 50 employees targeting mid-market customers"
 
-2. **Providing Examples**: "Similar to how Netflix focuses on 'Content Excellence', generate drivers for our context"
+2. **Providing Examples**: "Similar to how Netflix focuses on Content Excellence, generate drivers for our context"
 
 3. **Setting Constraints**: "Generate exactly 3 commitments for H1, each requiring less than $200K investment"
 
@@ -879,7 +879,7 @@ The AI will regenerate your file with proper UUIDs and update all references.
 - Describe what makes your organization different
 - Provide examples of similar organizations you admire
 
-### "Items don't connect logically"
+### "Items do not connect logically"
 
 **Solution**: Generate tier-by-tier with context
 - Always include previous tier output in next prompt
@@ -904,7 +904,7 @@ The AI will regenerate your file with proper UUIDs and update all references.
 - Verify date format is YYYY-MM-DD
 - Look for smart quotes from word processors (use straight quotes)
 
-### "Can't map to JSON structure"
+### "Cannot map to JSON structure"
 
 **Solution**: AI output formatting
 - Ask AI to "format as JSON matching this schema: [paste schema]"
