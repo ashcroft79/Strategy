@@ -655,18 +655,68 @@ export default function BuilderPage() {
               </div>
 
               {pyramid.vision?.statements.map((stmt) => (
-                <div key={stmt.id} className="p-4 bg-blue-50 rounded-lg mb-3 flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="font-medium text-blue-900 capitalize">{stmt.statement_type}</div>
-                    <div className="text-gray-700">{stmt.statement}</div>
-                  </div>
-                  <button
-                    onClick={() => handleDeleteVisionStatement(stmt.id)}
-                    className="ml-3 p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
-                    title="Delete statement"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                <div key={stmt.id} className="p-4 bg-blue-50 rounded-lg mb-3">
+                  {editingId === stmt.id && editType === "vision" ? (
+                    // Edit mode
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Statement Type
+                        </label>
+                        <select
+                          className="input"
+                          value={editFormData.statement_type || StatementType.VISION}
+                          onChange={(e) => setEditFormData({ ...editFormData, statement_type: e.target.value as StatementType })}
+                        >
+                          <option value={StatementType.VISION}>Vision - Where we're going</option>
+                          <option value={StatementType.MISSION}>Mission - What we do</option>
+                          <option value={StatementType.BELIEF}>Belief - What we stand for</option>
+                          <option value={StatementType.PASSION}>Passion - What drives us</option>
+                          <option value={StatementType.PURPOSE}>Purpose - Why we exist</option>
+                          <option value={StatementType.ASPIRATION}>Aspiration - What we aim for</option>
+                        </select>
+                      </div>
+                      <Textarea
+                        label="Statement"
+                        value={editFormData.statement || ""}
+                        onChange={(e) => setEditFormData({ ...editFormData, statement: e.target.value })}
+                        rows={3}
+                      />
+                      <div className="flex gap-2">
+                        <Button onClick={() => handleSaveEdit("vision")} size="sm">
+                          <Save className="w-4 h-4 mr-1" />
+                          Save
+                        </Button>
+                        <Button onClick={cancelEdit} variant="ghost" size="sm">
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    // Display mode
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="font-medium text-blue-900 capitalize">{stmt.statement_type}</div>
+                        <div className="text-gray-700">{stmt.statement}</div>
+                      </div>
+                      <div className="flex gap-1 ml-3">
+                        <button
+                          onClick={() => startEdit(stmt.id, "vision", stmt)}
+                          className="p-2 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                          title="Edit statement"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteVisionStatement(stmt.id)}
+                          className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
+                          title="Delete statement"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
 
@@ -719,20 +769,58 @@ export default function BuilderPage() {
 
               <div className="grid md:grid-cols-2 gap-3 mb-4">
                 {pyramid.values.map((value) => (
-                  <div key={value.id} className="p-4 bg-blue-50 rounded-lg flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="font-bold text-blue-900">{value.name}</div>
-                      {value.description && (
-                        <div className="text-sm text-gray-700 mt-1">{value.description}</div>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => handleDeleteValue(value.id)}
-                      className="ml-3 p-2 text-red-600 hover:bg-red-100 rounded transition-colors flex-shrink-0"
-                      title="Delete value"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                  <div key={value.id} className="p-4 bg-blue-50 rounded-lg">
+                    {editingId === value.id && editType === "value" ? (
+                      // Edit mode
+                      <div className="space-y-3">
+                        <Input
+                          label="Value Name"
+                          value={editFormData.name || ""}
+                          onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                        />
+                        <Textarea
+                          label="Description"
+                          value={editFormData.description || ""}
+                          onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                          rows={2}
+                        />
+                        <div className="flex gap-2">
+                          <Button onClick={() => handleSaveEdit("value")} size="sm">
+                            <Save className="w-4 h-4 mr-1" />
+                            Save
+                          </Button>
+                          <Button onClick={cancelEdit} variant="ghost" size="sm">
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      // Display mode
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="font-bold text-blue-900">{value.name}</div>
+                          {value.description && (
+                            <div className="text-sm text-gray-700 mt-1">{value.description}</div>
+                          )}
+                        </div>
+                        <div className="flex gap-1 ml-3 flex-shrink-0">
+                          <button
+                            onClick={() => startEdit(value.id, "value", value)}
+                            className="p-2 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                            title="Edit value"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteValue(value.id)}
+                            className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
+                            title="Delete value"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -770,32 +858,89 @@ export default function BuilderPage() {
 
               <div className="space-y-3 mb-4">
                 {pyramid.behaviours?.map((behaviour) => (
-                  <div key={behaviour.id} className="p-4 bg-green-50 rounded-lg flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="text-gray-700 mb-2">{behaviour.statement}</div>
-                      {behaviour.value_ids && behaviour.value_ids.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {behaviour.value_ids.map((valueId) => {
-                            const value = pyramid.values.find((v) => v.id === valueId);
-                            return value ? (
-                              <span
-                                key={valueId}
-                                className="px-2 py-1 bg-green-200 text-green-800 rounded text-xs"
-                              >
-                                {value.name}
-                              </span>
-                            ) : null;
-                          })}
+                  <div key={behaviour.id} className="p-4 bg-green-50 rounded-lg">
+                    {editingId === behaviour.id && editType === "behaviour" ? (
+                      // Edit mode
+                      <div className="space-y-3">
+                        <Textarea
+                          label="Behaviour Statement"
+                          value={editFormData.statement || ""}
+                          onChange={(e) => setEditFormData({ ...editFormData, statement: e.target.value })}
+                          rows={3}
+                        />
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Link to Values
+                          </label>
+                          <div className="grid md:grid-cols-2 gap-2">
+                            {pyramid.values.map((value) => (
+                              <label key={value.id} className="flex items-center gap-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={(editFormData.value_ids || []).includes(value.id)}
+                                  onChange={(e) => {
+                                    const currentIds = editFormData.value_ids || [];
+                                    const newIds = e.target.checked
+                                      ? [...currentIds, value.id]
+                                      : currentIds.filter((id: string) => id !== value.id);
+                                    setEditFormData({ ...editFormData, value_ids: newIds });
+                                  }}
+                                  className="rounded"
+                                />
+                                <span className="text-sm font-medium">{value.name}</span>
+                              </label>
+                            ))}
+                          </div>
                         </div>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => handleDeleteBehaviour(behaviour.id)}
-                      className="ml-3 p-2 text-red-600 hover:bg-red-100 rounded transition-colors flex-shrink-0"
-                      title="Delete behaviour"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                        <div className="flex gap-2">
+                          <Button onClick={() => handleSaveEdit("behaviour")} size="sm">
+                            <Save className="w-4 h-4 mr-1" />
+                            Save
+                          </Button>
+                          <Button onClick={cancelEdit} variant="ghost" size="sm">
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      // Display mode
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="text-gray-700 mb-2">{behaviour.statement}</div>
+                          {behaviour.value_ids && behaviour.value_ids.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {behaviour.value_ids.map((valueId) => {
+                                const value = pyramid.values.find((v) => v.id === valueId);
+                                return value ? (
+                                  <span
+                                    key={valueId}
+                                    className="px-2 py-1 bg-green-200 text-green-800 rounded text-xs"
+                                  >
+                                    {value.name}
+                                  </span>
+                                ) : null;
+                              })}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex gap-1 ml-3 flex-shrink-0">
+                          <button
+                            onClick={() => startEdit(behaviour.id, "behaviour", behaviour)}
+                            className="p-2 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                            title="Edit behaviour"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteBehaviour(behaviour.id)}
+                            className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
+                            title="Delete behaviour"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -848,18 +993,62 @@ export default function BuilderPage() {
 
               <div className="space-y-3 mb-4">
                 {pyramid.strategic_drivers.map((driver) => (
-                  <div key={driver.id} className="p-4 bg-blue-50 rounded-lg flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="font-bold text-blue-900 text-lg">{driver.name}</div>
-                      <div className="text-gray-700 mt-1">{driver.description}</div>
-                    </div>
-                    <button
-                      onClick={() => handleDeleteDriver(driver.id)}
-                      className="ml-3 p-2 text-red-600 hover:bg-red-100 rounded transition-colors flex-shrink-0"
-                      title="Delete driver"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                  <div key={driver.id} className="p-4 bg-blue-50 rounded-lg">
+                    {editingId === driver.id && editType === "driver" ? (
+                      // Edit mode
+                      <div className="space-y-3">
+                        <Input
+                          label="Driver Name"
+                          value={editFormData.name || ""}
+                          onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                        />
+                        <Textarea
+                          label="Description"
+                          value={editFormData.description || ""}
+                          onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                          rows={3}
+                        />
+                        <Textarea
+                          label="Rationale (Optional)"
+                          value={editFormData.rationale || ""}
+                          onChange={(e) => setEditFormData({ ...editFormData, rationale: e.target.value })}
+                          rows={2}
+                        />
+                        <div className="flex gap-2">
+                          <Button onClick={() => handleSaveEdit("driver")} size="sm">
+                            <Save className="w-4 h-4 mr-1" />
+                            Save
+                          </Button>
+                          <Button onClick={cancelEdit} variant="ghost" size="sm">
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      // Display mode
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="font-bold text-blue-900 text-lg">{driver.name}</div>
+                          <div className="text-gray-700 mt-1">{driver.description}</div>
+                        </div>
+                        <div className="flex gap-1 ml-3 flex-shrink-0">
+                          <button
+                            onClick={() => startEdit(driver.id, "driver", driver)}
+                            className="p-2 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                            title="Edit driver"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteDriver(driver.id)}
+                            className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
+                            title="Delete driver"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -898,20 +1087,70 @@ export default function BuilderPage() {
                 {pyramid.strategic_intents.map((intent) => {
                   const driver = pyramid.strategic_drivers.find(d => d.id === intent.driver_id);
                   return (
-                    <div key={intent.id} className="p-4 bg-green-50 rounded-lg flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="text-xs text-green-700 font-medium mb-1">
-                          {driver?.name || "Unknown Driver"}
+                    <div key={intent.id} className="p-4 bg-green-50 rounded-lg">
+                      {editingId === intent.id && editType === "intent" ? (
+                        // Edit mode
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Strategic Driver
+                            </label>
+                            <select
+                              className="input"
+                              value={editFormData.driver_id || ""}
+                              onChange={(e) => setEditFormData({ ...editFormData, driver_id: e.target.value })}
+                            >
+                              <option value="">Select a driver...</option>
+                              {pyramid.strategic_drivers.map((driver) => (
+                                <option key={driver.id} value={driver.id}>
+                                  {driver.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <Textarea
+                            label="Intent Statement"
+                            value={editFormData.statement || ""}
+                            onChange={(e) => setEditFormData({ ...editFormData, statement: e.target.value })}
+                            rows={3}
+                          />
+                          <div className="flex gap-2">
+                            <Button onClick={() => handleSaveEdit("intent")} size="sm">
+                              <Save className="w-4 h-4 mr-1" />
+                              Save
+                            </Button>
+                            <Button onClick={cancelEdit} variant="ghost" size="sm">
+                              Cancel
+                            </Button>
+                          </div>
                         </div>
-                        <div className="text-gray-700">{intent.statement}</div>
-                      </div>
-                      <button
-                        onClick={() => handleDeleteIntent(intent.id)}
-                        className="ml-3 p-2 text-red-600 hover:bg-red-100 rounded transition-colors flex-shrink-0"
-                        title="Delete intent"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      ) : (
+                        // Display mode
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="text-xs text-green-700 font-medium mb-1">
+                              {driver?.name || "Unknown Driver"}
+                            </div>
+                            <div className="text-gray-700">{intent.statement}</div>
+                          </div>
+                          <div className="flex gap-1 ml-3 flex-shrink-0">
+                            <button
+                              onClick={() => startEdit(intent.id, "intent", intent)}
+                              className="p-2 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                              title="Edit intent"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteIntent(intent.id)}
+                              className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
+                              title="Delete intent"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -975,41 +1214,119 @@ export default function BuilderPage() {
               <div className="space-y-3 mb-4">
                 {pyramid.enablers?.map((enabler) => (
                   <div key={enabler.id} className="p-4 bg-purple-50 rounded-lg">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="font-bold text-purple-900">{enabler.name}</div>
-                          {enabler.enabler_type && (
-                            <span className="px-2 py-1 bg-purple-200 text-purple-800 rounded text-xs">
-                              {enabler.enabler_type}
-                            </span>
-                          )}
+                    {editingId === enabler.id && editType === "enabler" ? (
+                      // Edit mode
+                      <div className="space-y-3">
+                        <Input
+                          label="Enabler Name"
+                          value={editFormData.name || ""}
+                          onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                        />
+                        <Textarea
+                          label="Description"
+                          value={editFormData.description || ""}
+                          onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                          rows={3}
+                        />
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Enabler Type (Optional)
+                          </label>
+                          <select
+                            className="input"
+                            value={editFormData.enabler_type || ""}
+                            onChange={(e) => setEditFormData({ ...editFormData, enabler_type: e.target.value })}
+                          >
+                            <option value="">Select type...</option>
+                            <option value="People & Culture">People & Culture</option>
+                            <option value="Process & Operations">Process & Operations</option>
+                            <option value="Technology & Data">Technology & Data</option>
+                            <option value="Partnerships & Resources">Partnerships & Resources</option>
+                          </select>
                         </div>
-                        <div className="text-gray-700 mb-2">{enabler.description}</div>
-                        {enabler.driver_ids && enabler.driver_ids.length > 0 && (
-                          <div className="flex flex-wrap gap-2">
-                            {enabler.driver_ids.map((driverId) => {
-                              const driver = pyramid.strategic_drivers.find((d) => d.id === driverId);
-                              return driver ? (
-                                <span
-                                  key={driverId}
-                                  className="px-2 py-1 bg-purple-200 text-purple-800 rounded text-xs"
-                                >
-                                  {driver.name}
-                                </span>
-                              ) : null;
-                            })}
+                        {pyramid.strategic_drivers.length > 0 && (
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Link to Strategic Drivers (optional)
+                            </label>
+                            <div className="grid md:grid-cols-2 gap-2">
+                              {pyramid.strategic_drivers.map((driver) => (
+                                <label key={driver.id} className="flex items-center gap-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={(editFormData.driver_ids || []).includes(driver.id)}
+                                    onChange={(e) => {
+                                      const currentIds = editFormData.driver_ids || [];
+                                      const newIds = e.target.checked
+                                        ? [...currentIds, driver.id]
+                                        : currentIds.filter((id: string) => id !== driver.id);
+                                      setEditFormData({ ...editFormData, driver_ids: newIds });
+                                    }}
+                                    className="rounded"
+                                  />
+                                  <span className="text-sm font-medium">{driver.name}</span>
+                                </label>
+                              ))}
+                            </div>
                           </div>
                         )}
+                        <div className="flex gap-2">
+                          <Button onClick={() => handleSaveEdit("enabler")} size="sm">
+                            <Save className="w-4 h-4 mr-1" />
+                            Save
+                          </Button>
+                          <Button onClick={cancelEdit} variant="ghost" size="sm">
+                            Cancel
+                          </Button>
+                        </div>
                       </div>
-                      <button
-                        onClick={() => handleDeleteEnabler(enabler.id)}
-                        className="ml-3 p-2 text-red-600 hover:bg-red-100 rounded transition-colors flex-shrink-0"
-                        title="Delete enabler"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                    ) : (
+                      // Display mode
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="font-bold text-purple-900">{enabler.name}</div>
+                            {enabler.enabler_type && (
+                              <span className="px-2 py-1 bg-purple-200 text-purple-800 rounded text-xs">
+                                {enabler.enabler_type}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-gray-700 mb-2">{enabler.description}</div>
+                          {enabler.driver_ids && enabler.driver_ids.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {enabler.driver_ids.map((driverId) => {
+                                const driver = pyramid.strategic_drivers.find((d) => d.id === driverId);
+                                return driver ? (
+                                  <span
+                                    key={driverId}
+                                    className="px-2 py-1 bg-purple-200 text-purple-800 rounded text-xs"
+                                  >
+                                    {driver.name}
+                                  </span>
+                                ) : null;
+                              })}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex gap-1 ml-3 flex-shrink-0">
+                          <button
+                            onClick={() => startEdit(enabler.id, "enabler", enabler)}
+                            className="p-2 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                            title="Edit enabler"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteEnabler(enabler.id)}
+                            className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
+                            title="Delete enabler"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -1084,25 +1401,106 @@ export default function BuilderPage() {
                   const driver = pyramid.strategic_drivers.find(d => d.id === commitment.primary_driver_id);
                   return (
                     <div key={commitment.id} className="p-4 bg-purple-50 rounded-lg">
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="font-bold text-purple-900">{commitment.name}</div>
-                            <span className="px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-sm">
-                              {commitment.horizon}
-                            </span>
+                      {editingId === commitment.id && editType === "commitment" ? (
+                        // Edit mode
+                        <div className="space-y-3">
+                          <Input
+                            label="Commitment Name"
+                            value={editFormData.name || ""}
+                            onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                          />
+                          <Textarea
+                            label="Description"
+                            value={editFormData.description || ""}
+                            onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                            rows={3}
+                          />
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Primary Driver
+                              </label>
+                              <select
+                                className="input"
+                                value={editFormData.primary_driver_id || ""}
+                                onChange={(e) => setEditFormData({ ...editFormData, primary_driver_id: e.target.value })}
+                              >
+                                <option value="">Select a driver...</option>
+                                {pyramid.strategic_drivers.map((driver) => (
+                                  <option key={driver.id} value={driver.id}>
+                                    {driver.name}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Horizon
+                              </label>
+                              <select
+                                className="input"
+                                value={editFormData.horizon || Horizon.H1}
+                                onChange={(e) => setEditFormData({ ...editFormData, horizon: e.target.value as Horizon })}
+                              >
+                                <option value={Horizon.H1}>H1 (0-12 months)</option>
+                                <option value={Horizon.H2}>H2 (12-24 months)</option>
+                                <option value={Horizon.H3}>H3 (24-36 months)</option>
+                              </select>
+                            </div>
                           </div>
-                          <div className="text-gray-700 mb-1">{commitment.description}</div>
-                          <div className="text-xs text-purple-700">Driver: {driver?.name}</div>
+                          <Input
+                            label="Owner (Optional)"
+                            value={editFormData.owner || ""}
+                            onChange={(e) => setEditFormData({ ...editFormData, owner: e.target.value })}
+                            placeholder="Person or team responsible"
+                          />
+                          <Input
+                            label="Target Date (Optional)"
+                            type="date"
+                            value={editFormData.target_date || ""}
+                            onChange={(e) => setEditFormData({ ...editFormData, target_date: e.target.value })}
+                          />
+                          <div className="flex gap-2">
+                            <Button onClick={() => handleSaveEdit("commitment")} size="sm">
+                              <Save className="w-4 h-4 mr-1" />
+                              Save
+                            </Button>
+                            <Button onClick={cancelEdit} variant="ghost" size="sm">
+                              Cancel
+                            </Button>
+                          </div>
                         </div>
-                        <button
-                          onClick={() => handleDeleteCommitment(commitment.id)}
-                          className="ml-3 p-2 text-red-600 hover:bg-red-100 rounded transition-colors flex-shrink-0"
-                          title="Delete commitment"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                      ) : (
+                        // Display mode
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="font-bold text-purple-900">{commitment.name}</div>
+                              <span className="px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-sm">
+                                {commitment.horizon}
+                              </span>
+                            </div>
+                            <div className="text-gray-700 mb-1">{commitment.description}</div>
+                            <div className="text-xs text-purple-700">Driver: {driver?.name}</div>
+                          </div>
+                          <div className="flex gap-1 ml-3 flex-shrink-0">
+                            <button
+                              onClick={() => startEdit(commitment.id, "commitment", commitment)}
+                              className="p-2 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                              title="Edit commitment"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteCommitment(commitment.id)}
+                              className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
+                              title="Delete commitment"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -1186,32 +1584,106 @@ export default function BuilderPage() {
                   );
                   return (
                     <div key={objective.id} className="p-4 bg-orange-50 rounded-lg">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between mb-2">
-                            <div className="font-bold text-orange-900">{objective.name}</div>
-                            <span className="px-2 py-1 bg-orange-200 text-orange-800 rounded text-xs">
-                              {objective.team_name}
-                            </span>
-                          </div>
-                          <div className="text-gray-700 mb-1">{objective.description}</div>
-                          {commitment && (
-                            <div className="text-xs text-orange-700 mt-2">
-                              Commitment: {commitment.name}
+                      {editingId === objective.id && editType === "team_objective" ? (
+                        // Edit mode
+                        <div className="space-y-3">
+                          <Input
+                            label="Objective Name"
+                            value={editFormData.name || ""}
+                            onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                          />
+                          <Textarea
+                            label="Description"
+                            value={editFormData.description || ""}
+                            onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                            rows={3}
+                          />
+                          <Input
+                            label="Team Name"
+                            value={editFormData.team_name || ""}
+                            onChange={(e) => setEditFormData({ ...editFormData, team_name: e.target.value })}
+                            placeholder="e.g., Product Team, Engineering"
+                          />
+                          {pyramid.iconic_commitments.length > 0 && (
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Link to Commitment (Optional)
+                              </label>
+                              <select
+                                className="input"
+                                value={editFormData.primary_commitment_id || ""}
+                                onChange={(e) => setEditFormData({ ...editFormData, primary_commitment_id: e.target.value })}
+                              >
+                                <option value="">Select a commitment...</option>
+                                {pyramid.iconic_commitments.map((commitment) => (
+                                  <option key={commitment.id} value={commitment.id}>
+                                    {commitment.name}
+                                  </option>
+                                ))}
+                              </select>
                             </div>
                           )}
-                          {objective.owner && (
-                            <div className="text-xs text-gray-600 mt-1">Owner: {objective.owner}</div>
-                          )}
+                          <Input
+                            label="Owner (Optional)"
+                            value={editFormData.owner || ""}
+                            onChange={(e) => setEditFormData({ ...editFormData, owner: e.target.value })}
+                            placeholder="Person responsible"
+                          />
+                          <Textarea
+                            label="Metrics (Optional)"
+                            value={editFormData.metrics || ""}
+                            onChange={(e) => setEditFormData({ ...editFormData, metrics: e.target.value })}
+                            rows={2}
+                            placeholder="How success will be measured"
+                          />
+                          <div className="flex gap-2">
+                            <Button onClick={() => handleSaveEdit("team_objective")} size="sm">
+                              <Save className="w-4 h-4 mr-1" />
+                              Save
+                            </Button>
+                            <Button onClick={cancelEdit} variant="ghost" size="sm">
+                              Cancel
+                            </Button>
+                          </div>
                         </div>
-                        <button
-                          onClick={() => handleDeleteTeamObjective(objective.id)}
-                          className="ml-3 p-2 text-red-600 hover:bg-red-100 rounded transition-colors flex-shrink-0"
-                          title="Delete team objective"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                      ) : (
+                        // Display mode
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="font-bold text-orange-900">{objective.name}</div>
+                              <span className="px-2 py-1 bg-orange-200 text-orange-800 rounded text-xs">
+                                {objective.team_name}
+                              </span>
+                            </div>
+                            <div className="text-gray-700 mb-1">{objective.description}</div>
+                            {commitment && (
+                              <div className="text-xs text-orange-700 mt-2">
+                                Commitment: {commitment.name}
+                              </div>
+                            )}
+                            {objective.owner && (
+                              <div className="text-xs text-gray-600 mt-1">Owner: {objective.owner}</div>
+                            )}
+                          </div>
+                          <div className="flex gap-1 ml-3 flex-shrink-0">
+                            <button
+                              onClick={() => startEdit(objective.id, "team_objective", objective)}
+                              className="p-2 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                              title="Edit team objective"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteTeamObjective(objective.id)}
+                              className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
+                              title="Delete team objective"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -1279,39 +1751,114 @@ export default function BuilderPage() {
               <div className="space-y-3 mb-4">
                 {pyramid.individual_objectives?.map((objective) => (
                   <div key={objective.id} className="p-4 bg-teal-50 rounded-lg">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="font-bold text-teal-900">{objective.name}</div>
-                          <span className="px-2 py-1 bg-teal-200 text-teal-800 rounded text-xs">
-                            {objective.individual_name}
-                          </span>
-                        </div>
-                        <div className="text-gray-700 mb-2">{objective.description}</div>
-                        {objective.team_objective_ids && objective.team_objective_ids.length > 0 && (
-                          <div className="flex flex-wrap gap-2">
-                            {objective.team_objective_ids.map((teamObjId) => {
-                              const teamObj = pyramid.team_objectives?.find((t) => t.id === teamObjId);
-                              return teamObj ? (
-                                <span
-                                  key={teamObjId}
-                                  className="px-2 py-1 bg-teal-200 text-teal-800 rounded text-xs"
-                                >
-                                  {teamObj.name}
-                                </span>
-                              ) : null;
-                            })}
+                    {editingId === objective.id && editType === "individual_objective" ? (
+                      // Edit mode
+                      <div className="space-y-3">
+                        <Input
+                          label="Objective Name"
+                          value={editFormData.name || ""}
+                          onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                        />
+                        <Textarea
+                          label="Description"
+                          value={editFormData.description || ""}
+                          onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                          rows={3}
+                        />
+                        <Input
+                          label="Individual Name"
+                          value={editFormData.individual_name || ""}
+                          onChange={(e) => setEditFormData({ ...editFormData, individual_name: e.target.value })}
+                          placeholder="e.g., John Smith"
+                        />
+                        {pyramid.team_objectives && pyramid.team_objectives.length > 0 && (
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Link to Team Objectives (optional)
+                            </label>
+                            <div className="grid md:grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                              {pyramid.team_objectives.map((teamObj) => (
+                                <label key={teamObj.id} className="flex items-center gap-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={(editFormData.team_objective_ids || []).includes(teamObj.id)}
+                                    onChange={(e) => {
+                                      const currentIds = editFormData.team_objective_ids || [];
+                                      const newIds = e.target.checked
+                                        ? [...currentIds, teamObj.id]
+                                        : currentIds.filter((id: string) => id !== teamObj.id);
+                                      setEditFormData({ ...editFormData, team_objective_ids: newIds });
+                                    }}
+                                    className="rounded"
+                                  />
+                                  <span className="text-sm font-medium">{teamObj.name}</span>
+                                </label>
+                              ))}
+                            </div>
                           </div>
                         )}
+                        <Textarea
+                          label="Success Criteria (Optional)"
+                          value={editFormData.success_criteria || ""}
+                          onChange={(e) => setEditFormData({ ...editFormData, success_criteria: e.target.value })}
+                          rows={2}
+                          placeholder="How success will be measured"
+                        />
+                        <div className="flex gap-2">
+                          <Button onClick={() => handleSaveEdit("individual_objective")} size="sm">
+                            <Save className="w-4 h-4 mr-1" />
+                            Save
+                          </Button>
+                          <Button onClick={cancelEdit} variant="ghost" size="sm">
+                            Cancel
+                          </Button>
+                        </div>
                       </div>
-                      <button
-                        onClick={() => handleDeleteIndividualObjective(objective.id)}
-                        className="ml-3 p-2 text-red-600 hover:bg-red-100 rounded transition-colors flex-shrink-0"
-                        title="Delete individual objective"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                    ) : (
+                      // Display mode
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="font-bold text-teal-900">{objective.name}</div>
+                            <span className="px-2 py-1 bg-teal-200 text-teal-800 rounded text-xs">
+                              {objective.individual_name}
+                            </span>
+                          </div>
+                          <div className="text-gray-700 mb-2">{objective.description}</div>
+                          {objective.team_objective_ids && objective.team_objective_ids.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {objective.team_objective_ids.map((teamObjId) => {
+                                const teamObj = pyramid.team_objectives?.find((t) => t.id === teamObjId);
+                                return teamObj ? (
+                                  <span
+                                    key={teamObjId}
+                                    className="px-2 py-1 bg-teal-200 text-teal-800 rounded text-xs"
+                                  >
+                                    {teamObj.name}
+                                  </span>
+                                ) : null;
+                              })}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex gap-1 ml-3 flex-shrink-0">
+                          <button
+                            onClick={() => startEdit(objective.id, "individual_objective", objective)}
+                            className="p-2 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                            title="Edit individual objective"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteIndividualObjective(objective.id)}
+                            className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
+                            title="Delete individual objective"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
