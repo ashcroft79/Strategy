@@ -193,6 +193,54 @@ export default function StrategyOnePageCompact({ pyramid, selectedTiers }: Strat
         )}
       </div>
 
+      {/* Team Objectives - Full Width */}
+      {selectedTiers.teamObjectives && pyramid.team_objectives && pyramid.team_objectives.length > 0 && (
+        <div className="team-objectives mb-2">
+          <div className="bg-indigo-600 text-white px-1.5 py-0.5 rounded text-[9px] font-bold uppercase mb-1">
+            Team Objectives
+          </div>
+          <div className="grid grid-cols-2 gap-1">
+            {pyramid.team_objectives.map((objective) => (
+              <div key={objective.id} className="bg-indigo-50 border-l-2 border-indigo-600 px-1.5 py-1">
+                <div className="font-bold text-indigo-900">{objective.name}</div>
+                {objective.description && (
+                  <div className="text-[9px] text-gray-700 mt-0.5">{objective.description}</div>
+                )}
+                {objective.team_name && (
+                  <div className="text-[8px] bg-indigo-200 text-indigo-800 px-1 rounded inline-block mt-0.5">
+                    {objective.team_name}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Individual Objectives - Full Width */}
+      {selectedTiers.individualObjectives && pyramid.individual_objectives && pyramid.individual_objectives.length > 0 && (
+        <div className="individual-objectives mb-2">
+          <div className="bg-pink-600 text-white px-1.5 py-0.5 rounded text-[9px] font-bold uppercase mb-1">
+            Individual Objectives
+          </div>
+          <div className="grid grid-cols-2 gap-1">
+            {pyramid.individual_objectives.map((objective) => (
+              <div key={objective.id} className="bg-pink-50 border-l-2 border-pink-600 px-1.5 py-1">
+                <div className="font-bold text-pink-900">{objective.name}</div>
+                {objective.description && (
+                  <div className="text-[9px] text-gray-700 mt-0.5">{objective.description}</div>
+                )}
+                {objective.individual_name && (
+                  <div className="text-[8px] bg-pink-200 text-pink-800 px-1 rounded inline-block mt-0.5">
+                    {objective.individual_name}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Footer - Stats */}
       <div className="footer border-t border-gray-300 pt-1">
         <div className="flex justify-center gap-3 text-[9px] text-gray-600">

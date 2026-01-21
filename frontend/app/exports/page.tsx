@@ -92,6 +92,10 @@ export default function ExportsPage() {
             <BarChart3 className="w-4 h-4 mr-2" />
             Visualizations
           </Button>
+          <Button variant="primary" onClick={() => router.push("/visualizations/one-page")}>
+            <FileText className="w-4 h-4 mr-2" />
+            Strategy Blueprint
+          </Button>
         </div>
 
         <div className="card mb-6">

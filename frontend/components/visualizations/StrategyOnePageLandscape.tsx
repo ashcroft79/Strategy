@@ -1,4 +1,4 @@
-import { StrategyPyramid, StrategicDriver, StrategicIntent, IconicCommitment, TeamObjective, IndividualObjective } from "@/types/pyramid";
+import { StrategyPyramid, Behaviour, StrategicDriver, StrategicIntent, IconicCommitment, TeamObjective, IndividualObjective } from "@/types/pyramid";
 
 interface TierSelection {
   vision: boolean;
@@ -17,6 +17,10 @@ interface StrategyOnePageLandscapeProps {
 export default function StrategyOnePageLandscape({ pyramid, selectedTiers }: StrategyOnePageLandscapeProps) {
   const getVisionStatements = () => {
     return pyramid.vision?.statements || [];
+  };
+
+  const getBehavioursForValue = (valueId: string): Behaviour[] => {
+    return pyramid.behaviours.filter(b => b.value_ids.includes(valueId));
   };
 
   const getIntentsForDriver = (driverId: string): StrategicIntent[] => {
@@ -111,6 +115,15 @@ export default function StrategyOnePageLandscape({ pyramid, selectedTiers }: Str
                 {value.description && (
                   <div className="text-[10px] text-gray-600 mt-0.5">{value.description}</div>
                 )}
+                {getBehavioursForValue(value.id).length > 0 && (
+                  <ul className="mt-1 space-y-0.5">
+                    {getBehavioursForValue(value.id).map((behaviour) => (
+                      <li key={behaviour.id} className="text-[10px] text-gray-700 pl-2 border-l border-blue-300">
+                        {behaviour.statement}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             ))}
           </div>
@@ -190,7 +203,7 @@ export default function StrategyOnePageLandscape({ pyramid, selectedTiers }: Str
 
       {/* Enablers Strip - Horizontal */}
       {selectedTiers.enablers && pyramid.enablers.length > 0 && (
-        <div className="enablers-strip">
+        <div className="enablers-strip mb-3">
           <div className="text-xs font-bold text-teal-900 uppercase mb-1.5">Enablers</div>
           <div className="flex gap-2 flex-wrap">
             {pyramid.enablers.map((enabler) => (
@@ -199,6 +212,50 @@ export default function StrategyOnePageLandscape({ pyramid, selectedTiers }: Str
                 {enabler.enabler_type && (
                   <span className="text-[9px] bg-teal-200 text-teal-800 px-1 py-0.5 rounded font-semibold">
                     {enabler.enabler_type}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Team Objectives Strip - Horizontal */}
+      {selectedTiers.teamObjectives && pyramid.team_objectives && pyramid.team_objectives.length > 0 && (
+        <div className="team-objectives-strip mb-3">
+          <div className="text-xs font-bold text-indigo-900 uppercase mb-1.5">Team Objectives</div>
+          <div className="flex gap-2 flex-wrap">
+            {pyramid.team_objectives.map((objective) => (
+              <div key={objective.id} className="flex-1 min-w-[150px] bg-indigo-50 border-l-2 border-indigo-600 rounded-r px-2 py-1.5">
+                <div className="font-bold text-xs text-indigo-900">{objective.name}</div>
+                {objective.description && (
+                  <div className="text-[10px] text-gray-600 mt-0.5">{objective.description}</div>
+                )}
+                {objective.team_name && (
+                  <span className="text-[9px] bg-indigo-200 text-indigo-800 px-1 py-0.5 rounded font-semibold inline-block mt-0.5">
+                    {objective.team_name}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Individual Objectives Strip - Horizontal */}
+      {selectedTiers.individualObjectives && pyramid.individual_objectives && pyramid.individual_objectives.length > 0 && (
+        <div className="individual-objectives-strip">
+          <div className="text-xs font-bold text-pink-900 uppercase mb-1.5">Individual Objectives</div>
+          <div className="flex gap-2 flex-wrap">
+            {pyramid.individual_objectives.map((objective) => (
+              <div key={objective.id} className="flex-1 min-w-[150px] bg-pink-50 border-l-2 border-pink-600 rounded-r px-2 py-1.5">
+                <div className="font-bold text-xs text-pink-900">{objective.name}</div>
+                {objective.description && (
+                  <div className="text-[10px] text-gray-600 mt-0.5">{objective.description}</div>
+                )}
+                {objective.individual_name && (
+                  <span className="text-[9px] bg-pink-200 text-pink-800 px-1 py-0.5 rounded font-semibold inline-block mt-0.5">
+                    {objective.individual_name}
                   </span>
                 )}
               </div>
