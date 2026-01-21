@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { usePyramidStore } from "@/lib/store";
 import {
   pyramidApi,
@@ -28,6 +28,7 @@ import { Save, Home, CheckCircle, FileDown, Eye, Trash2, Edit, Plus, BarChart3 }
 
 export default function BuilderPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { sessionId, pyramid, setPyramid, setLoading, setError, showToast, isLoading } = usePyramidStore();
   const [activeTier, setActiveTier] = useState<string | undefined>(undefined);
 
@@ -76,6 +77,31 @@ export default function BuilderPage() {
       router.push("/");
     }
   }, [pyramid, router]);
+
+  // Handle edit query params from other pages
+  useEffect(() => {
+    if (!pyramid) return;
+
+    const editType = searchParams.get('edit');
+    const editId = searchParams.get('id');
+
+    if (editType && editId) {
+      // Find the item and open the edit modal
+      if (editType === 'commitment') {
+        const commitment = pyramid.iconic_commitments.find(c => c.id === editId);
+        if (commitment) {
+          setActiveTier('commitments');
+          // Wait for tier to render, then open modal
+          setTimeout(() => {
+            openEditModal('commitment', editId, commitment);
+            // Clear query params
+            router.replace('/builder');
+          }, 100);
+        }
+      }
+      // Can add more types here if needed (vision, value, driver, etc.)
+    }
+  }, [pyramid, searchParams, router]);
 
   const refreshPyramid = async () => {
     try {
