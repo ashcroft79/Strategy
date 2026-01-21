@@ -586,6 +586,7 @@ class UpdateCommitmentRequest(BaseModel):
     horizon: Optional[Horizon] = None
     target_date: Optional[str] = None
     primary_driver_id: Optional[UUID] = None
+    primary_intent_ids: Optional[List[UUID]] = None
     owner: Optional[str] = None
 
 
@@ -627,6 +628,7 @@ async def update_iconic_commitment(session_id: str, request: UpdateCommitmentReq
             horizon=request.horizon,
             target_date=request.target_date,
             primary_driver_id=request.primary_driver_id,
+            primary_intent_ids=request.primary_intent_ids,
             owner=request.owner,
         )
 

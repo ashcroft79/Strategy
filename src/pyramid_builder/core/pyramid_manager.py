@@ -782,6 +782,7 @@ class PyramidManager:
         horizon: Optional[Horizon] = None,
         target_date: Optional[str] = None,
         primary_driver_id: Optional[UUID] = None,
+        primary_intent_ids: Optional[List[UUID]] = None,
         owner: Optional[str] = None,
     ) -> bool:
         """
@@ -794,6 +795,7 @@ class PyramidManager:
             horizon: New horizon (if changing)
             target_date: New target date (if changing)
             primary_driver_id: New primary driver (if changing)
+            primary_intent_ids: New primary intent IDs (if changing)
             owner: New owner (if changing)
 
         Returns:
@@ -818,6 +820,8 @@ class PyramidManager:
                     if not driver:
                         raise ValueError(f"Strategic driver {primary_driver_id} not found")
                     commitment.primary_driver_id = primary_driver_id
+                if primary_intent_ids is not None:
+                    commitment.primary_intent_ids = primary_intent_ids
                 if owner is not None:
                     commitment.owner = owner
                 commitment.update_timestamp()
