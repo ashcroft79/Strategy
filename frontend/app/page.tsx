@@ -96,6 +96,35 @@ export default function HomePage() {
           </p>
         </div>
 
+        {/* No Persistence Warning */}
+        <div className="card mb-8 bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-300">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0">
+              <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+            </div>
+            <div className="flex-1">
+              <h2 className="text-lg font-bold text-gray-900 mb-2">
+                ⚠️ Important: No Server-Side Storage
+              </h2>
+              <p className="text-gray-700 mb-3">
+                Your strategic pyramid data is stored <strong>only in your browser session</strong>. We deliberately don't use a database to avoid storing potentially sensitive commercial information.
+              </p>
+              <div className="bg-white/70 rounded-lg p-3 border border-orange-200">
+                <p className="text-sm font-semibold text-gray-900 mb-1">
+                  📥 Save Your Work Regularly
+                </p>
+                <p className="text-sm text-gray-700">
+                  Download JSON backups frequently to preserve your strategy. You'll see an indicator showing unsaved changes as you work. Closing your browser or clearing cache will lose unsaved data.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* AI Guide Banner */}
         <div className="card mb-8 bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200">
           <div className="flex flex-col md:flex-row items-center gap-6">

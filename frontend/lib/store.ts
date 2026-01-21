@@ -20,6 +20,8 @@ interface PyramidStore {
   isLoading: boolean;
   error: string | null;
   toasts: Toast[];
+  unsavedChanges: number;
+  lastSavedAt: Date | null;
 
   // Actions
   setSessionId: (id: string) => void;
@@ -29,6 +31,8 @@ interface PyramidStore {
   setError: (error: string | null) => void;
   showToast: (message: string, type?: Toast["type"]) => void;
   removeToast: (id: string) => void;
+  incrementUnsavedChanges: () => void;
+  resetUnsavedChanges: () => void;
   reset: () => void;
 }
 
@@ -42,6 +46,8 @@ export const usePyramidStore = create<PyramidStore>((set) => ({
   isLoading: false,
   error: null,
   toasts: [],
+  unsavedChanges: 0,
+  lastSavedAt: null,
 
   // Actions
   setSessionId: (id: string) => {
@@ -72,6 +78,19 @@ export const usePyramidStore = create<PyramidStore>((set) => ({
     }));
   },
 
+  incrementUnsavedChanges: () => {
+    set((state) => ({
+      unsavedChanges: state.unsavedChanges + 1,
+    }));
+  },
+
+  resetUnsavedChanges: () => {
+    set({
+      unsavedChanges: 0,
+      lastSavedAt: new Date(),
+    });
+  },
+
   reset: () => {
     const newSessionId = uuidv4();
     if (typeof window !== "undefined") {
@@ -84,6 +103,8 @@ export const usePyramidStore = create<PyramidStore>((set) => ({
       isLoading: false,
       error: null,
       toasts: [],
+      unsavedChanges: 0,
+      lastSavedAt: null,
     });
   },
 }));

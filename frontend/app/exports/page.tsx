@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { usePyramidStore } from "@/lib/store";
 import { exportsApi } from "@/lib/api-client";
 import { Button } from "@/components/ui/Button";
+import { Tooltip } from "@/components/ui/Tooltip";
+import { UnsavedChangesIndicator } from "@/components/ui/UnsavedChangesIndicator";
+import { EXPORTS_TOOLTIPS } from "@/config/tooltips";
 import { downloadBlob } from "@/lib/utils";
 import { FileText, Presentation, FileCode, Download, ArrowLeft, Sparkles, BarChart3 } from "lucide-react";
 
@@ -81,6 +84,7 @@ export default function ExportsPage() {
 
   return (
     <div className="min-h-screen p-4">
+      <UnsavedChangesIndicator />
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="mb-6 flex gap-3">
@@ -138,10 +142,10 @@ export default function ExportsPage() {
           <h2 className="text-xl font-bold mb-4">Select Audience</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { value: "executive", label: "Executive", desc: "High-level summary" },
-              { value: "leadership", label: "Leadership", desc: "Detailed strategy" },
-              { value: "detailed", label: "Detailed", desc: "Complete documentation" },
-              { value: "team", label: "Team Cascade", desc: "Team-focused view" },
+              { value: "executive", label: "Executive", desc: "High-level summary", tooltip: EXPORTS_TOOLTIPS.AUDIENCE_EXECUTIVE },
+              { value: "leadership", label: "Leadership", desc: "Detailed strategy", tooltip: EXPORTS_TOOLTIPS.AUDIENCE_LEADERSHIP },
+              { value: "detailed", label: "Detailed", desc: "Complete documentation", tooltip: EXPORTS_TOOLTIPS.AUDIENCE_DETAILED },
+              { value: "team", label: "Team Cascade", desc: "Team-focused view", tooltip: EXPORTS_TOOLTIPS.AUDIENCE_TEAM },
             ].map((option) => (
               <button
                 key={option.value}
@@ -152,7 +156,10 @@ export default function ExportsPage() {
                     : "border-gray-200 hover:border-gray-300"
                 }`}
               >
-                <div className="font-semibold text-gray-800">{option.label}</div>
+                <div className="font-semibold text-gray-800 inline-flex items-center">
+                  {option.label}
+                  <Tooltip tooltipContent={option.tooltip} placement="top" />
+                </div>
                 <div className="text-sm text-gray-600">{option.desc}</div>
               </button>
             ))}
@@ -167,8 +174,11 @@ export default function ExportsPage() {
             <div className="p-6 border-2 border-gray-200 rounded-lg hover:border-primary transition-all">
               <div className="flex items-center gap-3 mb-3">
                 <FileText className="w-8 h-8 text-blue-600" />
-                <div>
-                  <h3 className="font-bold text-lg">Word Document</h3>
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg inline-flex items-center">
+                    Word Document
+                    <Tooltip tooltipContent={EXPORTS_TOOLTIPS.FORMAT_WORD} placement="right" />
+                  </h3>
                   <p className="text-sm text-gray-600">Professional DOCX format</p>
                 </div>
               </div>
@@ -190,8 +200,11 @@ export default function ExportsPage() {
             <div className="p-6 border-2 border-gray-200 rounded-lg hover:border-primary transition-all">
               <div className="flex items-center gap-3 mb-3">
                 <Presentation className="w-8 h-8 text-orange-600" />
-                <div>
-                  <h3 className="font-bold text-lg">PowerPoint</h3>
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg inline-flex items-center">
+                    PowerPoint
+                    <Tooltip tooltipContent={EXPORTS_TOOLTIPS.FORMAT_POWERPOINT} placement="right" />
+                  </h3>
                   <p className="text-sm text-gray-600">Presentation deck (PPTX)</p>
                 </div>
               </div>
@@ -213,8 +226,11 @@ export default function ExportsPage() {
             <div className="p-6 border-2 border-gray-200 rounded-lg hover:border-primary transition-all">
               <div className="flex items-center gap-3 mb-3">
                 <FileCode className="w-8 h-8 text-green-600" />
-                <div>
-                  <h3 className="font-bold text-lg">Markdown</h3>
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg inline-flex items-center">
+                    Markdown
+                    <Tooltip tooltipContent={EXPORTS_TOOLTIPS.FORMAT_MARKDOWN} placement="right" />
+                  </h3>
                   <p className="text-sm text-gray-600">Clean documentation (.md)</p>
                 </div>
               </div>
@@ -235,8 +251,11 @@ export default function ExportsPage() {
             <div className="p-6 border-2 border-gray-200 rounded-lg hover:border-primary transition-all">
               <div className="flex items-center gap-3 mb-3">
                 <FileCode className="w-8 h-8 text-purple-600" />
-                <div>
-                  <h3 className="font-bold text-lg">JSON</h3>
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg inline-flex items-center">
+                    JSON
+                    <Tooltip tooltipContent={EXPORTS_TOOLTIPS.FORMAT_JSON} placement="right" />
+                  </h3>
                   <p className="text-sm text-gray-600">Machine-readable format</p>
                 </div>
               </div>

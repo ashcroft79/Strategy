@@ -18,6 +18,8 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
+import { LabelWithTooltip } from "@/components/ui/Tooltip";
+import { UnsavedChangesIndicator } from "@/components/ui/UnsavedChangesIndicator";
 import Modal from "@/components/ui/Modal";
 import TierHeader from "@/components/ui/TierHeader";
 import TierCard from "@/components/ui/TierCard";
@@ -25,6 +27,7 @@ import PyramidVisualization from "@/components/visualizations/PyramidVisualizati
 import ExecutionReadinessChecklist from "@/components/visualizations/ExecutionReadinessChecklist";
 import { StatementType, Horizon } from "@/types/pyramid";
 import { Save, Home, CheckCircle, FileDown, Eye, Trash2, Edit, Plus, BarChart3 } from "lucide-react";
+import { TIER1_TOOLTIPS, TIER2_TOOLTIPS, TIER3_TOOLTIPS, TIER4_TOOLTIPS, TIER5_TOOLTIPS, TIER6_TOOLTIPS, TIER7_TOOLTIPS, TIER8_TOOLTIPS, TIER9_TOOLTIPS } from "@/config/tooltips";
 
 // Component to handle edit query params
 function EditParamsHandler({
@@ -67,7 +70,7 @@ function EditParamsHandler({
 
 export default function BuilderPage() {
   const router = useRouter();
-  const { sessionId, pyramid, setPyramid, setLoading, setError, showToast, isLoading } = usePyramidStore();
+  const { sessionId, pyramid, setPyramid, setLoading, setError, showToast, isLoading, incrementUnsavedChanges } = usePyramidStore();
   const [activeTier, setActiveTier] = useState<string | undefined>(undefined);
 
   // Modal states
@@ -238,6 +241,7 @@ export default function BuilderPage() {
       await visionApi.removeStatement(sessionId, statementId);
       await refreshPyramid();
       showToast("Vision statement deleted", "success");
+      incrementUnsavedChanges();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to delete vision statement", "error");
     } finally {
@@ -253,6 +257,7 @@ export default function BuilderPage() {
       await valuesApi.remove(sessionId, valueId);
       await refreshPyramid();
       showToast("Value deleted", "success");
+      incrementUnsavedChanges();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to delete value", "error");
     } finally {
@@ -268,6 +273,7 @@ export default function BuilderPage() {
       await behavioursApi.remove(sessionId, behaviourId);
       await refreshPyramid();
       showToast("Behaviour deleted", "success");
+      incrementUnsavedChanges();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to delete behaviour", "error");
     } finally {
@@ -283,6 +289,7 @@ export default function BuilderPage() {
       await driversApi.remove(sessionId, driverId);
       await refreshPyramid();
       showToast("Driver deleted", "success");
+      incrementUnsavedChanges();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to delete driver", "error");
     } finally {
@@ -298,6 +305,7 @@ export default function BuilderPage() {
       await intentsApi.remove(sessionId, intentId);
       await refreshPyramid();
       showToast("Intent deleted", "success");
+      incrementUnsavedChanges();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to delete intent", "error");
     } finally {
@@ -313,6 +321,7 @@ export default function BuilderPage() {
       await enablersApi.remove(sessionId, enablerId);
       await refreshPyramid();
       showToast("Enabler deleted", "success");
+      incrementUnsavedChanges();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to delete enabler", "error");
     } finally {
@@ -328,6 +337,7 @@ export default function BuilderPage() {
       await commitmentsApi.remove(sessionId, commitmentId);
       await refreshPyramid();
       showToast("Commitment deleted", "success");
+      incrementUnsavedChanges();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to delete commitment", "error");
     } finally {
@@ -343,6 +353,7 @@ export default function BuilderPage() {
       await teamObjectivesApi.remove(sessionId, objectiveId);
       await refreshPyramid();
       showToast("Team objective deleted", "success");
+      incrementUnsavedChanges();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to delete team objective", "error");
     } finally {
@@ -358,6 +369,7 @@ export default function BuilderPage() {
       await individualObjectivesApi.remove(sessionId, objectiveId);
       await refreshPyramid();
       showToast("Individual objective deleted", "success");
+      incrementUnsavedChanges();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to delete individual objective", "error");
     } finally {
@@ -477,6 +489,7 @@ export default function BuilderPage() {
 
       await refreshPyramid();
       showToast("Successfully updated", "success");
+      incrementUnsavedChanges();
 
       // Close modal if in modal mode, otherwise use inline edit cancel
       if (editingItemId) {
@@ -502,6 +515,8 @@ export default function BuilderPage() {
       setVisionStatementType(StatementType.VISION);
       await refreshPyramid();
       showToast("Vision statement added successfully", "success");
+      incrementUnsavedChanges();
+      incrementUnsavedChanges();
       closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add vision", "error");
@@ -521,6 +536,7 @@ export default function BuilderPage() {
       setValueDescription("");
       await refreshPyramid();
       showToast("Value added successfully", "success");
+      incrementUnsavedChanges();
       closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add value", "error");
@@ -540,6 +556,7 @@ export default function BuilderPage() {
       setSelectedValueIds([]);
       await refreshPyramid();
       showToast("Behaviour added successfully", "success");
+      incrementUnsavedChanges();
       closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add behaviour", "error");
@@ -565,6 +582,7 @@ export default function BuilderPage() {
       setDriverDescription("");
       await refreshPyramid();
       showToast("Strategic driver added successfully", "success");
+      incrementUnsavedChanges();
       closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add driver", "error");
@@ -583,6 +601,7 @@ export default function BuilderPage() {
       setIntentStatement("");
       await refreshPyramid();
       showToast("Strategic intent added successfully", "success");
+      incrementUnsavedChanges();
       closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add intent", "error");
@@ -608,6 +627,7 @@ export default function BuilderPage() {
       setCommitmentDescription("");
       await refreshPyramid();
       showToast("Iconic commitment added successfully", "success");
+      incrementUnsavedChanges();
       closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add commitment", "error");
@@ -635,6 +655,7 @@ export default function BuilderPage() {
       setSelectedDriverIds([]);
       await refreshPyramid();
       showToast("Enabler added successfully", "success");
+      incrementUnsavedChanges();
       closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add enabler", "error");
@@ -668,6 +689,7 @@ export default function BuilderPage() {
       setSelectedCommitment("");
       await refreshPyramid();
       showToast("Team objective added successfully", "success");
+      incrementUnsavedChanges();
       closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add team objective", "error");
@@ -695,6 +717,7 @@ export default function BuilderPage() {
       setSelectedTeamObjectiveIds([]);
       await refreshPyramid();
       showToast("Individual objective added successfully", "success");
+      incrementUnsavedChanges();
       closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add individual objective", "error");
@@ -763,6 +786,9 @@ export default function BuilderPage() {
         {/* Left Sidebar - Fixed Pyramid */}
         <div className="w-96 bg-gradient-to-b from-gray-50 to-white border-r border-gray-200 overflow-y-auto">
           <div className="p-4 space-y-4">
+            {/* Unsaved Changes Indicator */}
+            <UnsavedChangesIndicator variant="inline" />
+
             {/* Pyramid Section */}
             <div>
               <h2 className="text-lg font-bold text-gray-800 mb-2">Strategic Pyramid</h2>
@@ -2406,9 +2432,11 @@ export default function BuilderPage() {
         {modalItemType === 'vision' && (
           <form onSubmit={modalMode === 'add' ? handleAddVision : (e) => { e.preventDefault(); handleSaveEdit('vision'); }} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Statement Type
-              </label>
+              <LabelWithTooltip
+                label="Statement Type"
+                tooltipContent={TIER1_TOOLTIPS.STATEMENT_TYPE}
+                required={true}
+              />
               <select
                 className="input"
                 value={modalMode === 'edit' ? editFormData.statement_type : visionStatementType}
@@ -2438,6 +2466,15 @@ export default function BuilderPage() {
                 }
               }}
               placeholder="Enter your inspiring statement here..."
+              tooltipContent={
+                (modalMode === 'edit' ? editFormData.statement_type : visionStatementType) === StatementType.VISION
+                  ? TIER1_TOOLTIPS.VISION
+                  : (modalMode === 'edit' ? editFormData.statement_type : visionStatementType) === StatementType.MISSION
+                  ? TIER1_TOOLTIPS.MISSION
+                  : (modalMode === 'edit' ? editFormData.statement_type : visionStatementType) === StatementType.BELIEF
+                  ? TIER1_TOOLTIPS.BELIEF
+                  : TIER1_TOOLTIPS.VISION
+              }
               rows={4}
               required
             />
@@ -2465,7 +2502,8 @@ export default function BuilderPage() {
                   setValueName(e.target.value);
                 }
               }}
-              placeholder="e.g., Trust, Innovation, Excellence"
+              placeholder="e.g., Speed Over Perfection, Transparent by Default"
+              tooltipContent={TIER2_TOOLTIPS.VALUE_NAME}
               required
             />
             <Textarea
@@ -2479,6 +2517,7 @@ export default function BuilderPage() {
                 }
               }}
               placeholder="What this value means to your organization..."
+              tooltipContent={TIER2_TOOLTIPS.VALUE_DESCRIPTION}
               rows={3}
             />
             <div className="flex gap-3 justify-end pt-4 border-t">
@@ -2505,14 +2544,16 @@ export default function BuilderPage() {
                   setBehaviourStatement(e.target.value);
                 }
               }}
-              placeholder="e.g., We actively seek diverse perspectives before making decisions..."
+              placeholder="e.g., We share work-in-progress early and often, inviting feedback..."
+              tooltipContent={TIER3_TOOLTIPS.BEHAVIOUR_STATEMENT}
               rows={4}
               required
             />
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Link to Values (select one or more)
-              </label>
+              <LabelWithTooltip
+                label="Link to Values (select one or more)"
+                tooltipContent={TIER3_TOOLTIPS.BEHAVIOUR_LINKS}
+              />
               <div className="grid md:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
                 {pyramid.values.map((value) => (
                   <label key={value.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
@@ -2554,7 +2595,7 @@ export default function BuilderPage() {
         {modalItemType === 'driver' && (
           <form onSubmit={modalMode === 'add' ? handleAddDriver : (e) => { e.preventDefault(); handleSaveEdit('driver'); }} className="space-y-4">
             <Input
-              label="Driver Name (1-3 words recommended)"
+              label="Driver Name"
               value={modalMode === 'edit' ? editFormData.name : driverName}
               onChange={(e) => {
                 if (modalMode === 'edit') {
@@ -2563,7 +2604,8 @@ export default function BuilderPage() {
                   setDriverName(e.target.value);
                 }
               }}
-              placeholder="e.g., Customer Experience, Innovation"
+              placeholder="e.g., Customer Excellence, Digital Innovation"
+              tooltipContent={TIER4_TOOLTIPS.DRIVER_NAME}
               required
             />
             <Textarea
@@ -2577,6 +2619,7 @@ export default function BuilderPage() {
                 }
               }}
               placeholder="What this driver means and why it matters..."
+              tooltipContent={TIER4_TOOLTIPS.DRIVER_DESCRIPTION}
               rows={3}
               required
             />
@@ -2586,6 +2629,7 @@ export default function BuilderPage() {
                 value={editFormData.rationale || ''}
                 onChange={(e) => setEditFormData({ ...editFormData, rationale: e.target.value })}
                 placeholder="Why this driver was chosen..."
+                tooltipContent={TIER4_TOOLTIPS.DRIVER_RATIONALE}
                 rows={2}
               />
             )}
@@ -2604,9 +2648,11 @@ export default function BuilderPage() {
         {modalItemType === 'intent' && (
           <form onSubmit={modalMode === 'add' ? handleAddIntent : (e) => { e.preventDefault(); handleSaveEdit('intent'); }} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Strategic Driver
-              </label>
+              <LabelWithTooltip
+                label="Strategic Driver"
+                tooltipContent={TIER5_TOOLTIPS.INTENT_DRIVER_LINK}
+                required={true}
+              />
               <select
                 className="input"
                 value={modalMode === 'edit' ? editFormData.driver_id : selectedDriver}
@@ -2629,6 +2675,7 @@ export default function BuilderPage() {
             </div>
             <Textarea
               label="Intent Statement"
+              tooltipContent={TIER5_TOOLTIPS.INTENT_STATEMENT}
               value={modalMode === 'edit' ? editFormData.statement : intentStatement}
               onChange={(e) => {
                 if (modalMode === 'edit') {
@@ -2665,7 +2712,8 @@ export default function BuilderPage() {
                   setEnablerName(e.target.value);
                 }
               }}
-              placeholder="e.g., Advanced Analytics Platform"
+              placeholder="e.g., Real-Time Data Platform, Cloud Infrastructure"
+              tooltipContent={TIER6_TOOLTIPS.ENABLER_NAME}
               required
             />
             <Textarea
@@ -2679,6 +2727,7 @@ export default function BuilderPage() {
                 }
               }}
               placeholder="What this enabler provides and why it's needed..."
+              tooltipContent={TIER6_TOOLTIPS.ENABLER_DESCRIPTION}
               rows={3}
               required
             />
@@ -2761,6 +2810,7 @@ export default function BuilderPage() {
                 }
               }}
               placeholder="e.g., Launch New Platform"
+              tooltipContent={TIER7_TOOLTIPS.COMMITMENT_NAME}
               required
             />
             <Textarea
@@ -2774,14 +2824,17 @@ export default function BuilderPage() {
                 }
               }}
               placeholder="What will be delivered..."
+              tooltipContent={TIER7_TOOLTIPS.COMMITMENT_DESCRIPTION}
               rows={3}
               required
             />
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Primary Driver
-                </label>
+                <LabelWithTooltip
+                  label="Primary Driver"
+                  tooltipContent={TIER7_TOOLTIPS.PRIMARY_DRIVER}
+                  required={true}
+                />
                 <select
                   className="input"
                   value={modalMode === 'edit' ? editFormData.primary_driver_id : selectedDriver}
@@ -2808,9 +2861,10 @@ export default function BuilderPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Horizon
-                </label>
+                <LabelWithTooltip
+                  label="Horizon"
+                  tooltipContent={TIER7_TOOLTIPS.HORIZON}
+                />
                 <select
                   className="input"
                   value={modalMode === 'edit' ? editFormData.horizon : commitmentHorizon}
@@ -2832,10 +2886,14 @@ export default function BuilderPage() {
             {/* Strategic Intents - Only show in edit mode for now */}
             {modalMode === 'edit' && editFormData.primary_driver_id && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Strategic Intents <span className="text-red-500">*</span>
+                <div className="mb-2">
+                  <LabelWithTooltip
+                    label="Strategic Intents"
+                    tooltipContent={TIER7_TOOLTIPS.STRATEGIC_INTENTS}
+                    required={true}
+                  />
                   <span className="text-xs text-gray-500 ml-2">(Select at least one)</span>
-                </label>
+                </div>
                 <div className="border border-gray-300 rounded-lg p-3 max-h-48 overflow-y-auto space-y-2 bg-gray-50">
                   {pyramid.strategic_intents
                     .filter(intent => intent.driver_id === editFormData.primary_driver_id)
@@ -2887,12 +2945,14 @@ export default function BuilderPage() {
                   value={editFormData.owner || ''}
                   onChange={(e) => setEditFormData({ ...editFormData, owner: e.target.value })}
                   placeholder="Person or team responsible"
+                  tooltipContent={TIER7_TOOLTIPS.OWNER}
                 />
                 <Input
                   label="Target Date (Optional)"
                   type="date"
                   value={editFormData.target_date || ''}
                   onChange={(e) => setEditFormData({ ...editFormData, target_date: e.target.value })}
+                  tooltipContent={TIER7_TOOLTIPS.TARGET_DATE}
                 />
               </>
             )}
@@ -2920,7 +2980,8 @@ export default function BuilderPage() {
                   setTeamObjectiveName(e.target.value);
                 }
               }}
-              placeholder="e.g., Launch MVP in Q2"
+              placeholder="e.g., Complete Mobile Backend API"
+              tooltipContent={TIER8_TOOLTIPS.TEAM_OBJECTIVE_NAME}
               required
             />
             <Textarea
@@ -2947,14 +3008,16 @@ export default function BuilderPage() {
                   setTeamName(e.target.value);
                 }
               }}
-              placeholder="e.g., Product Team, Engineering"
+              placeholder="e.g., Backend Engineering, Customer Success Team"
+              tooltipContent={TIER8_TOOLTIPS.TEAM_NAME}
               required
             />
             {pyramid.iconic_commitments.length > 0 && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Link to Commitment (Optional)
-                </label>
+                <LabelWithTooltip
+                  label="Link to Commitment (Optional)"
+                  tooltipContent={TIER8_TOOLTIPS.LINK_TO_COMMITMENT}
+                />
                 <select
                   className="input"
                   value={modalMode === 'edit' ? editFormData.primary_commitment_id : selectedCommitment}
@@ -3016,7 +3079,8 @@ export default function BuilderPage() {
                   setIndividualObjectiveName(e.target.value);
                 }
               }}
-              placeholder="e.g., Complete certification in Q1"
+              placeholder="e.g., Implement OAuth 2.0 Authentication"
+              tooltipContent={TIER9_TOOLTIPS.INDIVIDUAL_OBJECTIVE_NAME}
               required
             />
             <Textarea
@@ -3044,13 +3108,15 @@ export default function BuilderPage() {
                 }
               }}
               placeholder="e.g., John Smith"
+              tooltipContent={TIER9_TOOLTIPS.INDIVIDUAL_NAME}
               required
             />
             {pyramid.team_objectives && pyramid.team_objectives.length > 0 && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Link to Team Objectives (optional)
-                </label>
+                <LabelWithTooltip
+                  label="Link to Team Objectives (optional)"
+                  tooltipContent={TIER9_TOOLTIPS.LINK_TO_TEAM_OBJECTIVES}
+                />
                 <div className="grid md:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
                   {pyramid.team_objectives.map((teamObj) => (
                     <label key={teamObj.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
