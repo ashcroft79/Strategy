@@ -11,6 +11,7 @@ from src.pyramid_builder.exports.word_exporter import WordExporter
 from src.pyramid_builder.exports.powerpoint_exporter import PowerPointExporter
 from src.pyramid_builder.exports.markdown_exporter import MarkdownExporter
 from src.pyramid_builder.exports.json_exporter import JSONExporter
+from src.pyramid_builder.exports.ai_guide_generator import AIGuideGenerator
 from .pyramids import active_pyramids
 
 router = APIRouter()
@@ -45,7 +46,6 @@ async def export_word(session_id: str, request: ExportRequest):
         exporter.export(
             filepath=tmp_path,
             audience=request.audience,
-            include_metadata=request.include_metadata,
             include_cover_page=request.include_cover_page,
         )
 
@@ -82,7 +82,7 @@ async def export_powerpoint(session_id: str, request: ExportRequest):
         exporter.export(
             filepath=tmp_path,
             audience=request.audience,
-            include_metadata=request.include_metadata,
+            include_title_slide=request.include_cover_page,
         )
 
         # Return file
@@ -148,8 +148,8 @@ async def export_json(session_id: str, request: ExportRequest):
         exporter = JSONExporter(manager.pyramid)
 
         # Export to JSON string
-        json_content = exporter.export_to_string(
-            include_metadata=request.include_metadata
+        json_content = exporter.to_json_string(
+            indent=2
         )
 
         # Return JSON
@@ -162,3 +162,28 @@ async def export_json(session_id: str, request: ExportRequest):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
+
+
+@router.get("/ai-guide")
+async def download_ai_guide():
+    """Download the AI Strategy Guide for standalone AI tool usage."""
+    try:
+        generator = AIGuideGenerator()
+
+        # Create temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".md", mode='w') as tmp:
+            tmp_path = tmp.name
+
+        # Export to file
+        generator.export(tmp_path)
+
+        # Return file
+        filename = "AI_Strategy_Guide.md"
+        return FileResponse(
+            path=tmp_path,
+            media_type="text/markdown",
+            filename=filename,
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Guide generation failed: {str(e)}")

@@ -33,7 +33,8 @@ class MarkdownExporter:
         lines.append("")
 
         for stmt in self.pyramid.vision.get_statements_ordered():
-            lines.append(f"**{stmt.statement_type.value.title()}:** {stmt.statement}")
+            lines.append(f"**{stmt.statement_type.value.title()}**  ")
+            lines.append(f"_{stmt.statement}_")
             lines.append("")
 
         return lines
@@ -97,7 +98,8 @@ class MarkdownExporter:
             lines.append("## Strategic Focus")
             lines.append("")
             for driver in self.pyramid.strategic_drivers:
-                lines.append(f"**{driver.name}**: {driver.description}")
+                lines.append(f"**{driver.name}**  ")
+                lines.append(f"{driver.description}")
                 lines.append("")
 
         # Top 3-5 Iconic Commitments
@@ -163,14 +165,14 @@ class MarkdownExporter:
         lines.extend(self._format_vision_statements("### Vision"))
 
         if self.pyramid.values:
-            lines.append("### Values")
+            lines.append("### Our Values")
             lines.append("")
             for value in self.pyramid.values:
-                lines.append(f"**{value.name}**")
                 if value.description:
-                    lines.append(f": {value.description}")
+                    lines.append(f"**{value.name}**  ")
+                    lines.append(f"{value.description}")
                 else:
-                    lines.append("")
+                    lines.append(f"- **{value.name}**")
                 lines.append("")
 
         # SECTION 2: STRATEGY
@@ -210,9 +212,11 @@ class MarkdownExporter:
             lines.append("*What makes our strategy possible*")
             lines.append("")
             for enabler in self.pyramid.enablers:
-                enabler_type = f" ({enabler.enabler_type})" if enabler.enabler_type else ""
-                lines.append(f"**{enabler.name}**{enabler_type}")
-                lines.append(f": {enabler.description}")
+                if enabler.enabler_type:
+                    lines.append(f"**{enabler.name}** _{enabler.enabler_type}_  ")
+                else:
+                    lines.append(f"**{enabler.name}**  ")
+                lines.append(f"{enabler.description}")
                 lines.append("")
 
         # SECTION 3: EXECUTION
@@ -242,14 +246,21 @@ class MarkdownExporter:
                     for commitment in commitments_by_horizon[horizon]:
                         # Get primary driver name
                         driver = self.pyramid.get_driver_by_id(commitment.primary_driver_id)
-                        driver_name = driver.name if driver else "Unknown"
-
-                        target = f" • Target: {commitment.target_date}" if commitment.target_date else ""
-                        owner = f" • Owner: {commitment.owner}" if commitment.owner else ""
+                        driver_name = driver.name if driver else "Not specified"
 
                         lines.append(f"#### {commitment.name}")
-                        lines.append(f"**Primary Driver:** {driver_name}{target}{owner}")
                         lines.append("")
+
+                        # Metadata in a clean table
+                        lines.append("| | |")
+                        lines.append("|---|---|")
+                        lines.append(f"| **Primary Driver** | {driver_name} |")
+                        if commitment.target_date:
+                            lines.append(f"| **Target Date** | {commitment.target_date} |")
+                        if commitment.owner:
+                            lines.append(f"| **Owner** | {commitment.owner} |")
+                        lines.append("")
+
                         lines.append(commitment.description)
                         lines.append("")
 
@@ -263,7 +274,7 @@ class MarkdownExporter:
                                     secondary_drivers.append(f"{sec_driver.name}{weight}")
 
                             if secondary_drivers:
-                                lines.append(f"*Also contributes to: {', '.join(secondary_drivers)}*")
+                                lines.append(f"_Also contributes to: {', '.join(secondary_drivers)}_")
                                 lines.append("")
 
         # Distribution Analysis
@@ -323,26 +334,26 @@ class MarkdownExporter:
                     lines.append(obj.description)
                     lines.append("")
 
-                    if obj.metrics:
-                        lines.append("**Success Metrics:**")
-                        for metric in obj.metrics:
-                            lines.append(f"- {metric}")
-                        lines.append("")
-
                     # Show relationships (NEW: supports commitment OR intent)
                     relationships = []
                     if obj.primary_commitment_id:
                         commitment = self.pyramid.get_commitment_by_id(obj.primary_commitment_id)
                         if commitment:
-                            relationships.append(f"Commitment: {commitment.name}")
+                            relationships.append(f"**{commitment.name}**")
 
                     if obj.primary_intent_id:
                         intent = self.pyramid.get_intent_by_id(obj.primary_intent_id)
                         if intent:
-                            relationships.append(f"Intent: {intent.statement[:50]}...")
+                            relationships.append(f"_{intent.statement[:50]}..._")
 
                     if relationships:
-                        lines.append(f"*Supports: {' | '.join(relationships)}*")
+                        lines.append(f"↗ Supports: {' | '.join(relationships)}")
+                        lines.append("")
+
+                    if obj.metrics:
+                        lines.append("**Success Metrics:**")
+                        for metric in obj.metrics:
+                            lines.append(f"- {metric}")
                         lines.append("")
 
         # Add individual objectives if present
@@ -353,31 +364,40 @@ class MarkdownExporter:
             lines.append("## Individual Objectives")
             lines.append("")
 
+            # Group by individual
+            individuals = {}
             for obj in self.pyramid.individual_objectives:
-                lines.append(f"### {obj.individual_name}: {obj.name}")
+                if obj.individual_name not in individuals:
+                    individuals[obj.individual_name] = []
+                individuals[obj.individual_name].append(obj)
+
+            for individual_name, objectives in individuals.items():
+                lines.append(f"### {individual_name}")
                 lines.append("")
-                lines.append(obj.description)
-                lines.append("")
 
-                # Show which team objectives this supports (NEW relationship)
-                if obj.team_objective_ids:
-                    team_objs = []
-                    for team_id in obj.team_objective_ids:
-                        team_obj = next((to for to in self.pyramid.team_objectives if to.id == team_id), None)
-                        if team_obj:
-                            team_objs.append(f"{team_obj.team_name}: {team_obj.name}")
-
-                    if team_objs:
-                        lines.append("**Supports Team Objectives:**")
-                        for team_obj_name in team_objs:
-                            lines.append(f"- {team_obj_name}")
-                        lines.append("")
-
-                if obj.success_criteria:
-                    lines.append("**Success Criteria:**")
-                    for criterion in obj.success_criteria:
-                        lines.append(f"- {criterion}")
+                for obj in objectives:
+                    lines.append(f"#### {obj.name}")
                     lines.append("")
+                    lines.append(obj.description)
+                    lines.append("")
+
+                    # Show which team objectives this supports (NEW relationship)
+                    if obj.team_objective_ids:
+                        team_objs = []
+                        for team_id in obj.team_objective_ids:
+                            team_obj = next((to for to in self.pyramid.team_objectives if to.id == team_id), None)
+                            if team_obj:
+                                team_objs.append(f"**{team_obj.team_name}: {team_obj.name}**")
+
+                        if team_objs:
+                            lines.append(f"↗ Supports: {', '.join(team_objs)}")
+                            lines.append("")
+
+                    if obj.success_criteria:
+                        lines.append("**Success Criteria:**")
+                        for criterion in obj.success_criteria:
+                            lines.append(f"- {criterion}")
+                        lines.append("")
 
         return "\n".join(lines)
 

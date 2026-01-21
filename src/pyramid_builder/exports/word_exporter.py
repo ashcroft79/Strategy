@@ -54,15 +54,20 @@ class WordExporter:
         self.doc.add_heading('Our Purpose', level=heading_level)
 
         for stmt in self.pyramid.vision.get_statements_ordered():
-            # Add statement type as subheading
+            # Add statement type as bold label
             p = self.doc.add_paragraph()
-            run = p.add_run(f"{stmt.statement_type.value.title()}: ")
+            run = p.add_run(f"{stmt.statement_type.value.title()}")
             run.bold = True
+            run.font.size = Pt(12)
             run.font.color.rgb = RGBColor(31, 119, 180)
 
-            # Add statement content
-            run_content = p.add_run(stmt.statement)
+            # Add statement content on new line
+            p2 = self.doc.add_paragraph()
+            run_content = p2.add_run(stmt.statement)
             run_content.italic = True
+            run_content.font.size = Pt(11)
+            p2.paragraph_format.left_indent = Inches(0.25)
+            p2.space_after = Pt(12)
 
     def export(
         self,
@@ -177,12 +182,19 @@ class WordExporter:
         self._add_vision_statements(heading_level=2)
 
         if self.pyramid.values:
-            self.doc.add_heading('Values', level=2)
+            self.doc.add_heading('Our Values', level=2)
             for value in self.pyramid.values:
-                p = self.doc.add_paragraph(style='List Bullet')
-                p.add_run(value.name).bold = True
+                p = self.doc.add_paragraph()
+                run = p.add_run(value.name)
+                run.bold = True
+                run.font.size = Pt(11)
+                run.font.color.rgb = RGBColor(31, 119, 180)
+
                 if value.description:
-                    p.add_run(f": {value.description}")
+                    p2 = self.doc.add_paragraph()
+                    p2.add_run(value.description)
+                    p2.paragraph_format.left_indent = Inches(0.25)
+                    p2.space_after = Pt(8)
 
         # SECTION 2: STRATEGY
         self.doc.add_page_break()
@@ -210,13 +222,29 @@ class WordExporter:
 
         if self.pyramid.enablers:
             self.doc.add_heading('Enablers', level=2)
-            self.doc.add_paragraph('What makes our strategy possible').italic = True
+            p_intro = self.doc.add_paragraph('What makes our strategy possible')
+            p_intro.runs[0].italic = True
+            p_intro.runs[0].font.color.rgb = RGBColor(100, 100, 100)
+            p_intro.space_after = Pt(12)
+
             for enabler in self.pyramid.enablers:
-                p = self.doc.add_paragraph(style='List Bullet')
-                p.add_run(enabler.name).bold = True
+                p = self.doc.add_paragraph()
+                run = p.add_run(enabler.name)
+                run.bold = True
+                run.font.size = Pt(11)
+                run.font.color.rgb = RGBColor(31, 119, 180)
+
                 if enabler.enabler_type:
-                    p.add_run(f" ({enabler.enabler_type})")
-                p.add_run(f": {enabler.description}")
+                    run_type = p.add_run(f"  ")
+                    run_type = p.add_run(enabler.enabler_type)
+                    run_type.italic = True
+                    run_type.font.size = Pt(10)
+                    run_type.font.color.rgb = RGBColor(100, 100, 100)
+
+                p2 = self.doc.add_paragraph()
+                p2.add_run(enabler.description)
+                p2.paragraph_format.left_indent = Inches(0.25)
+                p2.space_after = Pt(8)
 
         # SECTION 3: EXECUTION
         self.doc.add_page_break()
@@ -239,23 +267,39 @@ class WordExporter:
                     for commitment in commitments:
                         # Get primary driver name
                         driver = self.pyramid.get_driver_by_id(commitment.primary_driver_id)
-                        driver_name = driver.name if driver else "Unknown"
+                        driver_name = driver.name if driver else "Not specified"
 
                         self.doc.add_heading(commitment.name, level=3)
 
-                        # Add details table
-                        details_table = self.doc.add_table(rows=3, cols=2)
-                        details_table.style = 'Light List Accent 1'
+                        # Add details table with cleaner formatting
+                        num_rows = 1
+                        if commitment.target_date:
+                            num_rows += 1
+                        if commitment.owner:
+                            num_rows += 1
 
-                        details_table.rows[0].cells[0].text = "Primary Driver"
-                        details_table.rows[0].cells[1].text = driver_name
+                        details_table = self.doc.add_table(rows=num_rows, cols=2)
+                        details_table.style = 'Light Grid Accent 1'
 
-                        details_table.rows[1].cells[0].text = "Target Date"
-                        details_table.rows[1].cells[1].text = commitment.target_date or "TBD"
+                        row_idx = 0
+                        details_table.rows[row_idx].cells[0].text = "Primary Driver"
+                        details_table.rows[row_idx].cells[1].text = driver_name
 
-                        details_table.rows[2].cells[0].text = "Owner"
-                        details_table.rows[2].cells[1].text = commitment.owner or "TBD"
+                        if commitment.target_date:
+                            row_idx += 1
+                            details_table.rows[row_idx].cells[0].text = "Target Date"
+                            details_table.rows[row_idx].cells[1].text = commitment.target_date
 
+                        if commitment.owner:
+                            row_idx += 1
+                            details_table.rows[row_idx].cells[0].text = "Owner"
+                            details_table.rows[row_idx].cells[1].text = commitment.owner
+
+                        # Make first column bold
+                        for row in details_table.rows:
+                            row.cells[0].paragraphs[0].runs[0].font.bold = True
+
+                        self.doc.add_paragraph()
                         self.doc.add_paragraph(commitment.description)
 
                         # Show secondary alignments
