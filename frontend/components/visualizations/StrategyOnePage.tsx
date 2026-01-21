@@ -218,6 +218,7 @@ export default function StrategyOnePage({ pyramid, selectedTiers }: StrategyOneP
                     <div className="space-y-2">
                       {commitments.map((commitment) => {
                         const colors = getHorizonColor(commitment.horizon);
+                        const teamObjectives = getTeamObjectivesForCommitment(commitment.id);
                         return (
                           <div key={commitment.id} className="bg-white border border-purple-200 rounded-lg p-2.5">
                             <div className="flex items-start justify-between gap-2 mb-1.5">
@@ -247,6 +248,62 @@ export default function StrategyOnePage({ pyramid, selectedTiers }: StrategyOneP
                                 </span>
                               )}
                             </div>
+
+                            {/* Nested Team Objectives */}
+                            {selectedTiers.teamObjectives && teamObjectives.length > 0 && (
+                              <div className="mt-2 pt-2 border-t border-indigo-100">
+                                <div className="text-xs font-semibold text-indigo-800 mb-1.5">Team Objectives:</div>
+                                <div className="space-y-1.5 ml-3">
+                                  {teamObjectives.map((teamObj) => {
+                                    const individualObjectives = getIndividualObjectivesForTeam(teamObj.id);
+                                    return (
+                                      <div key={teamObj.id} className="bg-indigo-50 border-l-2 border-indigo-600 rounded-r p-2">
+                                        <div className="font-semibold text-xs text-indigo-900 mb-0.5">
+                                          {teamObj.name}
+                                        </div>
+                                        <div className="text-[10px] text-indigo-700 mb-1">
+                                          Team: {teamObj.team_name}
+                                        </div>
+                                        {teamObj.description && (
+                                          <p className="text-xs text-gray-700 leading-relaxed mb-1">
+                                            {teamObj.description}
+                                          </p>
+                                        )}
+                                        {teamObj.owner && (
+                                          <div className="text-[10px] text-gray-600">
+                                            <span className="font-medium">Owner:</span> {teamObj.owner}
+                                          </div>
+                                        )}
+
+                                        {/* Nested Individual Objectives */}
+                                        {selectedTiers.individualObjectives && individualObjectives.length > 0 && (
+                                          <div className="mt-1.5 pt-1.5 border-t border-pink-100">
+                                            <div className="text-[10px] font-semibold text-pink-800 mb-1">Individual Objectives:</div>
+                                            <div className="space-y-1 ml-2">
+                                              {individualObjectives.map((indObj) => (
+                                                <div key={indObj.id} className="bg-pink-50 border-l-2 border-pink-600 rounded-r p-1.5">
+                                                  <div className="font-semibold text-[10px] text-pink-900">
+                                                    {indObj.name}
+                                                  </div>
+                                                  <div className="text-[9px] text-pink-700">
+                                                    {indObj.individual_name}
+                                                  </div>
+                                                  {indObj.description && (
+                                                    <p className="text-[10px] text-gray-700 leading-relaxed mt-0.5">
+                                                      {indObj.description}
+                                                    </p>
+                                                  )}
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         );
                       })}
@@ -286,83 +343,6 @@ export default function StrategyOnePage({ pyramid, selectedTiers }: StrategyOneP
                     <span className="text-xs bg-teal-200 text-teal-800 px-2 py-1 rounded-full font-semibold">
                       {enabler.enabler_type}
                     </span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Team Objectives Section */}
-      {selectedTiers.teamObjectives && pyramid.team_objectives.length > 0 && (
-        <div className="team-objectives-section mb-5">
-          <div className="section-header bg-indigo-600 text-white px-3 py-2 rounded-lg font-bold text-sm uppercase tracking-wide mb-3">
-            Team Objectives
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {pyramid.team_objectives.map((objective) => (
-              <div key={objective.id} className="bg-indigo-50 border-l-4 border-indigo-600 rounded-r p-3">
-                <h4 className="font-bold text-sm text-indigo-900 mb-1">
-                  {objective.name}
-                </h4>
-                <div className="text-xs text-indigo-700 mb-2 font-medium">
-                  Team: {objective.team_name}
-                </div>
-                <p className="text-xs text-gray-700 leading-relaxed mb-2">
-                  {objective.description}
-                </p>
-                {objective.metrics && objective.metrics.length > 0 && (
-                  <div className="mt-2 pt-2 border-t border-indigo-200">
-                    <div className="text-xs font-semibold text-indigo-800 mb-1">Metrics:</div>
-                    <ul className="space-y-0.5">
-                      {objective.metrics.map((metric, idx) => (
-                        <li key={idx} className="text-xs text-gray-700 pl-2 border-l-2 border-indigo-300">
-                          {metric}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {objective.owner && (
-                  <div className="mt-2 text-xs text-gray-600">
-                    <span className="font-medium">Owner:</span> {objective.owner}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Individual Objectives Section */}
-      {selectedTiers.individualObjectives && pyramid.individual_objectives.length > 0 && (
-        <div className="individual-objectives-section mb-5">
-          <div className="section-header bg-pink-600 text-white px-3 py-2 rounded-lg font-bold text-sm uppercase tracking-wide mb-3">
-            Individual Objectives
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {pyramid.individual_objectives.map((objective) => (
-              <div key={objective.id} className="bg-pink-50 border-l-4 border-pink-600 rounded-r p-3">
-                <h4 className="font-bold text-sm text-pink-900 mb-1">
-                  {objective.name}
-                </h4>
-                <div className="text-xs text-pink-700 mb-2 font-medium">
-                  Individual: {objective.individual_name}
-                </div>
-                <p className="text-xs text-gray-700 leading-relaxed mb-2">
-                  {objective.description}
-                </p>
-                {objective.success_criteria && objective.success_criteria.length > 0 && (
-                  <div className="mt-2 pt-2 border-t border-pink-200">
-                    <div className="text-xs font-semibold text-pink-800 mb-1">Success Criteria:</div>
-                    <ul className="space-y-0.5">
-                      {objective.success_criteria.map((criterion, idx) => (
-                        <li key={idx} className="text-xs text-gray-700 pl-2 border-l-2 border-pink-300">
-                          {criterion}
-                        </li>
-                      ))}
-                    </ul>
                   </div>
                 )}
               </div>

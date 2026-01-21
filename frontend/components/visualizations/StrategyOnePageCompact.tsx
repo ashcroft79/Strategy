@@ -27,6 +27,14 @@ export default function StrategyOnePageCompact({ pyramid, selectedTiers }: Strat
     return pyramid.strategic_intents.filter(i => i.driver_id === driverId);
   };
 
+  const getTeamObjectivesForCommitment = (commitmentId: string): TeamObjective[] => {
+    return pyramid.team_objectives.filter(to => to.primary_commitment_id === commitmentId);
+  };
+
+  const getIndividualObjectivesForTeam = (teamObjectiveId: string): IndividualObjective[] => {
+    return pyramid.individual_objectives.filter(io => io.team_objective_ids.includes(teamObjectiveId));
+  };
+
   const getCommitmentsByDriver = (driverId: string): IconicCommitment[] => {
     const commitments = pyramid.iconic_commitments.filter(c => c.primary_driver_id === driverId);
 
@@ -151,17 +159,57 @@ export default function StrategyOnePageCompact({ pyramid, selectedTiers }: Strat
                   {/* Commitments - Table style */}
                   {commitments.length > 0 && (
                     <div className="space-y-0.5">
-                      {commitments.map((commitment) => (
-                        <div key={commitment.id} className="flex items-start gap-1 text-[9px]">
-                          <span className={`${getHorizonBadge(commitment.horizon)} px-1 py-0.5 rounded text-[8px] font-bold`}>
-                            {commitment.horizon}
-                          </span>
-                          <span className="flex-1 font-semibold text-gray-900">{commitment.name}</span>
-                          {commitment.target_date && (
-                            <span className="text-gray-500 whitespace-nowrap">{formatDate(commitment.target_date)}</span>
-                          )}
-                        </div>
-                      ))}
+                      {commitments.map((commitment) => {
+                        const teamObjectives = getTeamObjectivesForCommitment(commitment.id);
+                        return (
+                          <div key={commitment.id} className="text-[9px]">
+                            <div className="flex items-start gap-1">
+                              <span className={`${getHorizonBadge(commitment.horizon)} px-1 py-0.5 rounded text-[8px] font-bold`}>
+                                {commitment.horizon}
+                              </span>
+                              <span className="flex-1 font-semibold text-gray-900">{commitment.name}</span>
+                              {commitment.target_date && (
+                                <span className="text-gray-500 whitespace-nowrap">{formatDate(commitment.target_date)}</span>
+                              )}
+                            </div>
+
+                            {/* Nested Team Objectives */}
+                            {selectedTiers.teamObjectives && teamObjectives.length > 0 && (
+                              <div className="mt-0.5 ml-6 space-y-0.5">
+                                {teamObjectives.map((teamObj) => {
+                                  const individualObjectives = getIndividualObjectivesForTeam(teamObj.id);
+                                  return (
+                                    <div key={teamObj.id} className="bg-indigo-50 border-l border-indigo-600 rounded-r px-1 py-0.5">
+                                      <div className="text-[8px] font-semibold text-indigo-900">
+                                        {teamObj.name}
+                                      </div>
+                                      <div className="text-[7px] text-indigo-700">
+                                        {teamObj.team_name}
+                                      </div>
+
+                                      {/* Nested Individual Objectives */}
+                                      {selectedTiers.individualObjectives && individualObjectives.length > 0 && (
+                                        <div className="mt-0.5 space-y-0.5">
+                                          {individualObjectives.map((indObj) => (
+                                            <div key={indObj.id} className="bg-pink-50 border-l border-pink-600 rounded-r px-1 py-0.5 ml-1">
+                                              <div className="text-[7px] font-semibold text-pink-900">
+                                                {indObj.name}
+                                              </div>
+                                              <div className="text-[7px] text-pink-700">
+                                                {indObj.individual_name}
+                                              </div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -192,54 +240,6 @@ export default function StrategyOnePageCompact({ pyramid, selectedTiers }: Strat
         </div>
         )}
       </div>
-
-      {/* Team Objectives - Full Width */}
-      {selectedTiers.teamObjectives && pyramid.team_objectives && pyramid.team_objectives.length > 0 && (
-        <div className="team-objectives mb-2">
-          <div className="bg-indigo-600 text-white px-1.5 py-0.5 rounded text-[9px] font-bold uppercase mb-1">
-            Team Objectives
-          </div>
-          <div className="grid grid-cols-2 gap-1">
-            {pyramid.team_objectives.map((objective) => (
-              <div key={objective.id} className="bg-indigo-50 border-l-2 border-indigo-600 px-1.5 py-1">
-                <div className="font-bold text-indigo-900">{objective.name}</div>
-                {objective.description && (
-                  <div className="text-[9px] text-gray-700 mt-0.5">{objective.description}</div>
-                )}
-                {objective.team_name && (
-                  <div className="text-[8px] bg-indigo-200 text-indigo-800 px-1 rounded inline-block mt-0.5">
-                    {objective.team_name}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Individual Objectives - Full Width */}
-      {selectedTiers.individualObjectives && pyramid.individual_objectives && pyramid.individual_objectives.length > 0 && (
-        <div className="individual-objectives mb-2">
-          <div className="bg-pink-600 text-white px-1.5 py-0.5 rounded text-[9px] font-bold uppercase mb-1">
-            Individual Objectives
-          </div>
-          <div className="grid grid-cols-2 gap-1">
-            {pyramid.individual_objectives.map((objective) => (
-              <div key={objective.id} className="bg-pink-50 border-l-2 border-pink-600 px-1.5 py-1">
-                <div className="font-bold text-pink-900">{objective.name}</div>
-                {objective.description && (
-                  <div className="text-[9px] text-gray-700 mt-0.5">{objective.description}</div>
-                )}
-                {objective.individual_name && (
-                  <div className="text-[8px] bg-pink-200 text-pink-800 px-1 rounded inline-block mt-0.5">
-                    {objective.individual_name}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Footer - Stats */}
       <div className="footer border-t border-gray-300 pt-1">
