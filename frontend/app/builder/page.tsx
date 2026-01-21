@@ -1934,7 +1934,7 @@ export default function BuilderPage() {
                             } else {
                               setEditFormData({
                                 ...editFormData,
-                                primary_intent_ids: currentIntents.filter(id => id !== intent.id)
+                                primary_intent_ids: currentIntents.filter((id: string) => id !== intent.id)
                               });
                             }
                           }}
