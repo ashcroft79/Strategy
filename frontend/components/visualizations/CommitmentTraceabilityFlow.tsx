@@ -1,7 +1,11 @@
 import { useState } from "react";
-import { StrategyPyramid, IconicCommitment } from "@/types/pyramid";
-import { Sparkles, AlertCircle, TrendingUp, Layers, ChevronRight, Edit } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { StrategyPyramid, IconicCommitment, Horizon } from "@/types/pyramid";
+import { Sparkles, AlertCircle, TrendingUp, Layers, ChevronRight, Edit, X, Save } from "lucide-react";
+import { commitmentsApi } from "@/lib/api-client";
+import { usePyramidStore } from "@/lib/store";
+import Modal from "@/components/ui/Modal";
+import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
 
 interface CommitmentTraceabilityFlowProps {
   pyramid: StrategyPyramid;
@@ -19,8 +23,80 @@ interface TraceabilityScore {
 }
 
 export default function CommitmentTraceabilityFlow({ pyramid }: CommitmentTraceabilityFlowProps) {
-  const router = useRouter();
+  const { sessionId, setPyramid, showToast, setLoading, isLoading } = usePyramidStore();
   const [selectedCommitmentId, setSelectedCommitmentId] = useState<string | null>(null);
+
+  // Edit modal state
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingCommitment, setEditingCommitment] = useState<IconicCommitment | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    description: "",
+    horizon: Horizon.H1,
+    target_date: "",
+    primary_driver_id: "",
+    owner: ""
+  });
+
+  // Open edit modal
+  const handleEditClick = (commitment: IconicCommitment) => {
+    setEditingCommitment(commitment);
+    setEditForm({
+      name: commitment.name,
+      description: commitment.description,
+      horizon: commitment.horizon,
+      target_date: commitment.target_date || "",
+      primary_driver_id: commitment.primary_driver_id,
+      owner: commitment.owner || ""
+    });
+    setIsEditModalOpen(true);
+  };
+
+  // Close edit modal
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
+    setEditingCommitment(null);
+    setEditForm({
+      name: "",
+      description: "",
+      horizon: Horizon.H1,
+      target_date: "",
+      primary_driver_id: "",
+      owner: ""
+    });
+  };
+
+  // Handle form submission
+  const handleUpdateCommitment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCommitment || !sessionId) return;
+
+    try {
+      setLoading(true);
+      await commitmentsApi.update(
+        sessionId,
+        editingCommitment.id,
+        editForm.name,
+        editForm.description,
+        editForm.horizon,
+        editForm.target_date || undefined,
+        editForm.primary_driver_id,
+        editForm.owner || undefined
+      );
+
+      // Refresh pyramid data
+      const { pyramidApi } = await import("@/lib/api-client");
+      const updated = await pyramidApi.get(sessionId);
+      setPyramid(updated);
+
+      showToast("Commitment updated successfully", "success");
+      closeEditModal();
+    } catch (err: any) {
+      showToast(err.response?.data?.detail || "Failed to update commitment", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Calculate traceability scores for all commitments
   const calculateTraceability = (): TraceabilityScore[] => {
@@ -285,7 +361,8 @@ export default function CommitmentTraceabilityFlow({ pyramid }: CommitmentTracea
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      router.push(`/builder?edit=commitment&id=${trace.commitmentId}`);
+                      const commitment = pyramid.iconic_commitments.find(c => c.id === trace.commitmentId);
+                      if (commitment) handleEditClick(commitment);
                     }}
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg text-xs font-medium transition-colors"
                   >
@@ -424,6 +501,119 @@ export default function CommitmentTraceabilityFlow({ pyramid }: CommitmentTracea
           </div>
         </div>
       </div>
+
+      {/* Edit Modal */}
+      <Modal isOpen={isEditModalOpen} onClose={closeEditModal} title="Edit Iconic Commitment">
+        <form onSubmit={handleUpdateCommitment} className="space-y-4">
+          {/* Name */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Commitment Name <span className="text-red-500">*</span>
+            </label>
+            <Input
+              value={editForm.name}
+              onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+              placeholder="Enter commitment name"
+              required
+            />
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Description <span className="text-red-500">*</span>
+            </label>
+            <Textarea
+              value={editForm.description}
+              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+              placeholder="Describe this commitment"
+              rows={3}
+              required
+            />
+          </div>
+
+          {/* Horizon */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Time Horizon <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={editForm.horizon}
+              onChange={(e) => setEditForm({ ...editForm, horizon: e.target.value as Horizon })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              required
+            >
+              <option value={Horizon.H1}>H1 (0-12 months)</option>
+              <option value={Horizon.H2}>H2 (12-24 months)</option>
+              <option value={Horizon.H3}>H3 (24-36 months)</option>
+            </select>
+          </div>
+
+          {/* Strategic Driver */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Primary Strategic Driver <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={editForm.primary_driver_id}
+              onChange={(e) => setEditForm({ ...editForm, primary_driver_id: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              required
+            >
+              <option value="">Select a driver</option>
+              {pyramid.strategic_drivers.map((driver) => (
+                <option key={driver.id} value={driver.id}>
+                  {driver.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Target Date */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Target Date (Optional)
+            </label>
+            <Input
+              type="date"
+              value={editForm.target_date}
+              onChange={(e) => setEditForm({ ...editForm, target_date: e.target.value })}
+            />
+          </div>
+
+          {/* Owner */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Owner (Optional)
+            </label>
+            <Input
+              value={editForm.owner}
+              onChange={(e) => setEditForm({ ...editForm, owner: e.target.value })}
+              placeholder="Who owns this commitment?"
+            />
+          </div>
+
+          {/* Buttons */}
+          <div className="flex justify-end gap-3 pt-4">
+            <button
+              type="button"
+              onClick={closeEditModal}
+              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              disabled={isLoading}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50"
+              disabled={isLoading}
+            >
+              <Save className="w-4 h-4" />
+              {isLoading ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
