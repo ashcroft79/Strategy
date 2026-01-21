@@ -268,25 +268,7 @@ This forces conversations about sequencing and capacity: "Can we really deliver 
 **Example (Good)**:
 - "We share work-in-progress early and often, inviting feedback before perfecting" → Links to: Speed Over Perfection, Transparent by Default
 
-### Tier 4: Strategic Intent
-
-**What It Is**: External voices, problems, and trends that inform strategy.
-
-**Structure**: Statement + Linked Driver
-- Statement: What we're hearing/seeing (e.g., "Customers demand 24/7 support across all channels")
-- Driver: Which strategic driver responds to this intent?
-
-**Best Practices**:
-- ✅ Start with "Customers expect...", "The market is shifting to...", "Employees report..."
-- ✅ Outside-in perspective (not internal capabilities)
-- ✅ Specific and evidence-based
-- ❌ Avoid: Internal strategic statements ("Improve efficiency")
-
-**Example (Good)**:
-- "Customers expect same-day delivery as standard, not premium" → Links to Driver: "Logistics Excellence"
-- "Employees report burnout from always-on culture" → Links to Driver: "Sustainable Performance"
-
-### Tier 5: Strategic Drivers (Themes/Pillars)
+### Tier 4: Strategic Drivers (Themes/Pillars)
 
 **What It Is**: The 3-5 focus areas that define your strategy.
 
@@ -298,15 +280,34 @@ This forces conversations about sequencing and capacity: "Can we really deliver 
 **Best Practices**:
 - ✅ 3-5 drivers (more = unfocused, fewer = oversimplified)
 - ✅ Each should be distinct and defensible
+- ✅ Each must be at least one word and no more than three. Ideal structure is an Adjective + Noun, alterntively Adverb + Verb
 - ✅ Rationale explains the strategic choice
 - ❌ Avoid: Generic labels without context
 
 **The Hard Part**: Leadership must CHOOSE. Not everything can be a strategic driver.
 
 **Example (Good)**:
-- **Customer Excellence**
+- **Exceptional Customer Servive**
   - Description: "We compete on customer experience, not price. Every touchpoint should exceed expectations."
   - Rationale: "Market research shows NPS is the #1 predictor of retention in our industry. We're betting on loyalty over acquisition."
+
+### Tier 5: Strategic Intent
+
+**What It Is**: External voices, problems, and trends that inform strategy.
+
+**Structure**: Statement + Linked Driver
+- Statement: What we're hearing/seeing (e.g., "Customers demand 24/7 support across all channels")
+- Driver: Which strategic driver responds to this intent?
+
+**Best Practices**:
+- ✅ Bold, aspirational, stretching outcome-focused statements per driver. Statements that can be imagined and paint an end state picture
+- ✅ Outside-in perspective (not internal capabilities)
+- ✅ Specific and evidence-based
+- ❌ Avoid: Internal strategic statements ("Improve efficiency")
+
+**Example (Good)**:
+- "Customers expect same-day delivery as standard, not premium" → Links to Driver: "Logistics Excellence"
+- "Our data tells stories so clear, decisions become obvious" → Links to Driver: "Driven by Data"
 
 ### Tier 6: Enablers
 
@@ -316,7 +317,7 @@ This forces conversations about sequencing and capacity: "Can we really deliver 
 - Name: The enabler (e.g., "Cloud Infrastructure", "Data Platform")
 - Description: What it is and why needed
 - Drivers: Which drivers depend on this enabler?
-- Type: Technology, Process, People, Culture, Partnership
+- Type: Technology/Systems, Process, People, Culture, Partnership
 
 **Best Practices**:
 - ✅ Enablers support multiple drivers (cross-cutting)
@@ -395,6 +396,9 @@ This forces conversations about sequencing and capacity: "Can we really deliver 
 - ✅ Personal development included
 - ✅ Achievable with reasonable effort
 - ❌ Avoid: Generic objectives (copy-paste across team)
+
+### The Red Thread
+All tiers connect through strategic alignment - each item should trace back to vision and forward to execution.
 
 ---
 
