@@ -736,9 +736,6 @@ export default function BuilderPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Unsaved Changes Indicator */}
-      <UnsavedChangesIndicator />
-
       {/* Edit params handler */}
       <Suspense fallback={null}>
         <EditParamsHandler
@@ -783,6 +780,9 @@ export default function BuilderPage() {
         {/* Left Sidebar - Fixed Pyramid */}
         <div className="w-96 bg-gradient-to-b from-gray-50 to-white border-r border-gray-200 overflow-y-auto">
           <div className="p-4 space-y-4">
+            {/* Unsaved Changes Indicator */}
+            <UnsavedChangesIndicator variant="inline" />
+
             {/* Pyramid Section */}
             <div>
               <h2 className="text-lg font-bold text-gray-800 mb-2">Strategic Pyramid</h2>

@@ -7,7 +7,11 @@ import { downloadBlob } from '@/lib/utils';
 import { Save, Download, AlertCircle, CheckCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
-export const UnsavedChangesIndicator: React.FC = () => {
+interface UnsavedChangesIndicatorProps {
+  variant?: 'fixed' | 'inline';
+}
+
+export const UnsavedChangesIndicator: React.FC<UnsavedChangesIndicatorProps> = ({ variant = 'fixed' }) => {
   const { unsavedChanges, lastSavedAt, sessionId, pyramid, resetUnsavedChanges } = usePyramidStore();
   const [isDownloading, setIsDownloading] = React.useState(false);
 
@@ -39,8 +43,10 @@ export const UnsavedChangesIndicator: React.FC = () => {
 
   const hasUnsavedChanges = unsavedChanges > 0;
 
+  const containerClass = variant === 'fixed' ? 'fixed top-4 right-4 z-50' : 'w-full';
+
   return (
-    <div className="fixed top-4 right-4 z-50">
+    <div className={containerClass}>
       <div
         className={`rounded-lg shadow-lg border-2 transition-all ${
           hasUnsavedChanges
