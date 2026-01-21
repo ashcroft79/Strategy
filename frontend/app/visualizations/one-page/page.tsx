@@ -1,16 +1,23 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePyramidStore } from "@/lib/store";
 import { Button } from "@/components/ui/Button";
 import StrategyOnePage from "@/components/visualizations/StrategyOnePage";
-import { ArrowLeft, Printer, Download, FileText } from "lucide-react";
+import StrategyOnePageLandscape from "@/components/visualizations/StrategyOnePageLandscape";
+import StrategyOnePageCompact from "@/components/visualizations/StrategyOnePageCompact";
+import { ArrowLeft, Printer, Download, FileText, Columns3, Columns, LayoutGrid } from "lucide-react";
 import "../../../styles/strategy-one-page.css";
+import "../../../styles/strategy-landscape.css";
+import "../../../styles/strategy-compact.css";
+
+type LayoutType = "portrait" | "landscape" | "compact";
 
 export default function OnePageVisualizationPage() {
   const router = useRouter();
   const { pyramid } = usePyramidStore();
+  const [layout, setLayout] = useState<LayoutType>("portrait");
 
   useEffect(() => {
     if (!pyramid) {
@@ -48,15 +55,57 @@ export default function OnePageVisualizationPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Button variant="secondary" onClick={handlePrint}>
-                <Printer className="w-4 h-4 mr-2" />
-                Print
-              </Button>
-              <Button variant="primary" onClick={handleExportPDF}>
-                <Download className="w-4 h-4 mr-2" />
-                Export PDF
-              </Button>
+            <div className="flex items-center gap-3">
+              {/* Layout Switcher */}
+              <div className="flex items-center gap-1 border border-gray-300 rounded-lg p-1">
+                <button
+                  onClick={() => setLayout("portrait")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                    layout === "portrait"
+                      ? "bg-blue-600 text-white"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                  title="Portrait Flow Layout"
+                >
+                  <Columns className="w-4 h-4" />
+                  <span className="hidden sm:inline">Portrait</span>
+                </button>
+                <button
+                  onClick={() => setLayout("landscape")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                    layout === "landscape"
+                      ? "bg-blue-600 text-white"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                  title="Landscape Pillars Layout"
+                >
+                  <Columns3 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Landscape</span>
+                </button>
+                <button
+                  onClick={() => setLayout("compact")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                    layout === "compact"
+                      ? "bg-blue-600 text-white"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                  title="Compact Dense Layout"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                  <span className="hidden sm:inline">Compact</span>
+                </button>
+              </div>
+
+              <div className="border-l border-gray-300 pl-3 flex items-center gap-2">
+                <Button variant="secondary" onClick={handlePrint}>
+                  <Printer className="w-4 h-4 mr-2" />
+                  Print
+                </Button>
+                <Button variant="primary" onClick={handleExportPDF}>
+                  <Download className="w-4 h-4 mr-2" />
+                  Export PDF
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -69,12 +118,15 @@ export default function OnePageVisualizationPage() {
             <FileText className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm text-blue-900 font-medium">
-                This page is optimized for printing and PDF export (A4 portrait)
+                {layout === "portrait" && "Portrait Flow: Logical grouping with drivers → intents → commitments (A4 portrait)"}
+                {layout === "landscape" && "Landscape Pillars: Side-by-side driver columns for comparison (A4 landscape)"}
+                {layout === "compact" && "Compact Dense: Maximum information density in minimal space (A4 portrait)"}
               </p>
               <p className="text-xs text-blue-700 mt-1">
-                Click "Print" or "Export PDF" above to generate a professional strategy document.
-                The layout groups commitments under their strategic drivers for clear alignment.
-                Minimum 11pt body text ensures readability.
+                Choose your preferred layout above, then click "Print" or "Export PDF" to generate your document.
+                {layout === "portrait" && " Groups commitments under drivers for clear strategic alignment."}
+                {layout === "landscape" && " Each driver is a vertical pillar showing its complete story."}
+                {layout === "compact" && " Newspaper-style density optimized for single-page overview."}
               </p>
             </div>
           </div>
@@ -83,9 +135,11 @@ export default function OnePageVisualizationPage() {
 
       {/* Main Content */}
       <div className="py-8">
-        <div className="max-w-[1400px] mx-auto px-6">
+        <div className={`mx-auto px-6 ${layout === "landscape" ? "max-w-full" : "max-w-[1400px]"}`}>
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <StrategyOnePage pyramid={pyramid} />
+            {layout === "portrait" && <StrategyOnePage pyramid={pyramid} />}
+            {layout === "landscape" && <StrategyOnePageLandscape pyramid={pyramid} />}
+            {layout === "compact" && <StrategyOnePageCompact pyramid={pyramid} />}
           </div>
         </div>
       </div>
@@ -93,7 +147,9 @@ export default function OnePageVisualizationPage() {
       {/* Footer - Hidden on print */}
       <div className="no-print py-8 text-center text-sm text-gray-500">
         <p>
-          Tip: For best results, use "Print to PDF" in your browser with A4 portrait orientation
+          {layout === "portrait" && "Tip: For best results, use \"Print to PDF\" with A4 portrait orientation"}
+          {layout === "landscape" && "Tip: For best results, use \"Print to PDF\" with A4 landscape orientation"}
+          {layout === "compact" && "Tip: For best results, use \"Print to PDF\" with A4 portrait orientation"}
         </p>
       </div>
     </div>
