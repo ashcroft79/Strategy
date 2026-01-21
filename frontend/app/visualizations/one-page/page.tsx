@@ -7,17 +7,35 @@ import { Button } from "@/components/ui/Button";
 import StrategyOnePage from "@/components/visualizations/StrategyOnePage";
 import StrategyOnePageLandscape from "@/components/visualizations/StrategyOnePageLandscape";
 import StrategyOnePageCompact from "@/components/visualizations/StrategyOnePageCompact";
-import { ArrowLeft, Printer, Download, FileText, Columns3, Columns, LayoutGrid } from "lucide-react";
+import { ArrowLeft, Printer, Download, FileText, Columns3, Columns, LayoutGrid, Settings, ChevronDown } from "lucide-react";
 import "../../../styles/strategy-one-page.css";
 import "../../../styles/strategy-landscape.css";
 import "../../../styles/strategy-compact.css";
 
 type LayoutType = "portrait" | "landscape" | "compact";
 
+interface TierSelection {
+  vision: boolean;
+  values: boolean;
+  drivers: boolean;
+  enablers: boolean;
+  teamObjectives: boolean;
+  individualObjectives: boolean;
+}
+
 export default function OnePageVisualizationPage() {
   const router = useRouter();
   const { pyramid } = usePyramidStore();
   const [layout, setLayout] = useState<LayoutType>("portrait");
+  const [showTierSelector, setShowTierSelector] = useState(false);
+  const [selectedTiers, setSelectedTiers] = useState<TierSelection>({
+    vision: true,
+    values: true,
+    drivers: true,
+    enablers: true,
+    teamObjectives: false,
+    individualObjectives: false,
+  });
 
   useEffect(() => {
     if (!pyramid) {
@@ -96,6 +114,82 @@ export default function OnePageVisualizationPage() {
                 </button>
               </div>
 
+              {/* Tier Selector */}
+              <div className="relative border-l border-gray-300 pl-3">
+                <button
+                  onClick={() => setShowTierSelector(!showTierSelector)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  title="Select which tiers to display"
+                >
+                  <Settings className="w-4 h-4" />
+                  <span className="hidden sm:inline">Tiers</span>
+                  <ChevronDown className={`w-4 h-4 transition-transform ${showTierSelector ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Tier Selector Dropdown */}
+                {showTierSelector && (
+                  <div className="absolute top-full right-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg p-3 w-64 z-50">
+                    <div className="text-xs font-bold text-gray-700 mb-2 uppercase">Select Tiers to Display</div>
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                        <input
+                          type="checkbox"
+                          checked={selectedTiers.vision}
+                          onChange={(e) => setSelectedTiers({ ...selectedTiers, vision: e.target.checked })}
+                          className="w-4 h-4 text-blue-600 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Vision/Mission</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                        <input
+                          type="checkbox"
+                          checked={selectedTiers.values}
+                          onChange={(e) => setSelectedTiers({ ...selectedTiers, values: e.target.checked })}
+                          className="w-4 h-4 text-blue-600 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Values & Behaviours</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                        <input
+                          type="checkbox"
+                          checked={selectedTiers.drivers}
+                          onChange={(e) => setSelectedTiers({ ...selectedTiers, drivers: e.target.checked })}
+                          className="w-4 h-4 text-blue-600 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Drivers, Intents & Commitments</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                        <input
+                          type="checkbox"
+                          checked={selectedTiers.enablers}
+                          onChange={(e) => setSelectedTiers({ ...selectedTiers, enablers: e.target.checked })}
+                          className="w-4 h-4 text-blue-600 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Enablers</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                        <input
+                          type="checkbox"
+                          checked={selectedTiers.teamObjectives}
+                          onChange={(e) => setSelectedTiers({ ...selectedTiers, teamObjectives: e.target.checked })}
+                          className="w-4 h-4 text-blue-600 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Team Objectives</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                        <input
+                          type="checkbox"
+                          checked={selectedTiers.individualObjectives}
+                          onChange={(e) => setSelectedTiers({ ...selectedTiers, individualObjectives: e.target.checked })}
+                          className="w-4 h-4 text-blue-600 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Individual Objectives</span>
+                      </label>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="border-l border-gray-300 pl-3 flex items-center gap-2">
                 <Button variant="secondary" onClick={handlePrint}>
                   <Printer className="w-4 h-4 mr-2" />
@@ -137,9 +231,9 @@ export default function OnePageVisualizationPage() {
       <div className="py-8">
         <div className={`mx-auto px-6 ${layout === "landscape" ? "max-w-full" : "max-w-[1400px]"}`}>
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            {layout === "portrait" && <StrategyOnePage pyramid={pyramid} />}
-            {layout === "landscape" && <StrategyOnePageLandscape pyramid={pyramid} />}
-            {layout === "compact" && <StrategyOnePageCompact pyramid={pyramid} />}
+            {layout === "portrait" && <StrategyOnePage pyramid={pyramid} selectedTiers={selectedTiers} />}
+            {layout === "landscape" && <StrategyOnePageLandscape pyramid={pyramid} selectedTiers={selectedTiers} />}
+            {layout === "compact" && <StrategyOnePageCompact pyramid={pyramid} selectedTiers={selectedTiers} />}
           </div>
         </div>
       </div>

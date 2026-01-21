@@ -1,10 +1,20 @@
-import { StrategyPyramid, Value, Behaviour, StrategicDriver, StrategicIntent, IconicCommitment, Enabler } from "@/types/pyramid";
+import { StrategyPyramid, Value, Behaviour, StrategicDriver, StrategicIntent, IconicCommitment, Enabler, TeamObjective, IndividualObjective } from "@/types/pyramid";
+
+interface TierSelection {
+  vision: boolean;
+  values: boolean;
+  drivers: boolean;
+  enablers: boolean;
+  teamObjectives: boolean;
+  individualObjectives: boolean;
+}
 
 interface StrategyOnePageProps {
   pyramid: StrategyPyramid;
+  selectedTiers: TierSelection;
 }
 
-export default function StrategyOnePage({ pyramid }: StrategyOnePageProps) {
+export default function StrategyOnePage({ pyramid, selectedTiers }: StrategyOnePageProps) {
   // Helper functions
   const getVisionStatements = () => {
     return pyramid.vision?.statements || [];
@@ -72,6 +82,14 @@ export default function StrategyOnePage({ pyramid }: StrategyOnePageProps) {
     }
   };
 
+  const getTeamObjectivesForCommitment = (commitmentId: string): TeamObjective[] => {
+    return pyramid.team_objectives.filter(to => to.primary_commitment_id === commitmentId);
+  };
+
+  const getIndividualObjectivesForTeam = (teamObjectiveId: string): IndividualObjective[] => {
+    return pyramid.individual_objectives.filter(io => io.team_objective_ids.includes(teamObjectiveId));
+  };
+
   return (
     <div className="strategy-one-page bg-white">
       {/* Page Header */}
@@ -98,7 +116,7 @@ export default function StrategyOnePage({ pyramid }: StrategyOnePageProps) {
       </div>
 
       {/* Vision/Mission Banner */}
-      {getVisionStatements().length > 0 && (
+      {selectedTiers.vision && getVisionStatements().length > 0 && (
         <div className="vision-banner bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg p-4 mb-4">
           {getVisionStatements().map((statement) => (
             <div key={statement.id} className="mb-3 last:mb-0">
@@ -116,7 +134,7 @@ export default function StrategyOnePage({ pyramid }: StrategyOnePageProps) {
       )}
 
       {/* Values & Behaviours Section */}
-      {pyramid.values.length > 0 && (
+      {selectedTiers.values && pyramid.values.length > 0 && (
         <div className="values-section mb-5">
           <div className="section-header bg-blue-600 text-white px-3 py-2 rounded-lg font-bold text-sm uppercase tracking-wide mb-3">
             Values & Behaviours
@@ -153,7 +171,7 @@ export default function StrategyOnePage({ pyramid }: StrategyOnePageProps) {
       )}
 
       {/* Strategic Drivers Section with Nested Intents and Commitments */}
-      {pyramid.strategic_drivers.length > 0 && (
+      {selectedTiers.drivers && pyramid.strategic_drivers.length > 0 && (
         <div className="drivers-section mb-5">
           <div className="section-header bg-purple-600 text-white px-3 py-2 rounded-lg font-bold text-sm uppercase tracking-wide mb-3">
             Strategic Drivers & Execution
@@ -249,7 +267,7 @@ export default function StrategyOnePage({ pyramid }: StrategyOnePageProps) {
       )}
 
       {/* Enablers Section */}
-      {pyramid.enablers.length > 0 && (
+      {selectedTiers.enablers && pyramid.enablers.length > 0 && (
         <div className="enablers-section mb-5">
           <div className="section-header bg-teal-600 text-white px-3 py-2 rounded-lg font-bold text-sm uppercase tracking-wide mb-3">
             Enablers
@@ -268,6 +286,83 @@ export default function StrategyOnePage({ pyramid }: StrategyOnePageProps) {
                     <span className="text-xs bg-teal-200 text-teal-800 px-2 py-1 rounded-full font-semibold">
                       {enabler.enabler_type}
                     </span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Team Objectives Section */}
+      {selectedTiers.teamObjectives && pyramid.team_objectives.length > 0 && (
+        <div className="team-objectives-section mb-5">
+          <div className="section-header bg-indigo-600 text-white px-3 py-2 rounded-lg font-bold text-sm uppercase tracking-wide mb-3">
+            Team Objectives
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {pyramid.team_objectives.map((objective) => (
+              <div key={objective.id} className="bg-indigo-50 border-l-4 border-indigo-600 rounded-r p-3">
+                <h4 className="font-bold text-sm text-indigo-900 mb-1">
+                  {objective.name}
+                </h4>
+                <div className="text-xs text-indigo-700 mb-2 font-medium">
+                  Team: {objective.team_name}
+                </div>
+                <p className="text-xs text-gray-700 leading-relaxed mb-2">
+                  {objective.description}
+                </p>
+                {objective.metrics && objective.metrics.length > 0 && (
+                  <div className="mt-2 pt-2 border-t border-indigo-200">
+                    <div className="text-xs font-semibold text-indigo-800 mb-1">Metrics:</div>
+                    <ul className="space-y-0.5">
+                      {objective.metrics.map((metric, idx) => (
+                        <li key={idx} className="text-xs text-gray-700 pl-2 border-l-2 border-indigo-300">
+                          {metric}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {objective.owner && (
+                  <div className="mt-2 text-xs text-gray-600">
+                    <span className="font-medium">Owner:</span> {objective.owner}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Individual Objectives Section */}
+      {selectedTiers.individualObjectives && pyramid.individual_objectives.length > 0 && (
+        <div className="individual-objectives-section mb-5">
+          <div className="section-header bg-pink-600 text-white px-3 py-2 rounded-lg font-bold text-sm uppercase tracking-wide mb-3">
+            Individual Objectives
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {pyramid.individual_objectives.map((objective) => (
+              <div key={objective.id} className="bg-pink-50 border-l-4 border-pink-600 rounded-r p-3">
+                <h4 className="font-bold text-sm text-pink-900 mb-1">
+                  {objective.name}
+                </h4>
+                <div className="text-xs text-pink-700 mb-2 font-medium">
+                  Individual: {objective.individual_name}
+                </div>
+                <p className="text-xs text-gray-700 leading-relaxed mb-2">
+                  {objective.description}
+                </p>
+                {objective.success_criteria && objective.success_criteria.length > 0 && (
+                  <div className="mt-2 pt-2 border-t border-pink-200">
+                    <div className="text-xs font-semibold text-pink-800 mb-1">Success Criteria:</div>
+                    <ul className="space-y-0.5">
+                      {objective.success_criteria.map((criterion, idx) => (
+                        <li key={idx} className="text-xs text-gray-700 pl-2 border-l-2 border-pink-300">
+                          {criterion}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 )}
               </div>

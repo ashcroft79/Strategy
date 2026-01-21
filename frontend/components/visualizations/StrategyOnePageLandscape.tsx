@@ -1,10 +1,20 @@
-import { StrategyPyramid, StrategicDriver, StrategicIntent, IconicCommitment } from "@/types/pyramid";
+import { StrategyPyramid, StrategicDriver, StrategicIntent, IconicCommitment, TeamObjective, IndividualObjective } from "@/types/pyramid";
+
+interface TierSelection {
+  vision: boolean;
+  values: boolean;
+  drivers: boolean;
+  enablers: boolean;
+  teamObjectives: boolean;
+  individualObjectives: boolean;
+}
 
 interface StrategyOnePageLandscapeProps {
   pyramid: StrategyPyramid;
+  selectedTiers: TierSelection;
 }
 
-export default function StrategyOnePageLandscape({ pyramid }: StrategyOnePageLandscapeProps) {
+export default function StrategyOnePageLandscape({ pyramid, selectedTiers }: StrategyOnePageLandscapeProps) {
   const getVisionStatements = () => {
     return pyramid.vision?.statements || [];
   };
@@ -80,7 +90,7 @@ export default function StrategyOnePageLandscape({ pyramid }: StrategyOnePageLan
       </div>
 
       {/* Vision Banner - Compact */}
-      {getVisionStatements().length > 0 && (
+      {selectedTiers.vision && getVisionStatements().length > 0 && (
         <div className="vision-compact bg-blue-700 text-white rounded p-2 mb-3">
           {getVisionStatements().map((statement) => (
             <p key={statement.id} className="text-sm font-semibold leading-tight">
@@ -91,7 +101,7 @@ export default function StrategyOnePageLandscape({ pyramid }: StrategyOnePageLan
       )}
 
       {/* Values Strip - Horizontal */}
-      {pyramid.values.length > 0 && (
+      {selectedTiers.values && pyramid.values.length > 0 && (
         <div className="values-strip mb-3">
           <div className="text-xs font-bold text-blue-900 uppercase mb-1.5">Core Values</div>
           <div className="flex gap-2 flex-wrap">
@@ -99,7 +109,7 @@ export default function StrategyOnePageLandscape({ pyramid }: StrategyOnePageLan
               <div key={value.id} className="flex-1 min-w-[150px] bg-blue-50 border-l-2 border-blue-600 rounded-r px-2 py-1.5">
                 <div className="font-bold text-xs text-blue-900">{value.name}</div>
                 {value.description && (
-                  <div className="text-[10px] text-gray-600 mt-0.5 line-clamp-2">{value.description}</div>
+                  <div className="text-[10px] text-gray-600 mt-0.5">{value.description}</div>
                 )}
               </div>
             ))}
@@ -108,6 +118,7 @@ export default function StrategyOnePageLandscape({ pyramid }: StrategyOnePageLan
       )}
 
       {/* Strategic Pillars - Main Columns */}
+      {selectedTiers.drivers && (
       <div className="pillars-section mb-3">
         <div className={`grid ${getColumnClass()} gap-2`}>
           {pyramid.strategic_drivers.map((driver) => {
@@ -123,7 +134,7 @@ export default function StrategyOnePageLandscape({ pyramid }: StrategyOnePageLan
 
                 {/* Driver Description */}
                 <div className="px-2 py-1.5 border-b border-purple-200">
-                  <p className="text-[10px] text-gray-700 leading-snug line-clamp-3">{driver.description}</p>
+                  <p className="text-[10px] text-gray-700 leading-snug">{driver.description}</p>
                 </div>
 
                 {/* Intents */}
@@ -175,9 +186,10 @@ export default function StrategyOnePageLandscape({ pyramid }: StrategyOnePageLan
           })}
         </div>
       </div>
+      )}
 
       {/* Enablers Strip - Horizontal */}
-      {pyramid.enablers.length > 0 && (
+      {selectedTiers.enablers && pyramid.enablers.length > 0 && (
         <div className="enablers-strip">
           <div className="text-xs font-bold text-teal-900 uppercase mb-1.5">Enablers</div>
           <div className="flex gap-2 flex-wrap">

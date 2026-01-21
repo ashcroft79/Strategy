@@ -1,10 +1,20 @@
-import { StrategyPyramid, Behaviour, StrategicDriver, StrategicIntent, IconicCommitment } from "@/types/pyramid";
+import { StrategyPyramid, Behaviour, StrategicDriver, StrategicIntent, IconicCommitment, TeamObjective, IndividualObjective } from "@/types/pyramid";
+
+interface TierSelection {
+  vision: boolean;
+  values: boolean;
+  drivers: boolean;
+  enablers: boolean;
+  teamObjectives: boolean;
+  individualObjectives: boolean;
+}
 
 interface StrategyOnePageCompactProps {
   pyramid: StrategyPyramid;
+  selectedTiers: TierSelection;
 }
 
-export default function StrategyOnePageCompact({ pyramid }: StrategyOnePageCompactProps) {
+export default function StrategyOnePageCompact({ pyramid, selectedTiers }: StrategyOnePageCompactProps) {
   const getVisionStatements = () => {
     return pyramid.vision?.statements || [];
   };
@@ -71,7 +81,7 @@ export default function StrategyOnePageCompact({ pyramid }: StrategyOnePageCompa
       </div>
 
       {/* Vision - Inline */}
-      {getVisionStatements().length > 0 && (
+      {selectedTiers.vision && getVisionStatements().length > 0 && (
         <div className="vision bg-blue-700 text-white rounded px-2 py-1 mb-2">
           {getVisionStatements().map((statement) => (
             <span key={statement.id} className="text-xs font-semibold">
@@ -84,6 +94,7 @@ export default function StrategyOnePageCompact({ pyramid }: StrategyOnePageCompa
       {/* Three Column Layout */}
       <div className="grid grid-cols-12 gap-2 mb-2">
         {/* Left: Values */}
+        {selectedTiers.values && (
         <div className="col-span-3">
           <div className="bg-blue-600 text-white px-1.5 py-0.5 rounded text-[9px] font-bold uppercase mb-1">
             Values
@@ -105,8 +116,10 @@ export default function StrategyOnePageCompact({ pyramid }: StrategyOnePageCompa
             ))}
           </div>
         </div>
+        )}
 
         {/* Middle: Drivers & Execution */}
+        {selectedTiers.drivers && (
         <div className="col-span-7">
           <div className="bg-purple-600 text-white px-1.5 py-0.5 rounded text-[9px] font-bold uppercase mb-1">
             Strategic Drivers & Execution
@@ -156,8 +169,10 @@ export default function StrategyOnePageCompact({ pyramid }: StrategyOnePageCompa
             })}
           </div>
         </div>
+        )}
 
         {/* Right: Enablers */}
+        {selectedTiers.enablers && (
         <div className="col-span-2">
           <div className="bg-teal-600 text-white px-1.5 py-0.5 rounded text-[9px] font-bold uppercase mb-1">
             Enablers
@@ -175,6 +190,7 @@ export default function StrategyOnePageCompact({ pyramid }: StrategyOnePageCompa
             ))}
           </div>
         </div>
+        )}
       </div>
 
       {/* Footer - Stats */}
