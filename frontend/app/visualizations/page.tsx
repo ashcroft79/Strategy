@@ -7,13 +7,14 @@ import { Button } from "@/components/ui/Button";
 import TimeHorizonView from "@/components/visualizations/TimeHorizonView";
 import StrategicHealthDashboard from "@/components/visualizations/StrategicHealthDashboard";
 import StrategicBalanceScorecard from "@/components/visualizations/StrategicBalanceScorecard";
-import { ArrowLeft, Calendar, Activity, BarChart2 } from "lucide-react";
+import CommitmentTraceabilityFlow from "@/components/visualizations/CommitmentTraceabilityFlow";
+import { ArrowLeft, Calendar, Activity, BarChart2, GitBranch } from "lucide-react";
 import { useState } from "react";
 
 export default function VisualizationsPage() {
   const router = useRouter();
   const { pyramid } = usePyramidStore();
-  const [activeTab, setActiveTab] = useState<"horizon" | "health" | "balance">("horizon");
+  const [activeTab, setActiveTab] = useState<"horizon" | "health" | "balance" | "traceability">("horizon");
 
   useEffect(() => {
     if (!pyramid) {
@@ -43,6 +44,12 @@ export default function VisualizationsPage() {
       label: "Balance Scorecard",
       icon: BarChart2,
       description: "Overall pyramid balance, completeness, and coverage gaps"
+    },
+    {
+      id: "traceability" as const,
+      label: "Traceability",
+      icon: GitBranch,
+      description: "Trace commitments from vision to execution (golden threads)"
     }
   ];
 
@@ -165,6 +172,24 @@ export default function VisualizationsPage() {
               </div>
 
               <StrategicBalanceScorecard pyramid={pyramid} />
+            </div>
+          </div>
+        )}
+
+        {/* Commitment Traceability Flow Tab */}
+        {activeTab === "traceability" && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="mb-6">
+                <h2 className="text-xl font-bold text-gray-800 mb-2">
+                  Commitment Traceability Flow
+                </h2>
+                <p className="text-sm text-gray-600">
+                  Visualize how commitments trace back to vision through drivers and intents. Identify golden threads and orphaned commitments.
+                </p>
+              </div>
+
+              <CommitmentTraceabilityFlow pyramid={pyramid} />
             </div>
           </div>
         )}
