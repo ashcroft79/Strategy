@@ -19,7 +19,32 @@ export default function StrategyOnePage({ pyramid }: StrategyOnePageProps) {
   };
 
   const getCommitmentsByDriver = (driverId: string): IconicCommitment[] => {
-    return pyramid.iconic_commitments.filter(c => c.primary_driver_id === driverId);
+    const commitments = pyramid.iconic_commitments.filter(c => c.primary_driver_id === driverId);
+
+    // Sort by horizon first (H1, H2, H3), then by target date
+    return commitments.sort((a, b) => {
+      // Define horizon priority
+      const horizonPriority: { [key: string]: number } = { H1: 1, H2: 2, H3: 3 };
+      const priorityA = horizonPriority[a.horizon] || 999;
+      const priorityB = horizonPriority[b.horizon] || 999;
+
+      // First sort by horizon
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB;
+      }
+
+      // Then sort by target date (if both have dates)
+      if (a.target_date && b.target_date) {
+        return new Date(a.target_date).getTime() - new Date(b.target_date).getTime();
+      }
+
+      // Put items with dates before items without dates
+      if (a.target_date && !b.target_date) return -1;
+      if (!a.target_date && b.target_date) return 1;
+
+      // If neither has a date, maintain original order
+      return 0;
+    });
   };
 
   const getDriver = (driverId: string): StrategicDriver | undefined => {
