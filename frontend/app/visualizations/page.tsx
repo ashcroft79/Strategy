@@ -8,7 +8,7 @@ import TimeHorizonView from "@/components/visualizations/TimeHorizonView";
 import StrategicHealthDashboard from "@/components/visualizations/StrategicHealthDashboard";
 import StrategicBalanceScorecard from "@/components/visualizations/StrategicBalanceScorecard";
 import CommitmentTraceabilityFlow from "@/components/visualizations/CommitmentTraceabilityFlow";
-import { ArrowLeft, Calendar, Activity, BarChart2, GitBranch } from "lucide-react";
+import { ArrowLeft, Calendar, Activity, BarChart2, GitBranch, FileText } from "lucide-react";
 import { useState } from "react";
 
 export default function VisualizationsPage() {
@@ -68,6 +68,12 @@ export default function VisualizationsPage() {
                 <h1 className="text-2xl font-bold text-gray-800">Visualizations</h1>
                 <p className="text-sm text-gray-600">{pyramid.metadata.project_name}</p>
               </div>
+            </div>
+            <div>
+              <Button variant="primary" onClick={() => router.push("/visualizations/one-page")}>
+                <FileText className="w-4 h-4 mr-2" />
+                Strategy Blueprint
+              </Button>
             </div>
           </div>
         </div>
