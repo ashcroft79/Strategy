@@ -107,6 +107,9 @@ export default function BuilderPage() {
   // Grouping preferences
   const [commitmentGroupBy, setCommitmentGroupBy] = useState<'driver' | 'intent'>('driver');
 
+  // Display preferences
+  const [showThreadLabels, setShowThreadLabels] = useState(true);
+
   // Edit states
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editType, setEditType] = useState<string | null>(null);
@@ -806,6 +809,25 @@ export default function BuilderPage() {
                   onBack={() => setActiveTier(undefined)}
                 />
 
+                {/* Thread Labels Toggle */}
+                <div className="mb-4 flex items-center justify-end p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <span className="text-sm font-medium text-gray-700">Show thread labels</span>
+                    <button
+                      onClick={() => setShowThreadLabels(!showThreadLabels)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        showThreadLabels ? 'bg-blue-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          showThreadLabels ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </label>
+                </div>
+
                 <div className="space-y-4">
                   {pyramid.vision?.statements.map((stmt) => (
                     <div key={stmt.id} id={`item-${stmt.id}`}>
@@ -815,6 +837,7 @@ export default function BuilderPage() {
                         onEdit={() => openEditModal('vision', stmt.id, stmt)}
                         onDelete={() => handleDeleteVisionStatement(stmt.id)}
                         onConnectionClick={handleConnectionClick}
+                        showConnections={showThreadLabels}
                       >
                         <div>
                           <div className="text-sm font-semibold text-blue-600 uppercase tracking-wide mb-1">
@@ -855,6 +878,25 @@ export default function BuilderPage() {
                   onBack={() => setActiveTier(undefined)}
                 />
 
+                {/* Thread Labels Toggle */}
+                <div className="mb-4 flex items-center justify-end p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <span className="text-sm font-medium text-gray-700">Show thread labels</span>
+                    <button
+                      onClick={() => setShowThreadLabels(!showThreadLabels)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        showThreadLabels ? 'bg-blue-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          showThreadLabels ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </label>
+                </div>
+
                 <div className="space-y-4">
                   {pyramid.values.map((value) => {
                     // Calculate downstream connections to behaviours
@@ -874,6 +916,7 @@ export default function BuilderPage() {
                           onEdit={() => openEditModal('value', value.id, value)}
                           onDelete={() => handleDeleteValue(value.id)}
                           onConnectionClick={handleConnectionClick}
+                          showConnections={showThreadLabels}
                         >
                           <div>
                             <div className="text-lg font-bold text-blue-900 mb-1">
@@ -916,6 +959,25 @@ export default function BuilderPage() {
                   onAddNew={pyramid.values.length > 0 ? () => openAddModal('behaviour') : undefined}
                   onBack={() => setActiveTier(undefined)}
                 />
+
+                {/* Thread Labels Toggle */}
+                <div className="mb-4 flex items-center justify-end p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <span className="text-sm font-medium text-gray-700">Show thread labels</span>
+                    <button
+                      onClick={() => setShowThreadLabels(!showThreadLabels)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        showThreadLabels ? 'bg-green-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          showThreadLabels ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </label>
+                </div>
 
                 {pyramid.values.length > 0 ? (
                   <div className="space-y-6">
@@ -976,6 +1038,7 @@ export default function BuilderPage() {
                                           onEdit={() => openEditModal('behaviour', behaviour.id, behaviour)}
                                           onDelete={() => handleDeleteBehaviour(behaviour.id)}
                                           onConnectionClick={handleConnectionClick}
+                        showConnections={showThreadLabels}
                                         >
                                           <div className="text-gray-900 leading-relaxed">
                                             {behaviour.statement}
@@ -1010,6 +1073,7 @@ export default function BuilderPage() {
                                       onEdit={() => openEditModal('behaviour', behaviour.id, behaviour)}
                                       onDelete={() => handleDeleteBehaviour(behaviour.id)}
                                       onConnectionClick={handleConnectionClick}
+                        showConnections={showThreadLabels}
                                     >
                                       <div className="text-gray-900 leading-relaxed">
                                         {behaviour.statement}
@@ -1065,6 +1129,25 @@ export default function BuilderPage() {
                   onBack={() => setActiveTier(undefined)}
                 />
 
+                {/* Thread Labels Toggle */}
+                <div className="mb-4 flex items-center justify-end p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <span className="text-sm font-medium text-gray-700">Show thread labels</span>
+                    <button
+                      onClick={() => setShowThreadLabels(!showThreadLabels)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        showThreadLabels ? 'bg-purple-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          showThreadLabels ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </label>
+                </div>
+
                 <div className="space-y-4">
                   {pyramid.strategic_drivers.map((driver) => {
                     // Calculate downstream connections
@@ -1098,6 +1181,7 @@ export default function BuilderPage() {
                           onEdit={() => openEditModal('driver', driver.id, driver)}
                           onDelete={() => handleDeleteDriver(driver.id)}
                           onConnectionClick={handleConnectionClick}
+                        showConnections={showThreadLabels}
                         >
                           <div>
                             <div className="text-xl font-bold text-purple-900 mb-2">
@@ -1143,6 +1227,25 @@ export default function BuilderPage() {
                   onAddNew={pyramid.strategic_drivers.length > 0 ? () => openAddModal('intent') : undefined}
                   onBack={() => setActiveTier(undefined)}
                 />
+
+                {/* Thread Labels Toggle */}
+                <div className="mb-4 flex items-center justify-end p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <span className="text-sm font-medium text-gray-700">Show thread labels</span>
+                    <button
+                      onClick={() => setShowThreadLabels(!showThreadLabels)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        showThreadLabels ? 'bg-purple-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          showThreadLabels ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </label>
+                </div>
 
                 {pyramid.strategic_drivers.length > 0 ? (
                   <div className="space-y-6">
@@ -1201,6 +1304,7 @@ export default function BuilderPage() {
                                         <TierCard
                                           variant="purple"
                                           onConnectionClick={handleConnectionClick}
+                        showConnections={showThreadLabels}
                                           connections={[...upstreamConnections, ...downstreamConnections]}
                                           onEdit={() => openEditModal('intent', intent.id, intent)}
                                           onDelete={() => handleDeleteIntent(intent.id)}
@@ -1244,6 +1348,7 @@ export default function BuilderPage() {
                                       <TierCard
                                         variant="purple"
                                         onConnectionClick={handleConnectionClick}
+                        showConnections={showThreadLabels}
                                         connections={downstreamConnections}
                                         onEdit={() => openEditModal('intent', intent.id, intent)}
                                         onDelete={() => handleDeleteIntent(intent.id)}
@@ -1303,6 +1408,25 @@ export default function BuilderPage() {
                   onBack={() => setActiveTier(undefined)}
                 />
 
+                {/* Thread Labels Toggle */}
+                <div className="mb-4 flex items-center justify-end p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <span className="text-sm font-medium text-gray-700">Show thread labels</span>
+                    <button
+                      onClick={() => setShowThreadLabels(!showThreadLabels)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        showThreadLabels ? 'bg-purple-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          showThreadLabels ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </label>
+                </div>
+
                 <div className="space-y-4">
                   {pyramid.enablers?.map((enabler) => {
                     // Upstream connections to drivers
@@ -1325,6 +1449,7 @@ export default function BuilderPage() {
                           onEdit={() => openEditModal('enabler', enabler.id, enabler)}
                           onDelete={() => handleDeleteEnabler(enabler.id)}
                           onConnectionClick={handleConnectionClick}
+                        showConnections={showThreadLabels}
                         >
                           <div>
                             <div className="flex items-start justify-between mb-2">
@@ -1373,30 +1498,49 @@ export default function BuilderPage() {
 
                 {pyramid.strategic_drivers.length > 0 ? (
                   <div className="space-y-4">
-                    {/* Grouping Toggle */}
-                    <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border border-orange-200">
-                      <span className="text-sm font-medium text-gray-700">Group by:</span>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => setCommitmentGroupBy('driver')}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            commitmentGroupBy === 'driver'
-                              ? 'bg-orange-600 text-white shadow-md'
-                              : 'bg-white text-gray-700 hover:bg-orange-100 border border-orange-300'
-                          }`}
-                        >
-                          Strategic Driver
-                        </button>
-                        <button
-                          onClick={() => setCommitmentGroupBy('intent')}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            commitmentGroupBy === 'intent'
-                              ? 'bg-orange-600 text-white shadow-md'
-                              : 'bg-white text-gray-700 hover:bg-orange-100 border border-orange-300'
-                          }`}
-                        >
-                          Strategic Intent
-                        </button>
+                    {/* Control Panel - Grouping and Thread Labels Toggles */}
+                    <div className="p-4 bg-orange-50 rounded-lg border border-orange-200 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700">Group by:</span>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setCommitmentGroupBy('driver')}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                              commitmentGroupBy === 'driver'
+                                ? 'bg-orange-600 text-white shadow-md'
+                                : 'bg-white text-gray-700 hover:bg-orange-100 border border-orange-300'
+                            }`}
+                          >
+                            Strategic Driver
+                          </button>
+                          <button
+                            onClick={() => setCommitmentGroupBy('intent')}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                              commitmentGroupBy === 'intent'
+                                ? 'bg-orange-600 text-white shadow-md'
+                                : 'bg-white text-gray-700 hover:bg-orange-100 border border-orange-300'
+                            }`}
+                          >
+                            Strategic Intent
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-end border-t border-orange-200 pt-3">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <span className="text-sm font-medium text-gray-700">Show thread labels</span>
+                          <button
+                            onClick={() => setShowThreadLabels(!showThreadLabels)}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                              showThreadLabels ? 'bg-orange-600' : 'bg-gray-300'
+                            }`}
+                          >
+                            <span
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                showThreadLabels ? 'translate-x-6' : 'translate-x-1'
+                              }`}
+                            />
+                          </button>
+                        </label>
                       </div>
                     </div>
 
@@ -1460,6 +1604,7 @@ export default function BuilderPage() {
                                               onEdit={() => openEditModal('commitment', commitment.id, commitment)}
                                               onDelete={() => handleDeleteCommitment(commitment.id)}
                                               onConnectionClick={handleConnectionClick}
+                        showConnections={showThreadLabels}
                                             >
                                               <div>
                                                 <div className="flex items-center justify-between mb-2">
@@ -1520,6 +1665,7 @@ export default function BuilderPage() {
                                             onEdit={() => openEditModal('commitment', commitment.id, commitment)}
                                             onDelete={() => handleDeleteCommitment(commitment.id)}
                                             onConnectionClick={handleConnectionClick}
+                        showConnections={showThreadLabels}
                                           >
                                             <div>
                                               <div className="flex items-center justify-between mb-2">
@@ -1617,6 +1763,7 @@ export default function BuilderPage() {
                                               onEdit={() => openEditModal('commitment', commitment.id, commitment)}
                                               onDelete={() => handleDeleteCommitment(commitment.id)}
                                               onConnectionClick={handleConnectionClick}
+                        showConnections={showThreadLabels}
                                             >
                                               <div>
                                                 <div className="flex items-center justify-between mb-2">
@@ -1684,6 +1831,7 @@ export default function BuilderPage() {
                                             onEdit={() => openEditModal('commitment', commitment.id, commitment)}
                                             onDelete={() => handleDeleteCommitment(commitment.id)}
                                             onConnectionClick={handleConnectionClick}
+                        showConnections={showThreadLabels}
                                           >
                                             <div>
                                               <div className="flex items-center justify-between mb-2">
@@ -1760,6 +1908,25 @@ export default function BuilderPage() {
                   onBack={() => setActiveTier(undefined)}
                 />
 
+                {/* Thread Labels Toggle */}
+                <div className="mb-4 flex items-center justify-end p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <span className="text-sm font-medium text-gray-700">Show thread labels</span>
+                    <button
+                      onClick={() => setShowThreadLabels(!showThreadLabels)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        showThreadLabels ? 'bg-orange-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          showThreadLabels ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </label>
+                </div>
+
                 <div className="space-y-6">
                   {(() => {
                     // Group team objectives by commitment
@@ -1823,6 +1990,7 @@ export default function BuilderPage() {
                                         onEdit={() => openEditModal('team_objective', objective.id, objective)}
                                         onDelete={() => handleDeleteTeamObjective(objective.id)}
                                         onConnectionClick={handleConnectionClick}
+                        showConnections={showThreadLabels}
                                       >
                                         <div>
                                           <div className="flex items-start justify-between mb-2">
@@ -1884,6 +2052,7 @@ export default function BuilderPage() {
                                       onEdit={() => openEditModal('team_objective', objective.id, objective)}
                                       onDelete={() => handleDeleteTeamObjective(objective.id)}
                                       onConnectionClick={handleConnectionClick}
+                        showConnections={showThreadLabels}
                                     >
                                       <div>
                                         <div className="flex items-start justify-between mb-2">
@@ -1943,6 +2112,25 @@ export default function BuilderPage() {
                   onAddNew={() => openAddModal('individual_objective')}
                   onBack={() => setActiveTier(undefined)}
                 />
+
+                {/* Thread Labels Toggle */}
+                <div className="mb-4 flex items-center justify-end p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <span className="text-sm font-medium text-gray-700">Show thread labels</span>
+                    <button
+                      onClick={() => setShowThreadLabels(!showThreadLabels)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        showThreadLabels ? 'bg-teal-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          showThreadLabels ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </label>
+                </div>
 
                 <div className="space-y-6">
                   {(() => {
@@ -2006,6 +2194,7 @@ export default function BuilderPage() {
                                         onEdit={() => openEditModal('individual_objective', objective.id, objective)}
                                         onDelete={() => handleDeleteIndividualObjective(objective.id)}
                                         onConnectionClick={handleConnectionClick}
+                        showConnections={showThreadLabels}
                                       >
                                         <div>
                                           <div className="flex items-start justify-between mb-2">
@@ -2053,6 +2242,7 @@ export default function BuilderPage() {
                                     onEdit={() => openEditModal('individual_objective', objective.id, objective)}
                                     onDelete={() => handleDeleteIndividualObjective(objective.id)}
                                     onConnectionClick={handleConnectionClick}
+                        showConnections={showThreadLabels}
                                   >
                                     <div>
                                       <div className="flex items-start justify-between mb-2">

@@ -16,6 +16,7 @@ interface TierCardProps {
   variant?: 'blue' | 'green' | 'purple' | 'orange' | 'teal';
   connections?: Connection[];
   onConnectionClick?: (connectionId: string, connectionType: 'upstream' | 'downstream') => void;
+  showConnections?: boolean;
 }
 
 export default function TierCard({
@@ -25,6 +26,7 @@ export default function TierCard({
   variant = 'blue',
   connections = [],
   onConnectionClick,
+  showConnections = true,
 }: TierCardProps) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -82,7 +84,7 @@ export default function TierCard({
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Upstream Connection Breadcrumbs */}
-      {upstreamConnections.length > 0 && (
+      {showConnections && upstreamConnections.length > 0 && (
         <div className="mb-2 flex items-center gap-2 text-xs">
           <ArrowUp className="w-3 h-3 text-red-500" />
           <div className="flex flex-wrap gap-1">
@@ -114,7 +116,7 @@ export default function TierCard({
         `}
       >
         {/* Red thread indicator line on left when hovering and has connections */}
-        {isHovered && connections.length > 0 && (
+        {showConnections && isHovered && connections.length > 0 && (
           <div
             className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
             style={{
@@ -162,7 +164,7 @@ export default function TierCard({
         </div>
 
         {/* Connection count badge at bottom */}
-        {connections.length > 0 && (
+        {showConnections && connections.length > 0 && (
           <div className="absolute -bottom-2 right-4">
             <div
               className={`
@@ -180,7 +182,7 @@ export default function TierCard({
       </div>
 
       {/* Downstream Connection Breadcrumbs */}
-      {downstreamConnections.length > 0 && (
+      {showConnections && downstreamConnections.length > 0 && (
         <div className="mt-2 flex items-center gap-2 text-xs">
           <ArrowDown className="w-3 h-3 text-red-500" />
           <div className="flex flex-wrap gap-1">
