@@ -104,6 +104,9 @@ export default function BuilderPage() {
   const [individualName, setIndividualName] = useState("");
   const [selectedTeamObjectiveIds, setSelectedTeamObjectiveIds] = useState<string[]>([]);
 
+  // Grouping preferences
+  const [commitmentGroupBy, setCommitmentGroupBy] = useState<'driver' | 'intent'>('driver');
+
   // Edit states
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editType, setEditType] = useState<string | null>(null);
@@ -915,48 +918,123 @@ export default function BuilderPage() {
                 />
 
                 {pyramid.values.length > 0 ? (
-                  <div className="space-y-4">
-                    {pyramid.behaviours?.map((behaviour) => {
-                      // Calculate upstream connections to values
-                      const upstreamConnections = behaviour.value_ids
-                        ?.map((valueId) => {
-                          const value = pyramid.values.find((v) => v.id === valueId);
-                          return value ? {
-                            id: value.id,
-                            name: value.name,
-                            type: 'upstream' as const,
-                          } : null;
-                        })
-                        .filter((conn): conn is NonNullable<typeof conn> => conn !== null) || [];
+                  <div className="space-y-6">
+                    {(() => {
+                      // Group behaviours by value
+                      const behavioursByValue = new Map<string, any[]>();
+                      const orphanedBehaviours: any[] = [];
+
+                      pyramid.behaviours?.forEach((behaviour) => {
+                        if (!behaviour.value_ids || behaviour.value_ids.length === 0) {
+                          orphanedBehaviours.push(behaviour);
+                        } else {
+                          behaviour.value_ids.forEach((valueId) => {
+                            if (!behavioursByValue.has(valueId)) {
+                              behavioursByValue.set(valueId, []);
+                            }
+                            behavioursByValue.get(valueId)!.push(behaviour);
+                          });
+                        }
+                      });
 
                       return (
-                        <div key={behaviour.id} id={`item-${behaviour.id}`}>
-                          <TierCard
-                            variant="green"
-                            connections={upstreamConnections}
-                            onEdit={() => openEditModal('behaviour', behaviour.id, behaviour)}
-                            onDelete={() => handleDeleteBehaviour(behaviour.id)}
-                            onConnectionClick={handleConnectionClick}
-                          >
-                            <div className="text-gray-900 leading-relaxed">
-                              {behaviour.statement}
-                            </div>
-                          </TierCard>
-                        </div>
-                      );
-                    })}
+                        <>
+                          {/* Render behaviours grouped by value */}
+                          {pyramid.values.map((value) => {
+                            const behaviours = behavioursByValue.get(value.id) || [];
+                            if (behaviours.length === 0) return null;
 
-                    {(!pyramid.behaviours || pyramid.behaviours.length === 0) && (
-                      <div className="text-center py-12 bg-green-50 rounded-xl border-2 border-dashed border-green-200">
-                        <div className="text-4xl mb-3">🎬</div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No behaviours yet</h3>
-                        <p className="text-gray-600 mb-4">Define observable actions that bring your values to life</p>
-                        <Button onClick={() => openAddModal('behaviour')}>
-                          <Plus className="w-4 h-4 mr-2" />
-                          Add First Behaviour
-                        </Button>
-                      </div>
-                    )}
+                            return (
+                              <div key={value.id}>
+                                <div className="mb-3 pb-2 border-b-2 border-blue-200">
+                                  <h3 className="text-md font-bold text-blue-900 flex items-center gap-2">
+                                    <span className="text-blue-600">↑</span>
+                                    {value.name}
+                                    <span className="ml-auto text-xs font-normal text-gray-500">
+                                      {behaviours.length} behaviour{behaviours.length !== 1 ? 's' : ''}
+                                    </span>
+                                  </h3>
+                                </div>
+                                <div className="space-y-4 ml-4">
+                                  {behaviours.map((behaviour) => {
+                                    const upstreamConnections = behaviour.value_ids
+                                      ?.map((valueId: string) => {
+                                        const val = pyramid.values.find((v) => v.id === valueId);
+                                        return val ? {
+                                          id: val.id,
+                                          name: val.name,
+                                          type: 'upstream' as const,
+                                        } : null;
+                                      })
+                                      .filter((conn: any): conn is NonNullable<typeof conn> => conn !== null) || [];
+
+                                    return (
+                                      <div key={behaviour.id} id={`item-${behaviour.id}`}>
+                                        <TierCard
+                                          variant="green"
+                                          connections={upstreamConnections}
+                                          onEdit={() => openEditModal('behaviour', behaviour.id, behaviour)}
+                                          onDelete={() => handleDeleteBehaviour(behaviour.id)}
+                                          onConnectionClick={handleConnectionClick}
+                                        >
+                                          <div className="text-gray-900 leading-relaxed">
+                                            {behaviour.statement}
+                                          </div>
+                                        </TierCard>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })}
+
+                          {/* Render orphaned behaviours if any */}
+                          {orphanedBehaviours.length > 0 && (
+                            <div>
+                              <div className="mb-3 pb-2 border-b-2 border-gray-300">
+                                <h3 className="text-md font-bold text-gray-700 flex items-center gap-2">
+                                  <span className="text-amber-600">⚠️</span>
+                                  Not Linked to Any Value
+                                  <span className="ml-auto text-xs font-normal text-gray-500">
+                                    {orphanedBehaviours.length} behaviour{orphanedBehaviours.length !== 1 ? 's' : ''}
+                                  </span>
+                                </h3>
+                              </div>
+                              <div className="space-y-4 ml-4">
+                                {orphanedBehaviours.map((behaviour) => (
+                                  <div key={behaviour.id} id={`item-${behaviour.id}`}>
+                                    <TierCard
+                                      variant="green"
+                                      connections={[]}
+                                      onEdit={() => openEditModal('behaviour', behaviour.id, behaviour)}
+                                      onDelete={() => handleDeleteBehaviour(behaviour.id)}
+                                      onConnectionClick={handleConnectionClick}
+                                    >
+                                      <div className="text-gray-900 leading-relaxed">
+                                        {behaviour.statement}
+                                      </div>
+                                    </TierCard>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {(!pyramid.behaviours || pyramid.behaviours.length === 0) && (
+                            <div className="text-center py-12 bg-green-50 rounded-xl border-2 border-dashed border-green-200">
+                              <div className="text-4xl mb-3">🎬</div>
+                              <h3 className="text-lg font-semibold text-gray-900 mb-2">No behaviours yet</h3>
+                              <p className="text-gray-600 mb-4">Define observable actions that bring your values to life</p>
+                              <Button onClick={() => openAddModal('behaviour')}>
+                                <Plus className="w-4 h-4 mr-2" />
+                                Add First Behaviour
+                              </Button>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 ) : (
                   <div className="p-6 bg-yellow-50 border-2 border-yellow-200 rounded-xl text-center">
@@ -1067,53 +1145,134 @@ export default function BuilderPage() {
                 />
 
                 {pyramid.strategic_drivers.length > 0 ? (
-                  <div className="space-y-4">
-                    {pyramid.strategic_intents.map((intent) => {
-                      // Upstream: the driver it belongs to
-                      const driver = pyramid.strategic_drivers.find(d => d.id === intent.driver_id);
-                      const upstreamConnections = driver ? [{
-                        id: driver.id,
-                        name: driver.name,
-                        type: 'upstream' as const,
-                      }] : [];
+                  <div className="space-y-6">
+                    {(() => {
+                      // Group intents by driver
+                      const intentsByDriver = new Map<string, any[]>();
+                      const orphanedIntents: any[] = [];
 
-                      // Downstream: commitments that reference this intent
-                      const downstreamConnections = pyramid.iconic_commitments
-                        .filter((c) => c.primary_intent_ids?.includes(intent.id))
-                        .map((c) => ({
-                          id: c.id,
-                          name: c.name,
-                          type: 'downstream' as const,
-                        }));
+                      pyramid.strategic_intents.forEach((intent) => {
+                        if (!intent.driver_id) {
+                          orphanedIntents.push(intent);
+                        } else {
+                          if (!intentsByDriver.has(intent.driver_id)) {
+                            intentsByDriver.set(intent.driver_id, []);
+                          }
+                          intentsByDriver.get(intent.driver_id)!.push(intent);
+                        }
+                      });
 
                       return (
-                        <div key={intent.id} id={`item-${intent.id}`}>
-                          <TierCard
-                            variant="purple"
-                            onConnectionClick={handleConnectionClick}
-                            connections={[...upstreamConnections, ...downstreamConnections]}
-                            onEdit={() => openEditModal('intent', intent.id, intent)}
-                            onDelete={() => handleDeleteIntent(intent.id)}
-                          >
-                            <div className="text-gray-900 leading-relaxed">
-                              {intent.statement}
-                            </div>
-                          </TierCard>
-                        </div>
-                      );
-                    })}
+                        <>
+                          {/* Render intents grouped by driver */}
+                          {pyramid.strategic_drivers.map((driver) => {
+                            const intents = intentsByDriver.get(driver.id) || [];
+                            if (intents.length === 0) return null;
 
-                    {pyramid.strategic_intents.length === 0 && (
-                      <div className="text-center py-12 bg-purple-50 rounded-xl border-2 border-dashed border-purple-200">
-                        <div className="text-4xl mb-3">🎯</div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No strategic intents yet</h3>
-                        <p className="text-gray-600 mb-4">Define what success looks like for each strategic driver</p>
-                        <Button onClick={() => openAddModal('intent')}>
-                          <Plus className="w-4 h-4 mr-2" />
-                          Add First Intent
-                        </Button>
-                      </div>
-                    )}
+                            return (
+                              <div key={driver.id}>
+                                <div className="mb-3 pb-2 border-b-2 border-purple-300">
+                                  <h3 className="text-md font-bold text-purple-900 flex items-center gap-2">
+                                    <span className="text-purple-600">↑</span>
+                                    {driver.name}
+                                    <span className="ml-auto text-xs font-normal text-gray-500">
+                                      {intents.length} intent{intents.length !== 1 ? 's' : ''}
+                                    </span>
+                                  </h3>
+                                </div>
+                                <div className="space-y-4 ml-4">
+                                  {intents.map((intent) => {
+                                    const upstreamConnections = [{
+                                      id: driver.id,
+                                      name: driver.name,
+                                      type: 'upstream' as const,
+                                    }];
+
+                                    const downstreamConnections = pyramid.iconic_commitments
+                                      .filter((c) => c.primary_intent_ids?.includes(intent.id))
+                                      .map((c) => ({
+                                        id: c.id,
+                                        name: c.name,
+                                        type: 'downstream' as const,
+                                      }));
+
+                                    return (
+                                      <div key={intent.id} id={`item-${intent.id}`}>
+                                        <TierCard
+                                          variant="purple"
+                                          onConnectionClick={handleConnectionClick}
+                                          connections={[...upstreamConnections, ...downstreamConnections]}
+                                          onEdit={() => openEditModal('intent', intent.id, intent)}
+                                          onDelete={() => handleDeleteIntent(intent.id)}
+                                        >
+                                          <div className="text-gray-900 leading-relaxed">
+                                            {intent.statement}
+                                          </div>
+                                        </TierCard>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })}
+
+                          {/* Render orphaned intents if any */}
+                          {orphanedIntents.length > 0 && (
+                            <div>
+                              <div className="mb-3 pb-2 border-b-2 border-gray-300">
+                                <h3 className="text-md font-bold text-gray-700 flex items-center gap-2">
+                                  <span className="text-amber-600">⚠️</span>
+                                  Not Linked to Any Driver
+                                  <span className="ml-auto text-xs font-normal text-gray-500">
+                                    {orphanedIntents.length} intent{orphanedIntents.length !== 1 ? 's' : ''}
+                                  </span>
+                                </h3>
+                              </div>
+                              <div className="space-y-4 ml-4">
+                                {orphanedIntents.map((intent) => {
+                                  const downstreamConnections = pyramid.iconic_commitments
+                                    .filter((c) => c.primary_intent_ids?.includes(intent.id))
+                                    .map((c) => ({
+                                      id: c.id,
+                                      name: c.name,
+                                      type: 'downstream' as const,
+                                    }));
+
+                                  return (
+                                    <div key={intent.id} id={`item-${intent.id}`}>
+                                      <TierCard
+                                        variant="purple"
+                                        onConnectionClick={handleConnectionClick}
+                                        connections={downstreamConnections}
+                                        onEdit={() => openEditModal('intent', intent.id, intent)}
+                                        onDelete={() => handleDeleteIntent(intent.id)}
+                                      >
+                                        <div className="text-gray-900 leading-relaxed">
+                                          {intent.statement}
+                                        </div>
+                                      </TierCard>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          {pyramid.strategic_intents.length === 0 && (
+                            <div className="text-center py-12 bg-purple-50 rounded-xl border-2 border-dashed border-purple-200">
+                              <div className="text-4xl mb-3">🎯</div>
+                              <h3 className="text-lg font-semibold text-gray-900 mb-2">No strategic intents yet</h3>
+                              <p className="text-gray-600 mb-4">Define what success looks like for each strategic driver</p>
+                              <Button onClick={() => openAddModal('intent')}>
+                                <Plus className="w-4 h-4 mr-2" />
+                                Add First Intent
+                              </Button>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 ) : (
                   <div className="p-6 bg-yellow-50 border-2 border-yellow-200 rounded-xl text-center">
@@ -1214,70 +1373,363 @@ export default function BuilderPage() {
 
                 {pyramid.strategic_drivers.length > 0 ? (
                   <div className="space-y-4">
-                    {pyramid.iconic_commitments.map((commitment) => {
-                      // Upstream: driver and possibly intents
-                      const driver = pyramid.strategic_drivers.find(d => d.id === commitment.primary_driver_id);
-                      const upstreamConnections = driver ? [{
-                        id: driver.id,
-                        name: driver.name,
-                        type: 'upstream' as const,
-                      }] : [];
-
-                      // Downstream: team objectives linked to this commitment
-                      const downstreamConnections = pyramid.team_objectives
-                        ?.filter((obj) => obj.primary_commitment_id === commitment.id)
-                        .map((obj) => ({
-                          id: obj.id,
-                          name: `${obj.team_name}: ${obj.name}`,
-                          type: 'downstream' as const,
-                        })) || [];
-
-                      return (
-                        <div key={commitment.id} id={`item-${commitment.id}`}>
-                          <TierCard
-                            variant="orange"
-                            connections={[...upstreamConnections, ...downstreamConnections]}
-                            onEdit={() => openEditModal('commitment', commitment.id, commitment)}
-                            onDelete={() => handleDeleteCommitment(commitment.id)}
-                            onConnectionClick={handleConnectionClick}
-                          >
-                            <div>
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="text-lg font-bold text-orange-900">{commitment.name}</div>
-                                <span className="px-3 py-1 bg-orange-200 text-orange-800 rounded-full text-sm font-medium">
-                                  {commitment.horizon}
-                                </span>
-                              </div>
-                              <div className="text-gray-700 leading-relaxed">
-                                {commitment.description}
-                              </div>
-                              {commitment.target_date && (
-                                <div className="mt-2 text-sm text-gray-600">
-                                  Target: {new Date(commitment.target_date).toLocaleDateString()}
-                                </div>
-                              )}
-                              {commitment.owner && (
-                                <div className="mt-1 text-sm text-gray-600">
-                                  Owner: {commitment.owner}
-                                </div>
-                              )}
-                            </div>
-                          </TierCard>
-                        </div>
-                      );
-                    })}
-
-                    {pyramid.iconic_commitments.length === 0 && (
-                      <div className="text-center py-12 bg-orange-50 rounded-xl border-2 border-dashed border-orange-200">
-                        <div className="text-4xl mb-3">🎯</div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No iconic commitments yet</h3>
-                        <p className="text-gray-600 mb-4">Define time-bound milestones that bring your strategy to life</p>
-                        <Button onClick={() => openAddModal('commitment')}>
-                          <Plus className="w-4 h-4 mr-2" />
-                          Add First Commitment
-                        </Button>
+                    {/* Grouping Toggle */}
+                    <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border border-orange-200">
+                      <span className="text-sm font-medium text-gray-700">Group by:</span>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setCommitmentGroupBy('driver')}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            commitmentGroupBy === 'driver'
+                              ? 'bg-orange-600 text-white shadow-md'
+                              : 'bg-white text-gray-700 hover:bg-orange-100 border border-orange-300'
+                          }`}
+                        >
+                          Strategic Driver
+                        </button>
+                        <button
+                          onClick={() => setCommitmentGroupBy('intent')}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            commitmentGroupBy === 'intent'
+                              ? 'bg-orange-600 text-white shadow-md'
+                              : 'bg-white text-gray-700 hover:bg-orange-100 border border-orange-300'
+                          }`}
+                        >
+                          Strategic Intent
+                        </button>
                       </div>
-                    )}
+                    </div>
+
+                    {/* Grouped Commitments */}
+                    <div className="space-y-6">
+                      {(() => {
+                        if (commitmentGroupBy === 'driver') {
+                          // Group by driver
+                          const commitmentsByDriver = new Map<string, any[]>();
+                          const orphanedCommitments: any[] = [];
+
+                          pyramid.iconic_commitments.forEach((commitment) => {
+                            if (!commitment.primary_driver_id) {
+                              orphanedCommitments.push(commitment);
+                            } else {
+                              if (!commitmentsByDriver.has(commitment.primary_driver_id)) {
+                                commitmentsByDriver.set(commitment.primary_driver_id, []);
+                              }
+                              commitmentsByDriver.get(commitment.primary_driver_id)!.push(commitment);
+                            }
+                          });
+
+                          return (
+                            <>
+                              {pyramid.strategic_drivers.map((driver) => {
+                                const commitments = commitmentsByDriver.get(driver.id) || [];
+                                if (commitments.length === 0) return null;
+
+                                return (
+                                  <div key={driver.id}>
+                                    <div className="mb-3 pb-2 border-b-2 border-purple-300">
+                                      <h3 className="text-md font-bold text-purple-900 flex items-center gap-2">
+                                        <span className="text-purple-600">↑</span>
+                                        {driver.name}
+                                        <span className="ml-auto text-xs font-normal text-gray-500">
+                                          {commitments.length} commitment{commitments.length !== 1 ? 's' : ''}
+                                        </span>
+                                      </h3>
+                                    </div>
+                                    <div className="space-y-4 ml-4">
+                                      {commitments.map((commitment) => {
+                                        const upstreamConnections = [{
+                                          id: driver.id,
+                                          name: driver.name,
+                                          type: 'upstream' as const,
+                                        }];
+
+                                        const downstreamConnections = pyramid.team_objectives
+                                          ?.filter((obj) => obj.primary_commitment_id === commitment.id)
+                                          .map((obj) => ({
+                                            id: obj.id,
+                                            name: `${obj.team_name}: ${obj.name}`,
+                                            type: 'downstream' as const,
+                                          })) || [];
+
+                                        return (
+                                          <div key={commitment.id} id={`item-${commitment.id}`}>
+                                            <TierCard
+                                              variant="orange"
+                                              connections={[...upstreamConnections, ...downstreamConnections]}
+                                              onEdit={() => openEditModal('commitment', commitment.id, commitment)}
+                                              onDelete={() => handleDeleteCommitment(commitment.id)}
+                                              onConnectionClick={handleConnectionClick}
+                                            >
+                                              <div>
+                                                <div className="flex items-center justify-between mb-2">
+                                                  <div className="text-lg font-bold text-orange-900">{commitment.name}</div>
+                                                  <span className="px-3 py-1 bg-orange-200 text-orange-800 rounded-full text-sm font-medium">
+                                                    {commitment.horizon}
+                                                  </span>
+                                                </div>
+                                                <div className="text-gray-700 leading-relaxed">
+                                                  {commitment.description}
+                                                </div>
+                                                {commitment.target_date && (
+                                                  <div className="mt-2 text-sm text-gray-600">
+                                                    Target: {new Date(commitment.target_date).toLocaleDateString()}
+                                                  </div>
+                                                )}
+                                                {commitment.owner && (
+                                                  <div className="mt-1 text-sm text-gray-600">
+                                                    Owner: {commitment.owner}
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </TierCard>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+
+                              {orphanedCommitments.length > 0 && (
+                                <div>
+                                  <div className="mb-3 pb-2 border-b-2 border-gray-300">
+                                    <h3 className="text-md font-bold text-gray-700 flex items-center gap-2">
+                                      <span className="text-amber-600">⚠️</span>
+                                      Not Linked to Any Driver
+                                      <span className="ml-auto text-xs font-normal text-gray-500">
+                                        {orphanedCommitments.length} commitment{orphanedCommitments.length !== 1 ? 's' : ''}
+                                      </span>
+                                    </h3>
+                                  </div>
+                                  <div className="space-y-4 ml-4">
+                                    {orphanedCommitments.map((commitment) => {
+                                      const downstreamConnections = pyramid.team_objectives
+                                        ?.filter((obj) => obj.primary_commitment_id === commitment.id)
+                                        .map((obj) => ({
+                                          id: obj.id,
+                                          name: `${obj.team_name}: ${obj.name}`,
+                                          type: 'downstream' as const,
+                                        })) || [];
+
+                                      return (
+                                        <div key={commitment.id} id={`item-${commitment.id}`}>
+                                          <TierCard
+                                            variant="orange"
+                                            connections={downstreamConnections}
+                                            onEdit={() => openEditModal('commitment', commitment.id, commitment)}
+                                            onDelete={() => handleDeleteCommitment(commitment.id)}
+                                            onConnectionClick={handleConnectionClick}
+                                          >
+                                            <div>
+                                              <div className="flex items-center justify-between mb-2">
+                                                <div className="text-lg font-bold text-orange-900">{commitment.name}</div>
+                                                <span className="px-3 py-1 bg-orange-200 text-orange-800 rounded-full text-sm font-medium">
+                                                  {commitment.horizon}
+                                                </span>
+                                              </div>
+                                              <div className="text-gray-700 leading-relaxed">
+                                                {commitment.description}
+                                              </div>
+                                              {commitment.target_date && (
+                                                <div className="mt-2 text-sm text-gray-600">
+                                                  Target: {new Date(commitment.target_date).toLocaleDateString()}
+                                                </div>
+                                              )}
+                                              {commitment.owner && (
+                                                <div className="mt-1 text-sm text-gray-600">
+                                                  Owner: {commitment.owner}
+                                                </div>
+                                              )}
+                                            </div>
+                                          </TierCard>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          );
+                        } else {
+                          // Group by intent
+                          const commitmentsByIntent = new Map<string, any[]>();
+                          const orphanedCommitments: any[] = [];
+
+                          pyramid.iconic_commitments.forEach((commitment) => {
+                            if (!commitment.primary_intent_ids || commitment.primary_intent_ids.length === 0) {
+                              orphanedCommitments.push(commitment);
+                            } else {
+                              commitment.primary_intent_ids.forEach((intentId) => {
+                                if (!commitmentsByIntent.has(intentId)) {
+                                  commitmentsByIntent.set(intentId, []);
+                                }
+                                commitmentsByIntent.get(intentId)!.push(commitment);
+                              });
+                            }
+                          });
+
+                          return (
+                            <>
+                              {pyramid.strategic_intents.map((intent) => {
+                                const commitments = commitmentsByIntent.get(intent.id) || [];
+                                if (commitments.length === 0) return null;
+
+                                const driver = pyramid.strategic_drivers.find(d => d.id === intent.driver_id);
+
+                                return (
+                                  <div key={intent.id}>
+                                    <div className="mb-3 pb-2 border-b-2 border-purple-300">
+                                      <h3 className="text-md font-bold text-purple-900 flex items-center gap-2">
+                                        <span className="text-purple-600">↑</span>
+                                        {intent.statement.substring(0, 80)}{intent.statement.length > 80 ? '...' : ''}
+                                        <span className="ml-auto text-xs font-normal text-gray-500">
+                                          {commitments.length} commitment{commitments.length !== 1 ? 's' : ''}
+                                        </span>
+                                      </h3>
+                                      {driver && (
+                                        <p className="text-xs text-purple-700 mt-1 ml-6">
+                                          Driver: {driver.name}
+                                        </p>
+                                      )}
+                                    </div>
+                                    <div className="space-y-4 ml-4">
+                                      {commitments.map((commitment) => {
+                                        const upstreamConnections = [{
+                                          id: intent.id,
+                                          name: intent.statement.substring(0, 50) + '...',
+                                          type: 'upstream' as const,
+                                        }];
+
+                                        const downstreamConnections = pyramid.team_objectives
+                                          ?.filter((obj) => obj.primary_commitment_id === commitment.id)
+                                          .map((obj) => ({
+                                            id: obj.id,
+                                            name: `${obj.team_name}: ${obj.name}`,
+                                            type: 'downstream' as const,
+                                          })) || [];
+
+                                        return (
+                                          <div key={commitment.id} id={`item-${commitment.id}`}>
+                                            <TierCard
+                                              variant="orange"
+                                              connections={[...upstreamConnections, ...downstreamConnections]}
+                                              onEdit={() => openEditModal('commitment', commitment.id, commitment)}
+                                              onDelete={() => handleDeleteCommitment(commitment.id)}
+                                              onConnectionClick={handleConnectionClick}
+                                            >
+                                              <div>
+                                                <div className="flex items-center justify-between mb-2">
+                                                  <div className="text-lg font-bold text-orange-900">{commitment.name}</div>
+                                                  <span className="px-3 py-1 bg-orange-200 text-orange-800 rounded-full text-sm font-medium">
+                                                    {commitment.horizon}
+                                                  </span>
+                                                </div>
+                                                <div className="text-gray-700 leading-relaxed">
+                                                  {commitment.description}
+                                                </div>
+                                                {commitment.target_date && (
+                                                  <div className="mt-2 text-sm text-gray-600">
+                                                    Target: {new Date(commitment.target_date).toLocaleDateString()}
+                                                  </div>
+                                                )}
+                                                {commitment.owner && (
+                                                  <div className="mt-1 text-sm text-gray-600">
+                                                    Owner: {commitment.owner}
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </TierCard>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+
+                              {orphanedCommitments.length > 0 && (
+                                <div>
+                                  <div className="mb-3 pb-2 border-b-2 border-gray-300">
+                                    <h3 className="text-md font-bold text-gray-700 flex items-center gap-2">
+                                      <span className="text-amber-600">⚠️</span>
+                                      Not Linked to Any Intent
+                                      <span className="ml-auto text-xs font-normal text-gray-500">
+                                        {orphanedCommitments.length} commitment{orphanedCommitments.length !== 1 ? 's' : ''}
+                                      </span>
+                                    </h3>
+                                  </div>
+                                  <div className="space-y-4 ml-4">
+                                    {orphanedCommitments.map((commitment) => {
+                                      const driver = pyramid.strategic_drivers.find(d => d.id === commitment.primary_driver_id);
+                                      const upstreamConnections = driver ? [{
+                                        id: driver.id,
+                                        name: driver.name,
+                                        type: 'upstream' as const,
+                                      }] : [];
+
+                                      const downstreamConnections = pyramid.team_objectives
+                                        ?.filter((obj) => obj.primary_commitment_id === commitment.id)
+                                        .map((obj) => ({
+                                          id: obj.id,
+                                          name: `${obj.team_name}: ${obj.name}`,
+                                          type: 'downstream' as const,
+                                        })) || [];
+
+                                      return (
+                                        <div key={commitment.id} id={`item-${commitment.id}`}>
+                                          <TierCard
+                                            variant="orange"
+                                            connections={[...upstreamConnections, ...downstreamConnections]}
+                                            onEdit={() => openEditModal('commitment', commitment.id, commitment)}
+                                            onDelete={() => handleDeleteCommitment(commitment.id)}
+                                            onConnectionClick={handleConnectionClick}
+                                          >
+                                            <div>
+                                              <div className="flex items-center justify-between mb-2">
+                                                <div className="text-lg font-bold text-orange-900">{commitment.name}</div>
+                                                <span className="px-3 py-1 bg-orange-200 text-orange-800 rounded-full text-sm font-medium">
+                                                  {commitment.horizon}
+                                                </span>
+                                              </div>
+                                              <div className="text-gray-700 leading-relaxed">
+                                                {commitment.description}
+                                              </div>
+                                              {commitment.target_date && (
+                                                <div className="mt-2 text-sm text-gray-600">
+                                                  Target: {new Date(commitment.target_date).toLocaleDateString()}
+                                                </div>
+                                              )}
+                                              {commitment.owner && (
+                                                <div className="mt-1 text-sm text-gray-600">
+                                                  Owner: {commitment.owner}
+                                                </div>
+                                              )}
+                                            </div>
+                                          </TierCard>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          );
+                        }
+                      })()}
+
+                      {pyramid.iconic_commitments.length === 0 && (
+                        <div className="text-center py-12 bg-orange-50 rounded-xl border-2 border-dashed border-orange-200">
+                          <div className="text-4xl mb-3">🎯</div>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">No iconic commitments yet</h3>
+                          <p className="text-gray-600 mb-4">Define time-bound milestones that bring your strategy to life</p>
+                          <Button onClick={() => openAddModal('commitment')}>
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add First Commitment
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ) : (
                   <div className="p-6 bg-yellow-50 border-2 border-yellow-200 rounded-xl text-center">
@@ -1308,71 +1760,174 @@ export default function BuilderPage() {
                   onBack={() => setActiveTier(undefined)}
                 />
 
-                <div className="space-y-4">
-                  {pyramid.team_objectives?.map((objective) => {
-                    // Upstream: commitment
-                    const commitment = pyramid.iconic_commitments.find((c) => c.id === objective.primary_commitment_id);
-                    const upstreamConnections = commitment ? [{
-                      id: commitment.id,
-                      name: commitment.name,
-                      type: 'upstream' as const,
-                    }] : [];
+                <div className="space-y-6">
+                  {(() => {
+                    // Group team objectives by commitment
+                    const objectivesByCommitment = new Map<string, any[]>();
+                    const orphanedObjectives: any[] = [];
 
-                    // Downstream: individual objectives linked to this team objective
-                    const downstreamConnections = pyramid.individual_objectives
-                      ?.filter((ind) => ind.team_objective_ids?.includes(objective.id))
-                      .map((ind) => ({
-                        id: ind.id,
-                        name: `${ind.individual_name}: ${ind.name}`,
-                        type: 'downstream' as const,
-                      })) || [];
+                    pyramid.team_objectives?.forEach((objective) => {
+                      if (!objective.primary_commitment_id) {
+                        orphanedObjectives.push(objective);
+                      } else {
+                        if (!objectivesByCommitment.has(objective.primary_commitment_id)) {
+                          objectivesByCommitment.set(objective.primary_commitment_id, []);
+                        }
+                        objectivesByCommitment.get(objective.primary_commitment_id)!.push(objective);
+                      }
+                    });
 
                     return (
-                      <div key={objective.id} id={`item-${objective.id}`}>
-                        <TierCard
-                          variant="orange"
-                          connections={[...upstreamConnections, ...downstreamConnections]}
-                          onEdit={() => openEditModal('team_objective', objective.id, objective)}
-                          onDelete={() => handleDeleteTeamObjective(objective.id)}
-                          onConnectionClick={handleConnectionClick}
-                        >
-                          <div>
-                            <div className="flex items-start justify-between mb-2">
-                              <div className="text-lg font-bold text-orange-900">{objective.name}</div>
-                              <span className="px-3 py-1 bg-orange-200 text-orange-800 rounded-full text-xs font-medium">
-                                {objective.team_name}
-                              </span>
-                            </div>
-                            <div className="text-gray-700 leading-relaxed">
-                              {objective.description}
-                            </div>
-                            {objective.metrics && (
-                              <div className="mt-2 text-sm text-gray-600">
-                                Metrics: {objective.metrics}
-                              </div>
-                            )}
-                            {objective.owner && (
-                              <div className="mt-1 text-sm text-gray-600">
-                                Owner: {objective.owner}
-                              </div>
-                            )}
-                          </div>
-                        </TierCard>
-                      </div>
-                    );
-                  })}
+                      <>
+                        {/* Render objectives grouped by commitment */}
+                        {pyramid.iconic_commitments.map((commitment) => {
+                          const objectives = objectivesByCommitment.get(commitment.id) || [];
+                          if (objectives.length === 0) return null;
 
-                  {(!pyramid.team_objectives || pyramid.team_objectives.length === 0) && (
-                    <div className="text-center py-12 bg-orange-50 rounded-xl border-2 border-dashed border-orange-200">
-                      <div className="text-4xl mb-3">👥</div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No team objectives yet</h3>
-                      <p className="text-gray-600 mb-4">Define team-level goals that cascade from your commitments</p>
-                      <Button onClick={() => openAddModal('team_objective')}>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add First Team Objective
-                      </Button>
-                    </div>
-                  )}
+                          return (
+                            <div key={commitment.id}>
+                              <div className="mb-3 pb-2 border-b-2 border-orange-300">
+                                <h3 className="text-md font-bold text-orange-900 flex items-center gap-2">
+                                  <span className="text-orange-600">↑</span>
+                                  {commitment.name}
+                                  <span className="ml-auto text-xs font-normal text-gray-500">
+                                    {objectives.length} objective{objectives.length !== 1 ? 's' : ''}
+                                  </span>
+                                </h3>
+                                <p className="text-xs text-orange-700 mt-1 ml-6">
+                                  {commitment.horizon} • {commitment.description.substring(0, 60)}
+                                  {commitment.description.length > 60 ? '...' : ''}
+                                </p>
+                              </div>
+                              <div className="space-y-4 ml-4">
+                                {objectives.map((objective) => {
+                                  const upstreamConnections = [{
+                                    id: commitment.id,
+                                    name: commitment.name,
+                                    type: 'upstream' as const,
+                                  }];
+
+                                  const downstreamConnections = pyramid.individual_objectives
+                                    ?.filter((ind) => ind.team_objective_ids?.includes(objective.id))
+                                    .map((ind) => ({
+                                      id: ind.id,
+                                      name: `${ind.individual_name}: ${ind.name}`,
+                                      type: 'downstream' as const,
+                                    })) || [];
+
+                                  return (
+                                    <div key={objective.id} id={`item-${objective.id}`}>
+                                      <TierCard
+                                        variant="orange"
+                                        connections={[...upstreamConnections, ...downstreamConnections]}
+                                        onEdit={() => openEditModal('team_objective', objective.id, objective)}
+                                        onDelete={() => handleDeleteTeamObjective(objective.id)}
+                                        onConnectionClick={handleConnectionClick}
+                                      >
+                                        <div>
+                                          <div className="flex items-start justify-between mb-2">
+                                            <div className="text-lg font-bold text-orange-900">{objective.name}</div>
+                                            <span className="px-3 py-1 bg-orange-200 text-orange-800 rounded-full text-xs font-medium">
+                                              {objective.team_name}
+                                            </span>
+                                          </div>
+                                          <div className="text-gray-700 leading-relaxed">
+                                            {objective.description}
+                                          </div>
+                                          {objective.metrics && (
+                                            <div className="mt-2 text-sm text-gray-600">
+                                              Metrics: {objective.metrics}
+                                            </div>
+                                          )}
+                                          {objective.owner && (
+                                            <div className="mt-1 text-sm text-gray-600">
+                                              Owner: {objective.owner}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </TierCard>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })}
+
+                        {/* Render orphaned objectives if any */}
+                        {orphanedObjectives.length > 0 && (
+                          <div>
+                            <div className="mb-3 pb-2 border-b-2 border-gray-300">
+                              <h3 className="text-md font-bold text-gray-700 flex items-center gap-2">
+                                <span className="text-amber-600">⚠️</span>
+                                Not Linked to Any Commitment
+                                <span className="ml-auto text-xs font-normal text-gray-500">
+                                  {orphanedObjectives.length} objective{orphanedObjectives.length !== 1 ? 's' : ''}
+                                </span>
+                              </h3>
+                            </div>
+                            <div className="space-y-4 ml-4">
+                              {orphanedObjectives.map((objective) => {
+                                const downstreamConnections = pyramid.individual_objectives
+                                  ?.filter((ind) => ind.team_objective_ids?.includes(objective.id))
+                                  .map((ind) => ({
+                                    id: ind.id,
+                                    name: `${ind.individual_name}: ${ind.name}`,
+                                    type: 'downstream' as const,
+                                  })) || [];
+
+                                return (
+                                  <div key={objective.id} id={`item-${objective.id}`}>
+                                    <TierCard
+                                      variant="orange"
+                                      connections={downstreamConnections}
+                                      onEdit={() => openEditModal('team_objective', objective.id, objective)}
+                                      onDelete={() => handleDeleteTeamObjective(objective.id)}
+                                      onConnectionClick={handleConnectionClick}
+                                    >
+                                      <div>
+                                        <div className="flex items-start justify-between mb-2">
+                                          <div className="text-lg font-bold text-orange-900">{objective.name}</div>
+                                          <span className="px-3 py-1 bg-orange-200 text-orange-800 rounded-full text-xs font-medium">
+                                            {objective.team_name}
+                                          </span>
+                                        </div>
+                                        <div className="text-gray-700 leading-relaxed">
+                                          {objective.description}
+                                        </div>
+                                        {objective.metrics && (
+                                          <div className="mt-2 text-sm text-gray-600">
+                                            Metrics: {objective.metrics}
+                                          </div>
+                                        )}
+                                        {objective.owner && (
+                                          <div className="mt-1 text-sm text-gray-600">
+                                            Owner: {objective.owner}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </TierCard>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {(!pyramid.team_objectives || pyramid.team_objectives.length === 0) && (
+                          <div className="text-center py-12 bg-orange-50 rounded-xl border-2 border-dashed border-orange-200">
+                            <div className="text-4xl mb-3">👥</div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">No team objectives yet</h3>
+                            <p className="text-gray-600 mb-4">Define team-level goals that cascade from your commitments</p>
+                            <Button onClick={() => openAddModal('team_objective')}>
+                              <Plus className="w-4 h-4 mr-2" />
+                              Add First Team Objective
+                            </Button>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </>
             )}
@@ -1389,61 +1944,153 @@ export default function BuilderPage() {
                   onBack={() => setActiveTier(undefined)}
                 />
 
-                <div className="space-y-4">
-                  {pyramid.individual_objectives?.map((objective) => {
-                    // Upstream: team objectives
-                    const upstreamConnections = objective.team_objective_ids
-                      ?.map((teamObjId) => {
-                        const teamObj = pyramid.team_objectives?.find((t) => t.id === teamObjId);
-                        return teamObj ? {
-                          id: teamObj.id,
-                          name: `${teamObj.team_name}: ${teamObj.name}`,
-                          type: 'upstream' as const,
-                        } : null;
-                      })
-                      .filter((conn): conn is NonNullable<typeof conn> => conn !== null) || [];
+                <div className="space-y-6">
+                  {(() => {
+                    // Group individual objectives by team objective
+                    const objectivesByTeamObjective = new Map<string, any[]>();
+                    const orphanedObjectives: any[] = [];
+
+                    pyramid.individual_objectives?.forEach((objective) => {
+                      if (!objective.team_objective_ids || objective.team_objective_ids.length === 0) {
+                        orphanedObjectives.push(objective);
+                      } else {
+                        objective.team_objective_ids.forEach((teamObjId) => {
+                          if (!objectivesByTeamObjective.has(teamObjId)) {
+                            objectivesByTeamObjective.set(teamObjId, []);
+                          }
+                          objectivesByTeamObjective.get(teamObjId)!.push(objective);
+                        });
+                      }
+                    });
 
                     return (
-                      <div key={objective.id} id={`item-${objective.id}`}>
-                        <TierCard
-                          variant="teal"
-                          connections={upstreamConnections}
-                          onEdit={() => openEditModal('individual_objective', objective.id, objective)}
-                          onDelete={() => handleDeleteIndividualObjective(objective.id)}
-                          onConnectionClick={handleConnectionClick}
-                        >
-                          <div>
-                            <div className="flex items-start justify-between mb-2">
-                              <div className="text-lg font-bold text-teal-900">{objective.name}</div>
-                              <span className="px-3 py-1 bg-teal-200 text-teal-800 rounded-full text-xs font-medium">
-                                {objective.individual_name}
-                              </span>
-                            </div>
-                            <div className="text-gray-700 leading-relaxed">
-                              {objective.description}
-                            </div>
-                            {objective.success_criteria && (
-                              <div className="mt-2 text-sm text-gray-600">
-                                Success criteria: {objective.success_criteria}
-                              </div>
-                            )}
-                          </div>
-                        </TierCard>
-                      </div>
-                    );
-                  })}
+                      <>
+                        {/* Render objectives grouped by team objective */}
+                        {pyramid.team_objectives?.map((teamObj) => {
+                          const objectives = objectivesByTeamObjective.get(teamObj.id) || [];
+                          if (objectives.length === 0) return null;
 
-                  {(!pyramid.individual_objectives || pyramid.individual_objectives.length === 0) && (
-                    <div className="text-center py-12 bg-teal-50 rounded-xl border-2 border-dashed border-teal-200">
-                      <div className="text-4xl mb-3">👤</div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No individual objectives yet</h3>
-                      <p className="text-gray-600 mb-4">Define personal goals that connect to team objectives</p>
-                      <Button onClick={() => openAddModal('individual_objective')}>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add First Individual Objective
-                      </Button>
-                    </div>
-                  )}
+                          return (
+                            <div key={teamObj.id}>
+                              <div className="mb-3 pb-2 border-b-2 border-orange-300">
+                                <h3 className="text-md font-bold text-orange-900 flex items-center gap-2">
+                                  <span className="text-orange-600">↑</span>
+                                  {teamObj.name}
+                                  <span className="ml-auto text-xs font-normal text-gray-500">
+                                    {objectives.length} objective{objectives.length !== 1 ? 's' : ''}
+                                  </span>
+                                </h3>
+                                <p className="text-xs text-orange-700 mt-1 ml-6">
+                                  {teamObj.team_name} • {teamObj.description.substring(0, 60)}
+                                  {teamObj.description.length > 60 ? '...' : ''}
+                                </p>
+                              </div>
+                              <div className="space-y-4 ml-4">
+                                {objectives.map((objective) => {
+                                  const upstreamConnections = objective.team_objective_ids
+                                    ?.map((teamObjId: string) => {
+                                      const tObj = pyramid.team_objectives?.find((t) => t.id === teamObjId);
+                                      return tObj ? {
+                                        id: tObj.id,
+                                        name: `${tObj.team_name}: ${tObj.name}`,
+                                        type: 'upstream' as const,
+                                      } : null;
+                                    })
+                                    .filter((conn: any): conn is NonNullable<typeof conn> => conn !== null) || [];
+
+                                  return (
+                                    <div key={objective.id} id={`item-${objective.id}`}>
+                                      <TierCard
+                                        variant="teal"
+                                        connections={upstreamConnections}
+                                        onEdit={() => openEditModal('individual_objective', objective.id, objective)}
+                                        onDelete={() => handleDeleteIndividualObjective(objective.id)}
+                                        onConnectionClick={handleConnectionClick}
+                                      >
+                                        <div>
+                                          <div className="flex items-start justify-between mb-2">
+                                            <div className="text-lg font-bold text-teal-900">{objective.name}</div>
+                                            <span className="px-3 py-1 bg-teal-200 text-teal-800 rounded-full text-xs font-medium">
+                                              {objective.individual_name}
+                                            </span>
+                                          </div>
+                                          <div className="text-gray-700 leading-relaxed">
+                                            {objective.description}
+                                          </div>
+                                          {objective.success_criteria && (
+                                            <div className="mt-2 text-sm text-gray-600">
+                                              Success criteria: {objective.success_criteria}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </TierCard>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })}
+
+                        {/* Render orphaned objectives if any */}
+                        {orphanedObjectives.length > 0 && (
+                          <div>
+                            <div className="mb-3 pb-2 border-b-2 border-gray-300">
+                              <h3 className="text-md font-bold text-gray-700 flex items-center gap-2">
+                                <span className="text-amber-600">⚠️</span>
+                                Not Linked to Any Team Objective
+                                <span className="ml-auto text-xs font-normal text-gray-500">
+                                  {orphanedObjectives.length} objective{orphanedObjectives.length !== 1 ? 's' : ''}
+                                </span>
+                              </h3>
+                            </div>
+                            <div className="space-y-4 ml-4">
+                              {orphanedObjectives.map((objective) => (
+                                <div key={objective.id} id={`item-${objective.id}`}>
+                                  <TierCard
+                                    variant="teal"
+                                    connections={[]}
+                                    onEdit={() => openEditModal('individual_objective', objective.id, objective)}
+                                    onDelete={() => handleDeleteIndividualObjective(objective.id)}
+                                    onConnectionClick={handleConnectionClick}
+                                  >
+                                    <div>
+                                      <div className="flex items-start justify-between mb-2">
+                                        <div className="text-lg font-bold text-teal-900">{objective.name}</div>
+                                        <span className="px-3 py-1 bg-teal-200 text-teal-800 rounded-full text-xs font-medium">
+                                          {objective.individual_name}
+                                        </span>
+                                      </div>
+                                      <div className="text-gray-700 leading-relaxed">
+                                        {objective.description}
+                                      </div>
+                                      {objective.success_criteria && (
+                                        <div className="mt-2 text-sm text-gray-600">
+                                          Success criteria: {objective.success_criteria}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </TierCard>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {(!pyramid.individual_objectives || pyramid.individual_objectives.length === 0) && (
+                          <div className="text-center py-12 bg-teal-50 rounded-xl border-2 border-dashed border-teal-200">
+                            <div className="text-4xl mb-3">👤</div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">No individual objectives yet</h3>
+                            <p className="text-gray-600 mb-4">Define personal goals that connect to team objectives</p>
+                            <Button onClick={() => openAddModal('individual_objective')}>
+                              <Plus className="w-4 h-4 mr-2" />
+                              Add First Individual Objective
+                            </Button>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </>
             )}
