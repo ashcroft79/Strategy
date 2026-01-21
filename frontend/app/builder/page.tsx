@@ -26,7 +26,7 @@ import PyramidVisualization from "@/components/visualizations/PyramidVisualizati
 import ExecutionReadinessChecklist from "@/components/visualizations/ExecutionReadinessChecklist";
 import { StatementType, Horizon } from "@/types/pyramid";
 import { Save, Home, CheckCircle, FileDown, Eye, Trash2, Edit, Plus, BarChart3 } from "lucide-react";
-import { TIER4_TOOLTIPS, TIER5_TOOLTIPS, TIER7_TOOLTIPS, TIER1_TOOLTIPS, TIER2_TOOLTIPS } from "@/config/tooltips";
+import { TIER1_TOOLTIPS, TIER2_TOOLTIPS, TIER3_TOOLTIPS, TIER4_TOOLTIPS, TIER5_TOOLTIPS, TIER6_TOOLTIPS, TIER7_TOOLTIPS, TIER8_TOOLTIPS, TIER9_TOOLTIPS } from "@/config/tooltips";
 
 // Component to handle edit query params
 function EditParamsHandler({
@@ -1597,14 +1597,16 @@ export default function BuilderPage() {
                   setBehaviourStatement(e.target.value);
                 }
               }}
-              placeholder="e.g., We actively seek diverse perspectives before making decisions..."
+              placeholder="e.g., We share work-in-progress early and often, inviting feedback..."
+              tooltipContent={TIER3_TOOLTIPS.BEHAVIOUR_STATEMENT}
               rows={4}
               required
             />
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Link to Values (select one or more)
-              </label>
+              <LabelWithTooltip
+                label="Link to Values (select one or more)"
+                tooltipContent={TIER3_TOOLTIPS.BEHAVIOUR_LINKS}
+              />
               <div className="grid md:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
                 {pyramid.values.map((value) => (
                   <label key={value.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
@@ -1763,7 +1765,8 @@ export default function BuilderPage() {
                   setEnablerName(e.target.value);
                 }
               }}
-              placeholder="e.g., Advanced Analytics Platform"
+              placeholder="e.g., Real-Time Data Platform, Cloud Infrastructure"
+              tooltipContent={TIER6_TOOLTIPS.ENABLER_NAME}
               required
             />
             <Textarea
@@ -1777,6 +1780,7 @@ export default function BuilderPage() {
                 }
               }}
               placeholder="What this enabler provides and why it's needed..."
+              tooltipContent={TIER6_TOOLTIPS.ENABLER_DESCRIPTION}
               rows={3}
               required
             />
@@ -2029,7 +2033,8 @@ export default function BuilderPage() {
                   setTeamObjectiveName(e.target.value);
                 }
               }}
-              placeholder="e.g., Launch MVP in Q2"
+              placeholder="e.g., Complete Mobile Backend API"
+              tooltipContent={TIER8_TOOLTIPS.TEAM_OBJECTIVE_NAME}
               required
             />
             <Textarea
@@ -2056,14 +2061,16 @@ export default function BuilderPage() {
                   setTeamName(e.target.value);
                 }
               }}
-              placeholder="e.g., Product Team, Engineering"
+              placeholder="e.g., Backend Engineering, Customer Success Team"
+              tooltipContent={TIER8_TOOLTIPS.TEAM_NAME}
               required
             />
             {pyramid.iconic_commitments.length > 0 && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Link to Commitment (Optional)
-                </label>
+                <LabelWithTooltip
+                  label="Link to Commitment (Optional)"
+                  tooltipContent={TIER8_TOOLTIPS.LINK_TO_COMMITMENT}
+                />
                 <select
                   className="input"
                   value={modalMode === 'edit' ? editFormData.primary_commitment_id : selectedCommitment}
@@ -2125,7 +2132,8 @@ export default function BuilderPage() {
                   setIndividualObjectiveName(e.target.value);
                 }
               }}
-              placeholder="e.g., Complete certification in Q1"
+              placeholder="e.g., Implement OAuth 2.0 Authentication"
+              tooltipContent={TIER9_TOOLTIPS.INDIVIDUAL_OBJECTIVE_NAME}
               required
             />
             <Textarea
@@ -2153,13 +2161,15 @@ export default function BuilderPage() {
                 }
               }}
               placeholder="e.g., John Smith"
+              tooltipContent={TIER9_TOOLTIPS.INDIVIDUAL_NAME}
               required
             />
             {pyramid.team_objectives && pyramid.team_objectives.length > 0 && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Link to Team Objectives (optional)
-                </label>
+                <LabelWithTooltip
+                  label="Link to Team Objectives (optional)"
+                  tooltipContent={TIER9_TOOLTIPS.LINK_TO_TEAM_OBJECTIVES}
+                />
                 <div className="grid md:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
                   {pyramid.team_objectives.map((teamObj) => (
                     <label key={teamObj.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
