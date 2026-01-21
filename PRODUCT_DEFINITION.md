@@ -105,8 +105,8 @@ TIER 1: Purpose (Vision/Mission/Belief)        ← "The Why"
 TIER 2: Values                                 ← "How we show up"
 TIER 3: Behaviours                             ← "Values in action"
         ─────────────────────────────────
-TIER 4: Strategic Intent                       ← "What we're hearing"
-TIER 5: Strategic Drivers (Themes/Pillars)     ← "Focus areas"
+TIER 4: Strategic Drivers (Themes/Pillars)     ← "Focus areas"
+TIER 5: Strategic Intents                      ← "What success looks like"
 TIER 6: Enablers                               ← "What must exist"
         ─────────────────────────────────
 TIER 7: Iconic Commitments                     ← "What we'll deliver"
@@ -116,22 +116,36 @@ TIER 9: Individual Objectives                  ← "What each person owns"
 
 **Three Distinct Zones:**
 1. **Purpose** (Tiers 1-3) - Why we exist, what we believe, how we behave
-2. **Strategy** (Tiers 4-6) - What we're responding to, where we focus, what we need
+2. **Strategy** (Tiers 4-6) - Where we focus, what success looks like, what we need
 3. **Execution** (Tiers 7-9) - What we'll deliver, team plans, individual goals
 
-### Strategic Intent: The Customer Voice
+**Strategic Cascade:**
+Driver → Intent → Commitment → Team Objective → Individual Objective
 
-**Tier 4 (Strategic Intent)** is often misunderstood. These are NOT internal strategic statements. They are:
-- What stakeholders/customers are telling us
-- Problems that need solving
-- Voices that demand response
-- The "outside-in" view that informs strategy
+This creates complete traceability from vision to individual actions with nested visualization.
+
+### Strategic Drivers & Intents: The Strategic Core
+
+**Tier 4 (Strategic Drivers)** are the 3-5 major focus areas or themes:
+- Strategic pillars that organize your efforts
+- Should be noun phrases (e.g., "Customer Excellence", "Operational Resilience")
+- Maximum 5 drivers (more creates dilution)
+
+**Tier 5 (Strategic Intents)** are bold, aspirational statements of what success looks like for each driver:
+- Outcome-focused, not activity-focused
+- Should be imaginable (paint a picture of the end state)
+- Can include stakeholder voice perspective
+- 2-3 intents per driver
 
 **Example:**
-- ❌ Bad: "Drive digital transformation" (internal, vague)
-- ✅ Good: "Customers expect mobile-first experiences" (external, specific)
+- Driver: "Customer Excellence"
+  - Intent 1: "Our platform becomes the industry standard customers choose first"
+  - Intent 2: "Customers describe us as 'anticipating what I need before I ask'"
+- Driver: "Operational Resilience"
+  - Intent 1: "We maintain 99.99% uptime even during peak demand"
+  - Intent 2: "Our team responds to incidents before customers notice"
 
-Strategic Intents connect to Drivers, showing HOW we respond to WHAT we're hearing.
+**Critical Link:** Iconic Commitments link to BOTH their primary driver AND the specific intents they deliver (via `primary_intent_ids` array). This shows which aspirations each commitment advances.
 
 ### The Horizon Framework (H1/H2/H3)
 
@@ -1139,73 +1153,81 @@ Driver Distribution:
 - Orphaned drivers (drivers with no commitments)
 - Structure validation (is this really 9 tiers or 5?)
 
-### The 4 Core Visualizations
+### The 5 Core Visualizations
 
-#### 1. Pyramid Structure Diagram
-**Type**: Funnel/pyramid chart (Plotly)
-**Layers**: 9 tiers with item counts
-**Colors**: Blue gradient (purpose), green (strategy), purple (execution)
-
-**What It Shows**:
-- Structure at a glance
-- Gaps in tiers (e.g., 3 drivers but 0 enablers)
-- Volume distribution (many commitments, few team objectives)
-
-**Interactions**:
-- Hover: Show tier name + count
-- Click: Filter to that tier in builder
-
-**Use Case**: Executive review, structure validation
-
-#### 2. Commitment Distribution (Sunburst)
-**Type**: Hierarchical sunburst chart (Plotly)
-**Layers**:
-- Inner: Strategic drivers
-- Middle: Iconic commitments
-- Outer: Horizons (H1/H2/H3)
+#### 1. Strategy Blueprint (NEW - January 2026)
+**Type**: Professional single-page layouts with print optimization
+**Layouts**: Portrait, Landscape, Compact
+**Format**: React components with Tailwind CSS, print-optimized CSS
 
 **What It Shows**:
-- Which drivers have the most commitments
-- Balance across drivers
-- Horizon distribution per driver
+- Complete pyramid structure on a single page
+- Strategic cascade with nested objectives (Driver → Intent → Commitment → Team → Individual)
+- Full tier coverage with selection controls
+- Behaviours nested under values
+- Team objectives nested under commitments
+- Individual objectives nested under team objectives
 
-**Interactions**:
-- Click: Zoom into driver
-- Hover: Show count + percentage
+**Features**:
+- Three layout options for different use cases:
+  - **Portrait**: Detailed narrative flow (A4 portrait)
+  - **Landscape**: Side-by-side pillar view (A4 landscape)
+  - **Compact**: Maximum density for executives (A4 portrait)
+- Tier selector dropdown (choose which tiers to display)
+- Print-optimized with A4 page sizing and margins
+- Export to PDF via browser print
+- Color-coded tiers (blue: values, purple: drivers, indigo: teams, pink: individuals)
 
-**Use Case**: Portfolio balance review, strategic bet analysis
+**Use Case**: Board presentations, stakeholder reports, workshop handouts, strategy communication
 
-#### 3. Horizon Timeline
-**Type**: Timeline/Gantt chart (Plotly)
-**X-Axis**: Time (H1: 0-12m, H2: 12-24m, H3: 24-36m)
-**Y-Axis**: Commitments (grouped by driver)
-**Colors**: By driver
-
-**What It Shows**:
-- When deliveries happen
-- Capacity reality check (15 things in Q1?)
-- Sequencing logic (or lack thereof)
-
-**Interactions**:
-- Hover: Show commitment details
-- Filter: By driver, by horizon
-
-**Use Case**: Timeline planning, capacity review, sequencing decisions
-
-#### 4. Strategic Drivers Overview
-**Type**: Horizontal bar chart (Plotly)
-**Bars**:
-- Intents per driver (green)
-- Commitments per driver (purple)
+#### 2. Time Horizon View
+**Type**: Interactive commitment timeline with nested objectives
+**Horizons**: H1 (0-12m), H2 (12-24m), H3 (24-36m)
+**Colors**: By horizon (green: H1, blue: H2, purple: H3)
 
 **What It Shows**:
-- Driver workload (intents + commitments)
-- Drivers with high intent but low commitment (talking, not doing)
-- Drivers with high commitment but low intent (doing without strategy)
+- Commitments organized by delivery timeline
+- Team objectives nested under their primary commitments
+- Individual objectives nested under team objectives
+- Target dates and ownership
 
-**Interactions**:
-- Hover: Show counts
-- Click: Navigate to driver in builder
+**Use Case**: Timeline planning, capacity review, cascade visibility
+
+#### 3. Strategic Health Dashboard
+**Type**: Driver-level health metrics with actionable insights
+**Metrics**: Completeness, balance, quality indicators
+
+**What It Shows**:
+- Health score per driver
+- Intents-to-commitments ratio
+- Team coverage analysis
+- Red flags and recommendations
+
+**Use Case**: Strategic health monitoring, gap identification, prioritization decisions
+
+#### 4. Balance Scorecard
+**Type**: Overall pyramid assessment
+**Components**: Completeness matrix, coverage analysis, quality indicators
+
+**What It Shows**:
+- Which tiers are complete
+- Distribution balance across drivers
+- Coverage gaps (drivers with no commitments)
+- Quality scores (language, specificity, alignment)
+
+**Use Case**: Strategy validation, board review preparation, quality assurance
+
+#### 5. Traceability Flow
+**Type**: Visual cascade diagram showing strategic alignment
+**Flow**: Vision → Driver → Intent → Commitment → Team → Individual
+
+**What It Shows**:
+- "Golden threads" from vision to execution
+- Orphaned commitments (no driver link)
+- Broken cascades (commitments with no team objectives)
+- Complete traceability paths
+
+**Use Case**: Alignment validation, cascade completeness, strategic coherence
 
 **Use Case**: Driver balance review, strategic focus analysis
 

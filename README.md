@@ -1,6 +1,6 @@
 # Strategic Pyramid Builder
 
-**Version:** 1.0.0
+**Version:** 1.1.0
 **Stack:** Next.js + FastAPI
 **Status:** Production Ready (Vercel + Railway)
 
@@ -31,8 +31,8 @@ PURPOSE
 └─ Tier 3: Behaviours                ← "Values in action"
 
 STRATEGY
-├─ Tier 4: Strategic Intent          ← "What we're hearing" (customer voice)
-├─ Tier 5: Strategic Drivers         ← "Our focus areas" (3-5 themes)
+├─ Tier 4: Strategic Drivers         ← "Our focus areas" (3-5 themes)
+├─ Tier 5: Strategic Intents         ← "What success looks like" (bold outcomes)
 └─ Tier 6: Enablers                  ← "What we need to succeed"
 
 EXECUTION
@@ -41,7 +41,11 @@ EXECUTION
 └─ Tier 9: Individual Objectives     ← "What each person owns"
 ```
 
-**The Key Innovation**: Every commitment MUST declare ONE primary driver. This forces strategic choices and reveals real priorities.
+**Key Innovations**:
+- Every commitment MUST declare ONE primary driver and links to strategic intents it delivers
+- Team objectives nest under their primary commitments
+- Individual objectives nest under team objectives
+- This creates a complete strategic cascade: Vision → Driver → Intent → Commitment → Team → Individual
 
 ---
 
@@ -112,11 +116,15 @@ npm run dev
 - **Markdown** - For wikis and documentation sites
 - **JSON** - For integrations and programmatic access
 
-### 4. Interactive Visualizations (4 Charts)
-- **Pyramid Diagram** - 9-tier structure with item counts
-- **Distribution Sunburst** - Commitment distribution across drivers
-- **Horizon Timeline** - When deliverables happen (H1/H2/H3)
-- **Driver Overview** - Intents + commitments per driver
+### 4. Interactive Visualizations (5 Views)
+- **Strategy Blueprint** - Professional single-page layouts (Portrait, Landscape, Compact) with print optimization
+  - Full pyramid visualization with tier selection controls
+  - Nested objectives showing strategic cascade (Driver → Intent → Commitment → Team → Individual)
+  - Print-optimized for A4 with PDF export capabilities
+- **Time Horizon View** - Commitment timeline visualization (H1/H2/H3)
+- **Strategic Health Dashboard** - Driver-level health metrics with actionable insights
+- **Balance Scorecard** - Overall pyramid completeness and coverage analysis
+- **Traceability Flow** - Visual cascade showing strategic alignment (golden threads)
 
 ---
 
@@ -153,22 +161,23 @@ This reveals:
 - Imbalanced portfolios (one driver has 12 commitments, another has 1)
 - Clear accountability (who owns what)
 
-### Strategic Intent vs. Commitments
+### Strategic Drivers → Intents → Commitments
 
-**Common Mistake**: Conflating "what we hear" with "what we'll do."
+**Common Mistake**: Conflating "what we aim for" with "what we'll do."
 
-**Strategic Intent** (Tier 4):
-- External voices, customer needs, market trends
-- "Customers expect 24/7 support across all channels"
-- "Employees report burnout from always-on culture"
+**Strategic Drivers** (Tier 4):
+- Major focus areas or themes (3-5 max)
+- "Customer Excellence", "Operational Resilience", "Innovation Leadership"
 
-**Strategic Drivers** (Tier 5):
-- How we respond to what we're hearing
-- "Customer Excellence", "Sustainable Performance"
+**Strategic Intents** (Tier 5):
+- Bold, aspirational statements of what success looks like for each driver
+- "Our platform becomes the industry standard for ease of use"
+- "Customers choose us first because we anticipate their needs"
 
 **Iconic Commitments** (Tier 7):
-- What we'll actually deliver
-- "Launch 24/7 chat support by Q3 2026"
+- Time-bound initiatives that deliver the intents
+- "Launch AI-powered recommendation engine by Q3 2026"
+- Each commitment links to ONE primary driver and the intents it delivers
 
 ### Horizon Framework (H1/H2/H3)
 
@@ -262,11 +271,15 @@ Strategy/
 2. **Create Pyramid**: Enter organization name and project details
 3. **Build Purpose**: Add vision, values, and behaviours
 4. **Define Strategy**: Add strategic drivers (3-5 focus areas)
-5. **Add Intents**: Capture what stakeholders are saying
-6. **Define Commitments**: Create deliverables with PRIMARY driver ownership
-7. **Validate**: Run validation to check structure and balance
-8. **Visualize**: View distribution charts and timeline
-9. **Export**: Generate Word doc for leadership review
+5. **Add Intents**: Create bold, aspirational success statements for each driver
+6. **Define Commitments**: Create deliverables with PRIMARY driver and intent links
+7. **Add Team & Individual Objectives**: Create cascade from commitments to teams to individuals
+8. **Validate**: Run validation to check structure and balance
+9. **Visualize**:
+   - View Strategy Blueprint (Portrait/Landscape/Compact layouts)
+   - See strategic cascade with nested objectives
+   - Review time horizon distribution and health metrics
+10. **Export**: Generate Word doc or print Strategy Blueprint as PDF
 
 ### Load Example
 
@@ -320,13 +333,16 @@ Contributions welcome! Please:
 
 ## 📈 Roadmap
 
-### ✅ Phase 1: Foundation (Complete)
+### ✅ Phase 1: Foundation (Complete - January 2026)
 - [x] Complete 9-tier pyramid builder
 - [x] Validation engine (8 checks)
 - [x] Export to Word, PowerPoint, Markdown, JSON
-- [x] Interactive visualizations (4 charts)
+- [x] Interactive visualizations (5 views)
+- [x] Strategy Blueprint with 3 professional layouts
+- [x] Strategic cascade visualization (nested objectives)
 - [x] Web UI (Next.js + FastAPI)
 - [x] Deployment configs (Vercel + Railway)
+- [x] AI Strategy Guide for external AI-powered pyramid generation
 
 ### 🔄 Phase 2: Persistence & Scale (Q1 2026)
 - [ ] PostgreSQL database integration
@@ -382,7 +398,8 @@ Copyright © 2026 Strategic Pyramid Builder
 **Product Vision**: Rob (HR Transformation Specialist)
 **Implementation**: Claude (Anthropic AI)
 **First Release**: January 19, 2026
-**Current Version**: 1.0.0 (January 21, 2026)
+**Strategy Blueprint Release**: January 21, 2026
+**Current Version**: 1.1.0 (January 21, 2026)
 
 ---
 

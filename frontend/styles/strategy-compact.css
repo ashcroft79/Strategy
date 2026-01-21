@@ -1,0 +1,165 @@
+/* Strategy Compact - Print-Optimized Styles */
+
+.strategy-compact {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+/* Print Styles */
+@media print {
+  .strategy-compact {
+    max-width: 100%;
+    padding: 0.25in 0.35in;
+    margin: 0;
+    font-size: 9pt;
+  }
+
+  /* Page setup for print */
+  @page {
+    size: A4 portrait;
+    margin: 0.25in 0.35in;
+  }
+
+  /* Ensure colors print correctly */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+
+  /* Prevent page breaks inside important sections */
+  .bg-purple-50,
+  .bg-blue-50,
+  .bg-teal-50 {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Remove shadows for cleaner print */
+  * {
+    box-shadow: none !important;
+  }
+
+  /* Optimize ultra-tight spacing for print */
+  .mb-2 {
+    margin-bottom: 0.05in;
+  }
+
+  .mb-1\.5 {
+    margin-bottom: 0.04in;
+  }
+
+  .mb-1 {
+    margin-bottom: 0.03in;
+  }
+
+  .mb-0\.5 {
+    margin-bottom: 0.02in;
+  }
+
+  .gap-2 {
+    gap: 0.04in;
+  }
+
+  .gap-1 {
+    gap: 0.02in;
+  }
+
+  .gap-0\.5 {
+    gap: 0.01in;
+  }
+
+  .p-2 {
+    padding: 0.05in;
+  }
+
+  .p-1 {
+    padding: 0.03in;
+  }
+
+  .px-1\.5 {
+    padding-left: 0.04in;
+    padding-right: 0.04in;
+  }
+
+  .py-1 {
+    padding-top: 0.03in;
+    padding-bottom: 0.03in;
+  }
+
+  .py-0\.5 {
+    padding-top: 0.02in;
+    padding-bottom: 0.02in;
+  }
+
+  /* Reduce border widths for print */
+  .border-l-2 {
+    border-left-width: 2px;
+  }
+
+  .border-2 {
+    border-width: 1px;
+  }
+
+  .border {
+    border-width: 0.5px;
+  }
+
+  /* Ultra-compact text sizing */
+  .text-xl {
+    font-size: 14pt;
+  }
+
+  .text-xs {
+    font-size: 9pt;
+  }
+
+  .text-\[10px\] {
+    font-size: 8.5pt;
+  }
+
+  .text-\[9px\] {
+    font-size: 7.5pt;
+  }
+
+  .text-\[8px\] {
+    font-size: 7pt;
+  }
+}
+
+/* Screen Styles */
+@media screen {
+  .strategy-compact {
+    background: white;
+    min-height: 100vh;
+  }
+}
+
+/* Typography - tight leading */
+.strategy-compact p {
+  line-height: 1.2;
+}
+
+.strategy-compact h1,
+.strategy-compact h2,
+.strategy-compact h3,
+.strategy-compact h4 {
+  line-height: 1.1;
+}
+
+/* Ensure consistent ultra-tight spacing */
+.strategy-compact .space-y-1\.5 > * + * {
+  margin-top: 0.375rem;
+}
+
+.strategy-compact .space-y-1 > * + * {
+  margin-top: 0.25rem;
+}
+
+.strategy-compact .space-y-0\.5 > * + * {
+  margin-top: 0.125rem;
+}

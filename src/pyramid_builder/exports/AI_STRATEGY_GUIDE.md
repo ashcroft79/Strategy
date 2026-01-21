@@ -122,41 +122,122 @@ for i in range(20):
     "organization": "Your Organization",
     "created_by": "Your Name",
     "created_at": "2025-01-20",
-    "version": "0.4.0"
+    "last_modified": "2025-01-20",
+    "version": "0.4.0",
+    "description": "Optional description"
   },
   "vision": {
+    "id": "vision-uuid-here",
+    "created_at": "2025-01-20T00:00:00Z",
+    "updated_at": "2025-01-20T00:00:00Z",
     "statements": [
       {
         "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "created_at": "2025-01-20T00:00:00Z",
+        "updated_at": "2025-01-20T00:00:00Z",
         "statement_type": "vision",
-        "statement": "Your vision statement"
+        "statement": "Your vision statement",
+        "order": 1
+      },
+      {
+        "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+        "created_at": "2025-01-20T00:00:00Z",
+        "updated_at": "2025-01-20T00:00:00Z",
+        "statement_type": "mission",
+        "statement": "Your mission statement",
+        "order": 2
       }
     ]
   },
   "values": [
     {
       "id": "d4e5f6a7-b8c9-0123-def1-234567890123",
+      "created_at": "2025-01-20T00:00:00Z",
+      "updated_at": "2025-01-20T00:00:00Z",
       "name": "Value Name",
       "description": "What this value means"
+    }
+  ],
+  "behaviours": [
+    {
+      "id": "e5f6a7b8-c9d0-1234-e123-456789012345",
+      "created_at": "2025-01-20T00:00:00Z",
+      "updated_at": "2025-01-20T00:00:00Z",
+      "statement": "Observable behavior that demonstrates the value",
+      "value_ids": ["d4e5f6a7-b8c9-0123-def1-234567890123"]
     }
   ],
   "strategic_drivers": [
     {
       "id": "f6a7b8c9-d0e1-2345-f123-456789012345",
+      "created_at": "2025-01-20T00:00:00Z",
+      "updated_at": "2025-01-20T00:00:00Z",
       "name": "Driver Name",
       "description": "What this driver aims to achieve",
       "rationale": "Why this is strategically important"
     }
   ],
+  "strategic_intents": [
+    {
+      "id": "a7b8c9d0-e1f2-3456-1234-567890123456",
+      "created_at": "2025-01-20T00:00:00Z",
+      "updated_at": "2025-01-20T00:00:00Z",
+      "statement": "Bold, aspirational statement of what success looks like",
+      "driver_id": "f6a7b8c9-d0e1-2345-f123-456789012345",
+      "is_stakeholder_voice": false,
+      "boldness_score": 8
+    }
+  ],
+  "enablers": [
+    {
+      "id": "b8c9d0e1-f2a3-4567-2345-678901234567",
+      "created_at": "2025-01-20T00:00:00Z",
+      "updated_at": "2025-01-20T00:00:00Z",
+      "name": "Enabler Name",
+      "description": "What capability or resource enables execution",
+      "driver_ids": ["f6a7b8c9-d0e1-2345-f123-456789012345"],
+      "enabler_type": "Technology"
+    }
+  ],
   "iconic_commitments": [
     {
       "id": "c9d0e1f2-a3b4-5678-3456-789012345678",
+      "created_at": "2025-01-20T00:00:00Z",
+      "updated_at": "2025-01-20T00:00:00Z",
       "name": "Commitment Name",
       "description": "What we will accomplish",
       "primary_driver_id": "f6a7b8c9-d0e1-2345-f123-456789012345",
+      "primary_intent_ids": ["a7b8c9d0-e1f2-3456-1234-567890123456"],
+      "secondary_alignments": [],
       "horizon": "H1",
       "target_date": "2025-06-30",
       "owner": "Executive Sponsor"
+    }
+  ],
+  "team_objectives": [
+    {
+      "id": "d0e1f2a3-b4c5-6789-4567-890123456789",
+      "created_at": "2025-01-20T00:00:00Z",
+      "updated_at": "2025-01-20T00:00:00Z",
+      "name": "Team Objective Name",
+      "description": "What the team will accomplish",
+      "team_name": "Engineering",
+      "primary_commitment_id": "c9d0e1f2-a3b4-5678-3456-789012345678",
+      "primary_intent_id": "a7b8c9d0-e1f2-3456-1234-567890123456",
+      "metrics": ["Metric 1", "Metric 2"],
+      "owner": "Team Lead Name"
+    }
+  ],
+  "individual_objectives": [
+    {
+      "id": "e1f2a3b4-c5d6-7890-5678-901234567890",
+      "created_at": "2025-01-20T00:00:00Z",
+      "updated_at": "2025-01-20T00:00:00Z",
+      "name": "Individual Objective Name",
+      "description": "What the individual will accomplish",
+      "individual_name": "John Smith",
+      "team_objective_ids": ["d0e1f2a3-b4c5-6789-4567-890123456789"],
+      "success_criteria": ["Criterion 1", "Criterion 2"]
     }
   ]
 }
@@ -164,16 +245,77 @@ for i in range(20):
 
 ### Field Reference
 
-**Required Fields:**
-- **id**: Valid UUID (e.g., "550e8400-e29b-41d4-a716-446655440000")
-- **name** or **statement**: Main content text
-- **description**: Detailed explanation
+#### Common Fields (All Items)
+- **id**: Valid UUID (REQUIRED) - e.g., "550e8400-e29b-41d4-a716-446655440000"
+- **created_at**: ISO 8601 timestamp (REQUIRED) - e.g., "2025-01-20T00:00:00Z"
+- **updated_at**: ISO 8601 timestamp (REQUIRED) - e.g., "2025-01-20T00:00:00Z"
+- **created_by**: String (OPTIONAL) - Who created this item
+- **notes**: String (OPTIONAL) - Additional notes
 
-**Connection Fields** (must reference valid UUIDs):
-- **value_ids**: Links to values (array of UUIDs)
-- **driver_id**: Links to a strategic driver (single UUID)
-- **primary_driver_id**: Primary driver link (single UUID)
-- **team_objective_ids**: Links to team objectives (array of UUIDs)
+#### Metadata (Project Information)
+- **project_name**: String (REQUIRED)
+- **organization**: String (REQUIRED)
+- **created_by**: String (REQUIRED)
+- **created_at**: Date string (REQUIRED) - e.g., "2025-01-20"
+- **last_modified**: Date string (REQUIRED) - e.g., "2025-01-20"
+- **version**: String (REQUIRED) - e.g., "0.4.0"
+- **description**: String (OPTIONAL)
+
+#### Vision Statements
+- **statement_type**: String (REQUIRED) - One of: "vision", "mission", "belief", "passion", "purpose", "aspiration"
+- **statement**: String (REQUIRED) - The vision/mission/belief statement
+- **order**: Number (REQUIRED) - Display order
+
+#### Values
+- **name**: String (REQUIRED) - Value name
+- **description**: String (OPTIONAL) - What the value means
+
+#### Behaviours
+- **statement**: String (REQUIRED) - Observable behavior description
+- **value_ids**: Array of UUIDs (REQUIRED) - Links to values this behavior demonstrates
+
+#### Strategic Drivers
+- **name**: String (REQUIRED) - Driver name (2-4 words)
+- **description**: String (REQUIRED) - What this driver aims to achieve
+- **rationale**: String (OPTIONAL) - Why this is strategically important
+
+#### Strategic Intents
+- **statement**: String (REQUIRED) - Bold, aspirational success statement
+- **driver_id**: UUID (REQUIRED) - Links to the strategic driver
+- **is_stakeholder_voice**: Boolean (REQUIRED) - Whether this is from stakeholder perspective
+- **boldness_score**: Number (OPTIONAL) - Score from 1-10 indicating boldness level
+
+#### Enablers
+- **name**: String (REQUIRED) - Enabler name
+- **description**: String (REQUIRED) - What capability/resource this provides
+- **driver_ids**: Array of UUIDs (REQUIRED) - Links to drivers this enables
+- **enabler_type**: String (OPTIONAL) - Type: "People", "Process", "Technology", "Partnership"
+
+#### Iconic Commitments
+- **name**: String (REQUIRED) - Commitment name
+- **description**: String (REQUIRED) - What will be accomplished
+- **primary_driver_id**: UUID (REQUIRED) - Primary strategic driver link
+- **primary_intent_ids**: Array of UUIDs (REQUIRED) - Links to strategic intents
+- **secondary_alignments**: Array (REQUIRED) - Can be empty []
+- **horizon**: String (REQUIRED) - "H1", "H2", or "H3"
+- **target_date**: Date string (OPTIONAL) - Format: "YYYY-MM-DD"
+- **owner**: String (OPTIONAL) - Executive sponsor
+
+#### Team Objectives
+- **name**: String (REQUIRED) - Objective name
+- **description**: String (REQUIRED) - What the team will accomplish
+- **team_name**: String (REQUIRED) - Name of the team
+- **primary_commitment_id**: UUID (OPTIONAL) - Links to iconic commitment
+- **primary_intent_id**: UUID (OPTIONAL) - Links to strategic intent
+- **metrics**: Array of strings (REQUIRED) - Can be empty []
+- **owner**: String (OPTIONAL) - Team lead name
+
+#### Individual Objectives
+- **name**: String (REQUIRED) - Objective name
+- **description**: String (REQUIRED) - What the individual will accomplish
+- **individual_name**: String (REQUIRED) - Person's name
+- **team_objective_ids**: Array of UUIDs (REQUIRED) - Links to team objectives
+- **success_criteria**: Array of strings (REQUIRED) - Can be empty []
 
 ## AI Prompt Templates
 
@@ -216,13 +358,36 @@ For each driver, provide:
 - Rationale: Why this is strategically critical
 ```
 
-### 3. Iconic Commitments
+### 3. Strategic Intents
+
+```
+Generate 2-3 strategic intents for each driver (8-15 total).
+
+STRATEGIC DRIVERS:
+[Your drivers with descriptions]
+
+For each intent, create:
+- Statement: Bold, aspirational, outcome-focused (imagine the end state)
+- Driver ID: Which driver this intent supports
+- Is Stakeholder Voice: true/false (is this from customer/stakeholder perspective?)
+- Boldness Score: 1-10 (how stretching is this goal?)
+
+Example formats:
+- "Our platform becomes the industry standard for..."
+- "Customers choose us first because..."
+- "We're known globally as the leader in..."
+```
+
+### 4. Iconic Commitments
 
 ```
 Generate 8-12 iconic commitments across three horizons.
 
 STRATEGIC DRIVERS:
 [Your drivers]
+
+STRATEGIC INTENTS:
+[Your intents per driver]
 
 Generate commitments for:
 - H1 (0-12 months): 3-4 near-term wins
@@ -232,10 +397,41 @@ Generate commitments for:
 For each commitment:
 - Name: Clear, compelling (4-8 words)
 - Description: What will be accomplished
-- Primary Driver: Which driver it supports
+- Primary Driver ID: Which driver it supports (UUID)
+- Primary Intent IDs: Which intents it delivers (array of UUIDs)
+- Secondary Alignments: Leave empty [] for now
 - Horizon: H1, H2, or H3
-- Target Date: Specific date
+- Target Date: Specific date (YYYY-MM-DD)
 - Owner: Executive sponsor role
+
+CRITICAL: Each commitment must link to at least one strategic intent via primary_intent_ids
+```
+
+### 5. Team and Individual Objectives
+
+```
+Generate team objectives that cascade from commitments.
+
+ICONIC COMMITMENTS:
+[Your commitments]
+
+For each commitment, create 1-3 team objectives:
+- Name: What the team will deliver
+- Description: Specific outcome
+- Team Name: Which department/team
+- Primary Commitment ID: Link to the commitment (UUID)
+- Primary Intent ID: Link to the intent (UUID)
+- Metrics: 2-4 measurable success indicators
+- Owner: Team lead name
+
+Then for each team objective, create 1-3 individual objectives:
+- Name: What the individual will deliver
+- Description: Specific tasks/outcomes
+- Individual Name: Person's name or role
+- Team Objective IDs: Link to team objectives (array of UUIDs)
+- Success Criteria: 2-4 specific success measures
+
+This creates the cascade: Driver → Intent → Commitment → Team Objective → Individual Objective
 ```
 
 ## Troubleshooting
@@ -277,6 +473,19 @@ all the connections. Here's my JSON: [paste your JSON]
 - Create more than 5 strategic drivers
 - Make commitments too vague
 
+## Visualization Features
+
+Once you've imported your AI-generated pyramid, you can visualize it using:
+
+- **Strategy Blueprint**: Single-page professional layouts (Portrait, Landscape, Compact) showing the complete pyramid with tier selection controls
+- **Time Horizon View**: Commitments organized by H1/H2/H3 timelines
+- **Strategic Health Dashboard**: Driver-level health metrics and insights
+- **Balance Scorecard**: Overall pyramid completeness and coverage analysis
+- **Traceability Flow**: Visual cascade from vision to individual objectives
+
+All visualizations are print-optimized and exportable as PDFs.
+
 ---
 
 *Generated by Strategic Pyramid Builder v0.4.0*
+*Last Updated: January 2026*
