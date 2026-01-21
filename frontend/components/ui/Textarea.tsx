@@ -1,18 +1,31 @@
 import { TextareaHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
+import { LabelWithTooltip, TooltipContent } from "./Tooltip";
 
 interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   error?: string;
+  tooltipContent?: TooltipContent;
 }
 
-export function Textarea({ label, error, className, ...props }: TextareaProps) {
+export function Textarea({ label, error, className, tooltipContent, ...props }: TextareaProps) {
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          {label}
-        </label>
+        <>
+          {tooltipContent ? (
+            <LabelWithTooltip
+              label={label}
+              tooltipContent={tooltipContent}
+              required={props.required}
+              htmlFor={props.id}
+            />
+          ) : (
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {label}
+            </label>
+          )}
+        </>
       )}
       <textarea
         className={cn(

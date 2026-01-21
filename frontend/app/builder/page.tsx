@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
+import { LabelWithTooltip } from "@/components/ui/Tooltip";
 import Modal from "@/components/ui/Modal";
 import TierHeader from "@/components/ui/TierHeader";
 import TierCard from "@/components/ui/TierCard";
@@ -25,6 +26,7 @@ import PyramidVisualization from "@/components/visualizations/PyramidVisualizati
 import ExecutionReadinessChecklist from "@/components/visualizations/ExecutionReadinessChecklist";
 import { StatementType, Horizon } from "@/types/pyramid";
 import { Save, Home, CheckCircle, FileDown, Eye, Trash2, Edit, Plus, BarChart3 } from "lucide-react";
+import { TIER4_TOOLTIPS, TIER5_TOOLTIPS, TIER7_TOOLTIPS, TIER1_TOOLTIPS, TIER2_TOOLTIPS } from "@/config/tooltips";
 
 // Component to handle edit query params
 function EditParamsHandler({
@@ -1483,9 +1485,11 @@ export default function BuilderPage() {
         {modalItemType === 'vision' && (
           <form onSubmit={modalMode === 'add' ? handleAddVision : (e) => { e.preventDefault(); handleSaveEdit('vision'); }} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Statement Type
-              </label>
+              <LabelWithTooltip
+                label="Statement Type"
+                tooltipContent={TIER1_TOOLTIPS.STATEMENT_TYPE}
+                required={true}
+              />
               <select
                 className="input"
                 value={modalMode === 'edit' ? editFormData.statement_type : visionStatementType}
@@ -1515,6 +1519,15 @@ export default function BuilderPage() {
                 }
               }}
               placeholder="Enter your inspiring statement here..."
+              tooltipContent={
+                (modalMode === 'edit' ? editFormData.statement_type : visionStatementType) === StatementType.VISION
+                  ? TIER1_TOOLTIPS.VISION
+                  : (modalMode === 'edit' ? editFormData.statement_type : visionStatementType) === StatementType.MISSION
+                  ? TIER1_TOOLTIPS.MISSION
+                  : (modalMode === 'edit' ? editFormData.statement_type : visionStatementType) === StatementType.BELIEF
+                  ? TIER1_TOOLTIPS.BELIEF
+                  : TIER1_TOOLTIPS.VISION
+              }
               rows={4}
               required
             />
@@ -1542,7 +1555,8 @@ export default function BuilderPage() {
                   setValueName(e.target.value);
                 }
               }}
-              placeholder="e.g., Trust, Innovation, Excellence"
+              placeholder="e.g., Speed Over Perfection, Transparent by Default"
+              tooltipContent={TIER2_TOOLTIPS.VALUE_NAME}
               required
             />
             <Textarea
@@ -1556,6 +1570,7 @@ export default function BuilderPage() {
                 }
               }}
               placeholder="What this value means to your organization..."
+              tooltipContent={TIER2_TOOLTIPS.VALUE_DESCRIPTION}
               rows={3}
             />
             <div className="flex gap-3 justify-end pt-4 border-t">
@@ -1631,7 +1646,7 @@ export default function BuilderPage() {
         {modalItemType === 'driver' && (
           <form onSubmit={modalMode === 'add' ? handleAddDriver : (e) => { e.preventDefault(); handleSaveEdit('driver'); }} className="space-y-4">
             <Input
-              label="Driver Name (1-3 words recommended)"
+              label="Driver Name"
               value={modalMode === 'edit' ? editFormData.name : driverName}
               onChange={(e) => {
                 if (modalMode === 'edit') {
@@ -1640,7 +1655,8 @@ export default function BuilderPage() {
                   setDriverName(e.target.value);
                 }
               }}
-              placeholder="e.g., Customer Experience, Innovation"
+              placeholder="e.g., Customer Excellence, Digital Innovation"
+              tooltipContent={TIER4_TOOLTIPS.DRIVER_NAME}
               required
             />
             <Textarea
@@ -1654,6 +1670,7 @@ export default function BuilderPage() {
                 }
               }}
               placeholder="What this driver means and why it matters..."
+              tooltipContent={TIER4_TOOLTIPS.DRIVER_DESCRIPTION}
               rows={3}
               required
             />
@@ -1663,6 +1680,7 @@ export default function BuilderPage() {
                 value={editFormData.rationale || ''}
                 onChange={(e) => setEditFormData({ ...editFormData, rationale: e.target.value })}
                 placeholder="Why this driver was chosen..."
+                tooltipContent={TIER4_TOOLTIPS.DRIVER_RATIONALE}
                 rows={2}
               />
             )}
@@ -1681,9 +1699,11 @@ export default function BuilderPage() {
         {modalItemType === 'intent' && (
           <form onSubmit={modalMode === 'add' ? handleAddIntent : (e) => { e.preventDefault(); handleSaveEdit('intent'); }} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Strategic Driver
-              </label>
+              <LabelWithTooltip
+                label="Strategic Driver"
+                tooltipContent={TIER5_TOOLTIPS.INTENT_DRIVER_LINK}
+                required={true}
+              />
               <select
                 className="input"
                 value={modalMode === 'edit' ? editFormData.driver_id : selectedDriver}
@@ -1706,6 +1726,7 @@ export default function BuilderPage() {
             </div>
             <Textarea
               label="Intent Statement"
+              tooltipContent={TIER5_TOOLTIPS.INTENT_STATEMENT}
               value={modalMode === 'edit' ? editFormData.statement : intentStatement}
               onChange={(e) => {
                 if (modalMode === 'edit') {
@@ -1838,6 +1859,7 @@ export default function BuilderPage() {
                 }
               }}
               placeholder="e.g., Launch New Platform"
+              tooltipContent={TIER7_TOOLTIPS.COMMITMENT_NAME}
               required
             />
             <Textarea
@@ -1851,14 +1873,17 @@ export default function BuilderPage() {
                 }
               }}
               placeholder="What will be delivered..."
+              tooltipContent={TIER7_TOOLTIPS.COMMITMENT_DESCRIPTION}
               rows={3}
               required
             />
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Primary Driver
-                </label>
+                <LabelWithTooltip
+                  label="Primary Driver"
+                  tooltipContent={TIER7_TOOLTIPS.PRIMARY_DRIVER}
+                  required={true}
+                />
                 <select
                   className="input"
                   value={modalMode === 'edit' ? editFormData.primary_driver_id : selectedDriver}
@@ -1885,9 +1910,10 @@ export default function BuilderPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Horizon
-                </label>
+                <LabelWithTooltip
+                  label="Horizon"
+                  tooltipContent={TIER7_TOOLTIPS.HORIZON}
+                />
                 <select
                   className="input"
                   value={modalMode === 'edit' ? editFormData.horizon : commitmentHorizon}
@@ -1909,10 +1935,14 @@ export default function BuilderPage() {
             {/* Strategic Intents - Only show in edit mode for now */}
             {modalMode === 'edit' && editFormData.primary_driver_id && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Strategic Intents <span className="text-red-500">*</span>
+                <div className="mb-2">
+                  <LabelWithTooltip
+                    label="Strategic Intents"
+                    tooltipContent={TIER7_TOOLTIPS.STRATEGIC_INTENTS}
+                    required={true}
+                  />
                   <span className="text-xs text-gray-500 ml-2">(Select at least one)</span>
-                </label>
+                </div>
                 <div className="border border-gray-300 rounded-lg p-3 max-h-48 overflow-y-auto space-y-2 bg-gray-50">
                   {pyramid.strategic_intents
                     .filter(intent => intent.driver_id === editFormData.primary_driver_id)
@@ -1964,12 +1994,14 @@ export default function BuilderPage() {
                   value={editFormData.owner || ''}
                   onChange={(e) => setEditFormData({ ...editFormData, owner: e.target.value })}
                   placeholder="Person or team responsible"
+                  tooltipContent={TIER7_TOOLTIPS.OWNER}
                 />
                 <Input
                   label="Target Date (Optional)"
                   type="date"
                   value={editFormData.target_date || ''}
                   onChange={(e) => setEditFormData({ ...editFormData, target_date: e.target.value })}
+                  tooltipContent={TIER7_TOOLTIPS.TARGET_DATE}
                 />
               </>
             )}
