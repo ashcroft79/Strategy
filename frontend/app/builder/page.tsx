@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { usePyramidStore } from "@/lib/store";
 import {
   pyramidApi,
@@ -22,8 +22,48 @@ import Modal from "@/components/ui/Modal";
 import TierHeader from "@/components/ui/TierHeader";
 import TierCard from "@/components/ui/TierCard";
 import PyramidVisualization from "@/components/visualizations/PyramidVisualization";
+import ExecutionReadinessChecklist from "@/components/visualizations/ExecutionReadinessChecklist";
 import { StatementType, Horizon } from "@/types/pyramid";
-import { Save, Home, CheckCircle, FileDown, Eye, Trash2, Edit, Plus } from "lucide-react";
+import { Save, Home, CheckCircle, FileDown, Eye, Trash2, Edit, Plus, BarChart3 } from "lucide-react";
+
+// Component to handle edit query params
+function EditParamsHandler({
+  pyramid,
+  setActiveTier,
+  openEditModal
+}: {
+  pyramid: any;
+  setActiveTier: (tier: string) => void;
+  openEditModal: (type: string, id: string, data: any) => void;
+}) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!pyramid) return;
+
+    const editType = searchParams.get('edit');
+    const editId = searchParams.get('id');
+
+    if (editType && editId) {
+      // Find the item and open the edit modal
+      if (editType === 'commitment') {
+        const commitment = pyramid.iconic_commitments.find((c: any) => c.id === editId);
+        if (commitment) {
+          setActiveTier('commitments');
+          // Wait for tier to render, then open modal
+          setTimeout(() => {
+            openEditModal('commitment', editId, commitment);
+            // Clear query params
+            router.replace('/builder');
+          }, 100);
+        }
+      }
+    }
+  }, [pyramid, searchParams, router, setActiveTier, openEditModal]);
+
+  return null;
+}
 
 export default function BuilderPage() {
   const router = useRouter();
@@ -400,7 +440,8 @@ export default function BuilderPage() {
             editFormData.horizon,
             editFormData.target_date,
             editFormData.primary_driver_id,
-            editFormData.owner
+            editFormData.owner,
+            editFormData.primary_intent_ids
           );
           break;
         case "team_objective":
@@ -672,6 +713,15 @@ export default function BuilderPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Edit params handler */}
+      <Suspense fallback={null}>
+        <EditParamsHandler
+          pyramid={pyramid}
+          setActiveTier={setActiveTier}
+          openEditModal={openEditModal}
+        />
+      </Suspense>
+
       {/* Header */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-full mx-auto px-6 py-4">
@@ -684,6 +734,10 @@ export default function BuilderPage() {
               <Button variant="ghost" onClick={handleHomeClick}>
                 <Home className="w-4 h-4 mr-2" />
                 Home
+              </Button>
+              <Button variant="secondary" onClick={() => router.push("/visualizations")}>
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Visualizations
               </Button>
               <Button variant="secondary" onClick={() => router.push("/validation")}>
                 <CheckCircle className="w-4 h-4 mr-2" />
@@ -702,8 +756,9 @@ export default function BuilderPage() {
       <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar - Fixed Pyramid */}
         <div className="w-96 bg-gradient-to-b from-gray-50 to-white border-r border-gray-200 overflow-y-auto">
-          <div className="sticky top-0 bg-gradient-to-b from-gray-50 to-white z-10 border-b border-gray-200">
-            <div className="p-4">
+          <div className="p-4 space-y-4">
+            {/* Pyramid Section */}
+            <div>
               <h2 className="text-lg font-bold text-gray-800 mb-2">Strategic Pyramid</h2>
               <p className="text-xs text-gray-600 mb-4">Click any tier to view and edit</p>
               <PyramidVisualization
@@ -713,6 +768,9 @@ export default function BuilderPage() {
                 compact={true}
               />
             </div>
+
+            {/* Execution Readiness Checklist */}
+            <ExecutionReadinessChecklist pyramid={pyramid} />
           </div>
         </div>
 
@@ -1806,7 +1864,12 @@ export default function BuilderPage() {
                   value={modalMode === 'edit' ? editFormData.primary_driver_id : selectedDriver}
                   onChange={(e) => {
                     if (modalMode === 'edit') {
-                      setEditFormData({ ...editFormData, primary_driver_id: e.target.value });
+                      // Reset intent selection when driver changes in edit mode
+                      setEditFormData({
+                        ...editFormData,
+                        primary_driver_id: e.target.value,
+                        primary_intent_ids: []
+                      });
                     } else {
                       setSelectedDriver(e.target.value);
                     }
@@ -1842,6 +1905,58 @@ export default function BuilderPage() {
                 </select>
               </div>
             </div>
+
+            {/* Strategic Intents - Only show in edit mode for now */}
+            {modalMode === 'edit' && editFormData.primary_driver_id && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Strategic Intents <span className="text-red-500">*</span>
+                  <span className="text-xs text-gray-500 ml-2">(Select at least one)</span>
+                </label>
+                <div className="border border-gray-300 rounded-lg p-3 max-h-48 overflow-y-auto space-y-2 bg-gray-50">
+                  {pyramid.strategic_intents
+                    .filter(intent => intent.driver_id === editFormData.primary_driver_id)
+                    .map((intent) => (
+                      <label
+                        key={intent.id}
+                        className="flex items-start gap-2 p-2 hover:bg-white rounded cursor-pointer transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={(editFormData.primary_intent_ids || []).includes(intent.id)}
+                          onChange={(e) => {
+                            const currentIntents = editFormData.primary_intent_ids || [];
+                            if (e.target.checked) {
+                              setEditFormData({
+                                ...editFormData,
+                                primary_intent_ids: [...currentIntents, intent.id]
+                              });
+                            } else {
+                              setEditFormData({
+                                ...editFormData,
+                                primary_intent_ids: currentIntents.filter((id: string) => id !== intent.id)
+                              });
+                            }
+                          }}
+                          className="mt-1 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                        />
+                        <span className="text-sm text-gray-700 flex-1">{intent.statement}</span>
+                      </label>
+                    ))}
+                  {pyramid.strategic_intents.filter(intent => intent.driver_id === editFormData.primary_driver_id).length === 0 && (
+                    <p className="text-sm text-gray-500 text-center py-2">
+                      No strategic intents for this driver yet
+                    </p>
+                  )}
+                </div>
+                {(!editFormData.primary_intent_ids || editFormData.primary_intent_ids.length === 0) && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    ⚠️ This commitment will be marked as "orphaned" without intent linkage
+                  </p>
+                )}
+              </div>
+            )}
+
             {modalMode === 'edit' && (
               <>
                 <Input

@@ -339,7 +339,8 @@ export const commitmentsApi = {
     horizon?: Horizon,
     targetDate?: string,
     primaryDriverId?: string,
-    owner?: string
+    owner?: string,
+    primaryIntentIds?: string[]
   ): Promise<void> {
     await api.put(`/api/pyramids/${sessionId}/commitments`, {
       commitment_id: commitmentId,
@@ -349,6 +350,7 @@ export const commitmentsApi = {
       target_date: targetDate,
       primary_driver_id: primaryDriverId,
       owner,
+      primary_intent_ids: primaryIntentIds,
     });
   },
 
