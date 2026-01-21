@@ -11,6 +11,18 @@ import { VALIDATION_TOOLTIPS } from "@/config/tooltips";
 import type { ValidationResult } from "@/types/pyramid";
 import { CheckCircle, AlertTriangle, Info, XCircle, ArrowLeft } from "lucide-react";
 
+interface AIReview {
+  overall_impression: string;
+  strengths: string[];
+  concerns: string[];
+  recommendations: Array<{
+    priority: number;
+    title: string;
+    description: string;
+  }>;
+  error?: string;
+}
+
 export default function ValidationPage() {
   const router = useRouter();
   const { sessionId, pyramid } = usePyramidStore();
@@ -18,6 +30,10 @@ export default function ValidationPage() {
   const [isValidating, setIsValidating] = useState(false);
   const [filterLevel, setFilterLevel] = useState<string>("all");
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [aiReview, setAiReview] = useState<AIReview | null>(null);
+  const [isAiReviewing, setIsAiReviewing] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [useAiValidation, setUseAiValidation] = useState(false);
 
   useEffect(() => {
     if (!pyramid) {
@@ -31,12 +47,43 @@ export default function ValidationPage() {
   const runValidation = async () => {
     try {
       setIsValidating(true);
-      const result = await validationApi.validate(sessionId);
-      setValidationResult(result);
+      setAiError(null);
+
+      if (useAiValidation) {
+        // Try AI validation
+        try {
+          const result = await validationApi.aiValidate(sessionId);
+          setValidationResult(result);
+        } catch (aiErr: any) {
+          // Fall back to standard validation if AI fails
+          console.warn("AI validation failed, falling back to standard:", aiErr);
+          setAiError(aiErr?.response?.data?.detail || "AI validation unavailable");
+          const result = await validationApi.validate(sessionId);
+          setValidationResult(result);
+        }
+      } else {
+        // Standard validation
+        const result = await validationApi.validate(sessionId);
+        setValidationResult(result);
+      }
     } catch (err) {
       console.error("Validation failed:", err);
     } finally {
       setIsValidating(false);
+    }
+  };
+
+  const runAiReview = async () => {
+    try {
+      setIsAiReviewing(true);
+      setAiError(null);
+      const review = await validationApi.aiReview(sessionId);
+      setAiReview(review);
+    } catch (err: any) {
+      console.error("AI review failed:", err);
+      setAiError(err?.response?.data?.detail || "AI review unavailable. Check API configuration.");
+    } finally {
+      setIsAiReviewing(false);
     }
   };
 
@@ -131,10 +178,121 @@ export default function ValidationPage() {
             Check your strategic pyramid for completeness, structural integrity, and quality.
           </p>
 
-          <Button onClick={runValidation} disabled={isValidating}>
-            {isValidating ? "Validating..." : "Run Validation"}
-          </Button>
+          <div className="flex items-center gap-4 mb-4">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={useAiValidation}
+                onChange={(e) => setUseAiValidation(e.target.checked)}
+                className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+              />
+              <span className="text-sm font-medium text-gray-700">
+                ✨ Enable AI-Enhanced Validation
+              </span>
+            </label>
+            {useAiValidation && (
+              <span className="text-xs text-gray-500">
+                (Includes semantic coherence, alignment, and boldness checks)
+              </span>
+            )}
+          </div>
+
+          <div className="flex gap-3">
+            <Button onClick={runValidation} disabled={isValidating}>
+              {isValidating ? "Validating..." : useAiValidation ? "Run AI Validation" : "Run Validation"}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={runAiReview}
+              disabled={isAiReviewing}
+            >
+              {isAiReviewing ? "Generating..." : "🤖 Get AI Review"}
+            </Button>
+          </div>
+
+          {aiError && (
+            <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-800">
+                ⚠️ {aiError}
+              </p>
+            </div>
+          )}
         </div>
+
+        {/* AI Review Section */}
+        {aiReview && !aiReview.error && (
+          <div className="card mb-6 border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center justify-center w-10 h-10 bg-blue-600 rounded-full">
+                <span className="text-2xl">🤖</span>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800">AI Strategic Review</h2>
+                <p className="text-sm text-gray-600">Powered by Claude</p>
+              </div>
+            </div>
+
+            {/* Overall Impression */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Overall Impression</h3>
+              <p className="text-gray-700 leading-relaxed">{aiReview.overall_impression}</p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6 mb-6">
+              {/* Strengths */}
+              <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                <h3 className="text-lg font-semibold text-green-800 mb-3 flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5" />
+                  Key Strengths
+                </h3>
+                <ul className="space-y-2">
+                  {aiReview.strengths.map((strength, idx) => (
+                    <li key={idx} className="text-sm text-green-900 flex items-start gap-2">
+                      <span className="text-green-600 mt-0.5">✓</span>
+                      <span>{strength}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Concerns */}
+              <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                <h3 className="text-lg font-semibold text-yellow-800 mb-3 flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5" />
+                  Key Concerns
+                </h3>
+                <ul className="space-y-2">
+                  {aiReview.concerns.map((concern, idx) => (
+                    <li key={idx} className="text-sm text-yellow-900 flex items-start gap-2">
+                      <span className="text-yellow-600 mt-0.5">⚠</span>
+                      <span>{concern}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Recommendations */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">Top Recommendations</h3>
+              <div className="space-y-3">
+                {aiReview.recommendations.map((rec) => (
+                  <div key={rec.priority} className="p-4 bg-white rounded-lg border border-gray-200">
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full font-bold text-sm flex-shrink-0">
+                        {rec.priority}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-800 mb-1">{rec.title}</h4>
+                        <p className="text-sm text-gray-600">{rec.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {validationResult && (
           <>

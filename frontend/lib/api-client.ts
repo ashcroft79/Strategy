@@ -479,6 +479,26 @@ export const validationApi = {
     const { data } = await api.get(`/api/validation/${sessionId}/quick`);
     return data;
   },
+
+  async aiValidate(sessionId: string): Promise<ValidationResult> {
+    const { data } = await api.get(`/api/validation/${sessionId}/ai`);
+    return data;
+  },
+
+  async aiReview(sessionId: string): Promise<{
+    overall_impression: string;
+    strengths: string[];
+    concerns: string[];
+    recommendations: Array<{
+      priority: number;
+      title: string;
+      description: string;
+    }>;
+    error?: string;
+  }> {
+    const { data } = await api.get(`/api/validation/${sessionId}/ai-review`);
+    return data;
+  },
 };
 
 // ============================================================================
