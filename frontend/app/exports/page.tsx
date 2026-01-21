@@ -6,6 +6,7 @@ import { usePyramidStore } from "@/lib/store";
 import { exportsApi } from "@/lib/api-client";
 import { Button } from "@/components/ui/Button";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { UnsavedChangesIndicator } from "@/components/ui/UnsavedChangesIndicator";
 import { EXPORTS_TOOLTIPS } from "@/config/tooltips";
 import { downloadBlob } from "@/lib/utils";
 import { FileText, Presentation, FileCode, Download, ArrowLeft, Sparkles, BarChart3 } from "lucide-react";
@@ -83,6 +84,7 @@ export default function ExportsPage() {
 
   return (
     <div className="min-h-screen p-4">
+      <UnsavedChangesIndicator />
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="mb-6 flex gap-3">

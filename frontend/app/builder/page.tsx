@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { LabelWithTooltip } from "@/components/ui/Tooltip";
+import { UnsavedChangesIndicator } from "@/components/ui/UnsavedChangesIndicator";
 import Modal from "@/components/ui/Modal";
 import TierHeader from "@/components/ui/TierHeader";
 import TierCard from "@/components/ui/TierCard";
@@ -69,7 +70,7 @@ function EditParamsHandler({
 
 export default function BuilderPage() {
   const router = useRouter();
-  const { sessionId, pyramid, setPyramid, setLoading, setError, showToast, isLoading } = usePyramidStore();
+  const { sessionId, pyramid, setPyramid, setLoading, setError, showToast, isLoading, incrementUnsavedChanges } = usePyramidStore();
   const [activeTier, setActiveTier] = useState<string | undefined>(undefined);
 
   // Modal states
@@ -234,6 +235,7 @@ export default function BuilderPage() {
       await visionApi.removeStatement(sessionId, statementId);
       await refreshPyramid();
       showToast("Vision statement deleted", "success");
+      incrementUnsavedChanges();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to delete vision statement", "error");
     } finally {
@@ -249,6 +251,7 @@ export default function BuilderPage() {
       await valuesApi.remove(sessionId, valueId);
       await refreshPyramid();
       showToast("Value deleted", "success");
+      incrementUnsavedChanges();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to delete value", "error");
     } finally {
@@ -264,6 +267,7 @@ export default function BuilderPage() {
       await behavioursApi.remove(sessionId, behaviourId);
       await refreshPyramid();
       showToast("Behaviour deleted", "success");
+      incrementUnsavedChanges();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to delete behaviour", "error");
     } finally {
@@ -279,6 +283,7 @@ export default function BuilderPage() {
       await driversApi.remove(sessionId, driverId);
       await refreshPyramid();
       showToast("Driver deleted", "success");
+      incrementUnsavedChanges();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to delete driver", "error");
     } finally {
@@ -294,6 +299,7 @@ export default function BuilderPage() {
       await intentsApi.remove(sessionId, intentId);
       await refreshPyramid();
       showToast("Intent deleted", "success");
+      incrementUnsavedChanges();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to delete intent", "error");
     } finally {
@@ -309,6 +315,7 @@ export default function BuilderPage() {
       await enablersApi.remove(sessionId, enablerId);
       await refreshPyramid();
       showToast("Enabler deleted", "success");
+      incrementUnsavedChanges();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to delete enabler", "error");
     } finally {
@@ -324,6 +331,7 @@ export default function BuilderPage() {
       await commitmentsApi.remove(sessionId, commitmentId);
       await refreshPyramid();
       showToast("Commitment deleted", "success");
+      incrementUnsavedChanges();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to delete commitment", "error");
     } finally {
@@ -339,6 +347,7 @@ export default function BuilderPage() {
       await teamObjectivesApi.remove(sessionId, objectiveId);
       await refreshPyramid();
       showToast("Team objective deleted", "success");
+      incrementUnsavedChanges();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to delete team objective", "error");
     } finally {
@@ -354,6 +363,7 @@ export default function BuilderPage() {
       await individualObjectivesApi.remove(sessionId, objectiveId);
       await refreshPyramid();
       showToast("Individual objective deleted", "success");
+      incrementUnsavedChanges();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to delete individual objective", "error");
     } finally {
@@ -473,6 +483,7 @@ export default function BuilderPage() {
 
       await refreshPyramid();
       showToast("Successfully updated", "success");
+      incrementUnsavedChanges();
 
       // Close modal if in modal mode, otherwise use inline edit cancel
       if (editingItemId) {
@@ -498,6 +509,8 @@ export default function BuilderPage() {
       setVisionStatementType(StatementType.VISION);
       await refreshPyramid();
       showToast("Vision statement added successfully", "success");
+      incrementUnsavedChanges();
+      incrementUnsavedChanges();
       closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add vision", "error");
@@ -517,6 +530,7 @@ export default function BuilderPage() {
       setValueDescription("");
       await refreshPyramid();
       showToast("Value added successfully", "success");
+      incrementUnsavedChanges();
       closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add value", "error");
@@ -536,6 +550,7 @@ export default function BuilderPage() {
       setSelectedValueIds([]);
       await refreshPyramid();
       showToast("Behaviour added successfully", "success");
+      incrementUnsavedChanges();
       closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add behaviour", "error");
@@ -561,6 +576,7 @@ export default function BuilderPage() {
       setDriverDescription("");
       await refreshPyramid();
       showToast("Strategic driver added successfully", "success");
+      incrementUnsavedChanges();
       closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add driver", "error");
@@ -579,6 +595,7 @@ export default function BuilderPage() {
       setIntentStatement("");
       await refreshPyramid();
       showToast("Strategic intent added successfully", "success");
+      incrementUnsavedChanges();
       closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add intent", "error");
@@ -604,6 +621,7 @@ export default function BuilderPage() {
       setCommitmentDescription("");
       await refreshPyramid();
       showToast("Iconic commitment added successfully", "success");
+      incrementUnsavedChanges();
       closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add commitment", "error");
@@ -631,6 +649,7 @@ export default function BuilderPage() {
       setSelectedDriverIds([]);
       await refreshPyramid();
       showToast("Enabler added successfully", "success");
+      incrementUnsavedChanges();
       closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add enabler", "error");
@@ -664,6 +683,7 @@ export default function BuilderPage() {
       setSelectedCommitment("");
       await refreshPyramid();
       showToast("Team objective added successfully", "success");
+      incrementUnsavedChanges();
       closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add team objective", "error");
@@ -691,6 +711,7 @@ export default function BuilderPage() {
       setSelectedTeamObjectiveIds([]);
       await refreshPyramid();
       showToast("Individual objective added successfully", "success");
+      incrementUnsavedChanges();
       closeModal();
     } catch (err: any) {
       showToast(err.response?.data?.detail || "Failed to add individual objective", "error");
@@ -715,6 +736,9 @@ export default function BuilderPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Unsaved Changes Indicator */}
+      <UnsavedChangesIndicator />
+
       {/* Edit params handler */}
       <Suspense fallback={null}>
         <EditParamsHandler

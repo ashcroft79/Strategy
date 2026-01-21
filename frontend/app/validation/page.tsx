@@ -6,6 +6,7 @@ import { usePyramidStore } from "@/lib/store";
 import { validationApi } from "@/lib/api-client";
 import { Button } from "@/components/ui/Button";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { UnsavedChangesIndicator } from "@/components/ui/UnsavedChangesIndicator";
 import { VALIDATION_TOOLTIPS } from "@/config/tooltips";
 import type { ValidationResult } from "@/types/pyramid";
 import { CheckCircle, AlertTriangle, Info, XCircle, ArrowLeft } from "lucide-react";
@@ -114,6 +115,7 @@ export default function ValidationPage() {
 
   return (
     <div className="min-h-screen p-4">
+      <UnsavedChangesIndicator />
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="mb-6">
