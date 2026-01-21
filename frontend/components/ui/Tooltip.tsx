@@ -22,8 +22,61 @@ export const Tooltip: React.FC<TooltipProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showExample, setShowExample] = useState(false);
+  const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+
+  // Calculate position when tooltip opens
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const buttonRect = buttonRef.current.getBoundingClientRect();
+      const tooltipWidth = 320; // w-80 = 320px
+      const tooltipHeight = tooltipRef.current?.offsetHeight || 400;
+      const spacing = 8; // spacing between button and tooltip
+
+      let top = 0;
+      let left = 0;
+
+      switch (placement) {
+        case 'top':
+          top = buttonRect.top - tooltipHeight - spacing;
+          left = buttonRect.left + buttonRect.width / 2 - tooltipWidth / 2;
+          break;
+        case 'bottom':
+          top = buttonRect.bottom + spacing;
+          left = buttonRect.left + buttonRect.width / 2 - tooltipWidth / 2;
+          break;
+        case 'left':
+          top = buttonRect.top + buttonRect.height / 2;
+          left = buttonRect.left - tooltipWidth - spacing;
+          break;
+        case 'right':
+        default:
+          top = buttonRect.top + buttonRect.height / 2;
+          left = buttonRect.right + spacing;
+          break;
+      }
+
+      // Keep tooltip within viewport bounds
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      if (left + tooltipWidth > viewportWidth) {
+        left = viewportWidth - tooltipWidth - 16;
+      }
+      if (left < 16) {
+        left = 16;
+      }
+      if (top + tooltipHeight > viewportHeight) {
+        top = viewportHeight - tooltipHeight - 16;
+      }
+      if (top < 16) {
+        top = 16;
+      }
+
+      setPosition({ top, left });
+    }
+  }, [isOpen, placement, showExample]); // Recalculate when example is toggled
 
   // Close tooltip when clicking outside
   useEffect(() => {
@@ -55,22 +108,8 @@ export const Tooltip: React.FC<TooltipProps> = ({
     }
   };
 
-  const getPopoverPosition = () => {
-    switch (placement) {
-      case 'top':
-        return 'bottom-full mb-2 left-1/2 -translate-x-1/2';
-      case 'bottom':
-        return 'top-full mt-2 left-1/2 -translate-x-1/2';
-      case 'left':
-        return 'right-full mr-2 top-1/2 -translate-y-1/2';
-      case 'right':
-      default:
-        return 'left-full ml-2 top-1/2 -translate-y-1/2';
-    }
-  };
-
   return (
-    <div className="relative inline-flex items-center">
+    <div className="inline-flex items-center">
       <button
         ref={buttonRef}
         type="button"
@@ -81,10 +120,15 @@ export const Tooltip: React.FC<TooltipProps> = ({
         ?
       </button>
 
-      {isOpen && (
+      {isOpen && position && (
         <div
           ref={tooltipRef}
-          className={`absolute z-50 ${getPopoverPosition()} w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-4`}
+          className="fixed z-[100] w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-4"
+          style={{
+            top: `${position.top}px`,
+            left: `${position.left}px`,
+            transform: placement === 'left' || placement === 'right' ? 'translateY(-50%)' : 'none'
+          }}
         >
           {/* Title */}
           {tooltipContent.title && (
