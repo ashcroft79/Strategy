@@ -6,7 +6,7 @@ import { usePyramidStore } from "@/lib/store";
 import { exportsApi } from "@/lib/api-client";
 import { Button } from "@/components/ui/Button";
 import { downloadBlob } from "@/lib/utils";
-import { FileText, Presentation, FileCode, Download, ArrowLeft, Sparkles } from "lucide-react";
+import { FileText, Presentation, FileCode, Download, ArrowLeft, Sparkles, BarChart3 } from "lucide-react";
 
 type AudienceType = "executive" | "leadership" | "detailed" | "team";
 
@@ -83,10 +83,14 @@ export default function ExportsPage() {
     <div className="min-h-screen p-4">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-6 flex gap-3">
           <Button variant="ghost" onClick={() => router.push("/builder")}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Builder
+          </Button>
+          <Button variant="secondary" onClick={() => router.push("/visualizations")}>
+            <BarChart3 className="w-4 h-4 mr-2" />
+            Visualizations
           </Button>
         </div>
 
