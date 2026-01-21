@@ -69,11 +69,12 @@ export default function OnePageVisualizationPage() {
             <FileText className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm text-blue-900 font-medium">
-                This page is optimized for printing and PDF export (A3 landscape recommended)
+                This page is optimized for printing and PDF export (A4 portrait)
               </p>
               <p className="text-xs text-blue-700 mt-1">
-                Click "Print" or "Export PDF" above to generate a professional single-page strategy document.
-                Colors and layout are optimized for both screen viewing and printing.
+                Click "Print" or "Export PDF" above to generate a professional strategy document.
+                The layout groups commitments under their strategic drivers for clear alignment.
+                Minimum 11pt body text ensures readability.
               </p>
             </div>
           </div>
@@ -92,7 +93,7 @@ export default function OnePageVisualizationPage() {
       {/* Footer - Hidden on print */}
       <div className="no-print py-8 text-center text-sm text-gray-500">
         <p>
-          Tip: For best results, use "Print to PDF" in your browser with A3 landscape orientation
+          Tip: For best results, use "Print to PDF" in your browser with A4 portrait orientation
         </p>
       </div>
     </div>

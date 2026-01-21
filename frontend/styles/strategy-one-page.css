@@ -1,27 +1,27 @@
 /* Strategy One Page - Print-Optimized Styles */
 
 .strategy-one-page {
-  max-width: 1400px;
+  max-width: 800px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 2rem;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-  font-size: 10px;
-  line-height: 1.4;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 /* Print Styles */
 @media print {
   .strategy-one-page {
     max-width: 100%;
-    padding: 0.3in;
+    padding: 0.75in;
     margin: 0;
-    font-size: 8pt;
+    font-size: 11pt;
   }
 
   /* Page setup for print */
   @page {
-    size: A3 landscape;
-    margin: 0.3in;
+    size: A4 portrait;
+    margin: 0.75in;
   }
 
   /* Hide screen-only elements when printing */
@@ -41,39 +41,45 @@
 
   /* Prevent page breaks inside important elements */
   .value-card,
-  .driver-card,
-  .horizon-section,
-  .enabler-card {
+  .driver-section,
+  .driver-card {
     page-break-inside: avoid;
     break-inside: avoid;
   }
 
   /* Adjust font sizes for print */
   .page-header h1 {
-    font-size: 18pt;
+    font-size: 20pt;
   }
 
   .vision-banner p {
-    font-size: 10pt;
+    font-size: 13pt;
   }
 
   .section-header {
-    font-size: 7pt;
+    font-size: 12pt;
+  }
+
+  /* Body text minimum */
+  .text-xs {
+    font-size: 11pt;
+  }
+
+  .text-sm {
+    font-size: 12pt;
+  }
+
+  .text-base {
+    font-size: 13pt;
   }
 
   /* Ensure borders and backgrounds print */
   .vision-banner,
   .value-card,
-  .driver-card,
-  .horizon-section > div {
+  .driver-section,
+  .driver-card {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
-  }
-
-  /* Optimize grid for print */
-  .main-grid {
-    grid-template-columns: repeat(12, 1fr);
-    gap: 0.15in;
   }
 
   /* Remove shadows for cleaner print */
@@ -81,17 +87,17 @@
     box-shadow: none !important;
   }
 
-  /* Ensure proper spacing */
-  .space-y-2 > * + * {
-    margin-top: 0.06in;
+  /* Optimize spacing for print */
+  .mb-5 {
+    margin-bottom: 0.3in;
   }
 
-  .space-y-1\.5 > * + * {
-    margin-top: 0.04in;
+  .mb-4 {
+    margin-bottom: 0.25in;
   }
 
-  .space-y-1 > * + * {
-    margin-top: 0.03in;
+  .mb-3 {
+    margin-bottom: 0.2in;
   }
 }
 
