@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { StrategyPyramid, IconicCommitment } from "@/types/pyramid";
-import { Sparkles, AlertCircle, TrendingUp, Layers, ChevronRight } from "lucide-react";
+import { Sparkles, AlertCircle, TrendingUp, Layers, ChevronRight, ExternalLink } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface CommitmentTraceabilityFlowProps {
   pyramid: StrategyPyramid;
@@ -18,6 +19,7 @@ interface TraceabilityScore {
 }
 
 export default function CommitmentTraceabilityFlow({ pyramid }: CommitmentTraceabilityFlowProps) {
+  const router = useRouter();
   const [selectedCommitmentId, setSelectedCommitmentId] = useState<string | null>(null);
 
   // Calculate traceability scores for all commitments
@@ -221,10 +223,11 @@ export default function CommitmentTraceabilityFlow({ pyramid }: CommitmentTracea
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="flex flex-col lg:flex-row gap-6 lg:h-[700px]">
         {/* Commitment List */}
-        <div className="space-y-3">
+        <div className="lg:w-1/2 flex flex-col">
           <h3 className="text-lg font-bold text-gray-900 mb-4">All Commitments</h3>
+          <div className="flex-1 overflow-y-auto space-y-3 pr-2">
           {traceabilityData.map(trace => {
             const colors = getScoreColor(trace.score);
             const isSelected = selectedCommitmentId === trace.commitmentId;
@@ -275,16 +278,29 @@ export default function CommitmentTraceabilityFlow({ pyramid }: CommitmentTracea
               </button>
             );
           })}
+          </div>
         </div>
 
         {/* Trace Detail */}
-        <div className="lg:sticky lg:top-24 lg:self-start">
+        <div className="lg:w-1/2 flex flex-col">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">Strategic Trace</h3>
+          <div className="flex-1 overflow-y-auto pr-2">
           {selectedTrace ? (
             <div className="bg-white rounded-xl border-2 border-purple-200 p-6 shadow-lg">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Strategic Trace</h3>
-              <p className="text-sm text-gray-600 mb-6">
-                Following the thread from vision to execution
-              </p>
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <p className="text-sm text-gray-600">
+                    Following the thread from vision to execution
+                  </p>
+                </div>
+                <button
+                  onClick={() => router.push("/builder")}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-800 rounded-lg text-xs font-semibold transition-colors"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  Edit in Builder
+                </button>
+              </div>
 
               {/* Trace Flow */}
               <div className="space-y-4">
@@ -391,13 +407,14 @@ export default function CommitmentTraceabilityFlow({ pyramid }: CommitmentTracea
               </div>
             </div>
           ) : (
-            <div className="bg-gray-50 rounded-xl border-2 border-gray-200 p-12 text-center">
-              <Layers className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <div className="bg-gray-50 rounded-xl border-2 border-gray-200 p-12 text-center h-full flex flex-col items-center justify-center">
+              <Layers className="w-12 h-12 text-gray-400 mb-4" />
               <p className="text-gray-600">
                 Click on any commitment to see its full strategic trace
               </p>
             </div>
           )}
+          </div>
         </div>
       </div>
     </div>
