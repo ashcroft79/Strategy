@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { usePyramidStore } from "@/lib/store";
 import { validationApi } from "@/lib/api-client";
 import { Button } from "@/components/ui/Button";
+import { Tooltip } from "@/components/ui/Tooltip";
+import { VALIDATION_TOOLTIPS } from "@/config/tooltips";
 import type { ValidationResult } from "@/types/pyramid";
 import { CheckCircle, AlertTriangle, Info, XCircle, ArrowLeft } from "lucide-react";
 
@@ -92,6 +94,20 @@ export default function ValidationPage() {
     return issues.filter((issue) => issue.level === filterLevel);
   };
 
+  const getCategoryTooltip = (category: string) => {
+    const categoryMap: Record<string, any> = {
+      "Completeness": VALIDATION_TOOLTIPS.COMPLETENESS,
+      "Structure": VALIDATION_TOOLTIPS.STRUCTURE,
+      "Orphaned Items": VALIDATION_TOOLTIPS.ORPHANED_ITEMS,
+      "Balance": VALIDATION_TOOLTIPS.BALANCE,
+      "Language Quality": VALIDATION_TOOLTIPS.LANGUAGE_QUALITY,
+      "Commitment Quality": VALIDATION_TOOLTIPS.COMMITMENT_QUALITY,
+      "Weighting": VALIDATION_TOOLTIPS.WEIGHTING,
+      "Cascade Alignment": VALIDATION_TOOLTIPS.CASCADE_ALIGNMENT,
+    };
+    return categoryMap[category];
+  };
+
   if (!pyramid) {
     return null;
   }
@@ -141,15 +157,24 @@ export default function ValidationPage() {
               <div className="grid grid-cols-3 gap-4">
                 <div className="p-4 bg-red-50 rounded-lg text-center">
                   <div className="text-3xl font-bold text-red-600">{validationResult.errors}</div>
-                  <div className="text-sm text-gray-600">Errors</div>
+                  <div className="text-sm text-gray-600 inline-flex items-center justify-center">
+                    Errors
+                    <Tooltip tooltipContent={VALIDATION_TOOLTIPS.SEVERITY_ERROR} placement="top" />
+                  </div>
                 </div>
                 <div className="p-4 bg-yellow-50 rounded-lg text-center">
                   <div className="text-3xl font-bold text-yellow-600">{validationResult.warnings}</div>
-                  <div className="text-sm text-gray-600">Warnings</div>
+                  <div className="text-sm text-gray-600 inline-flex items-center justify-center">
+                    Warnings
+                    <Tooltip tooltipContent={VALIDATION_TOOLTIPS.SEVERITY_WARNING} placement="top" />
+                  </div>
                 </div>
                 <div className="p-4 bg-blue-50 rounded-lg text-center">
                   <div className="text-3xl font-bold text-blue-600">{validationResult.info}</div>
-                  <div className="text-sm text-gray-600">Info</div>
+                  <div className="text-sm text-gray-600 inline-flex items-center justify-center">
+                    Info
+                    <Tooltip tooltipContent={VALIDATION_TOOLTIPS.SEVERITY_INFO} placement="top" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -220,7 +245,12 @@ export default function ValidationPage() {
                           className="w-full p-4 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
                         >
                           <div className="flex items-center gap-3">
-                            <span className="font-semibold text-gray-800">{category}</span>
+                            <span className="font-semibold text-gray-800 inline-flex items-center">
+                              {category}
+                              {getCategoryTooltip(category) && (
+                                <Tooltip tooltipContent={getCategoryTooltip(category)} placement="right" />
+                              )}
+                            </span>
                             <div className="flex gap-2">
                               {errorCount > 0 && (
                                 <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-medium">

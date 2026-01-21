@@ -548,6 +548,296 @@ export const TIER9_TOOLTIPS = {
 };
 
 // ============================================================================
+// VALIDATION PAGE TOOLTIPS
+// ============================================================================
+
+export const VALIDATION_TOOLTIPS = {
+  COMPLETENESS: {
+    id: 'TT-036',
+    title: 'Completeness Check',
+    content: 'Ensures all required sections of your pyramid are populated with sufficient content. A complete pyramid has vision, values, drivers, intents, and commitments defined.',
+    dos: [
+      'Fill in all required tiers before finalizing',
+      'Aim for 3-5 strategic drivers',
+      'Create 4-6 core values'
+    ],
+    donts: [
+      'Leave critical tiers empty',
+      'Rush through foundational sections',
+      'Skip values or vision statements'
+    ]
+  } as TooltipContent,
+
+  STRUCTURE: {
+    id: 'TT-037',
+    title: 'Structure Check',
+    content: 'Validates that all relationships between items are valid. Ensures commitments link to existing drivers, intents reference valid drivers, and no broken references exist.',
+    dos: [
+      'Fix broken links immediately',
+      'Verify all references after deleting items',
+      'Keep your pyramid structurally sound'
+    ],
+    donts: [
+      'Delete drivers without updating commitments',
+      'Leave orphaned references',
+      'Ignore structure errors'
+    ]
+  } as TooltipContent,
+
+  ORPHANED_ITEMS: {
+    id: 'TT-038',
+    title: 'Orphaned Items Check',
+    content: 'Identifies items that lack strategic connections. Orphaned items appear disconnected from your strategy and reduce traceability from vision to execution.',
+    example: '⚠️ Common issues:\n• Drivers with no intents\n• Intents with no commitments\n• Commitments not linked to intents',
+    dos: [
+      'Link commitments to strategic intents',
+      'Create intents for every driver',
+      'Establish clear traceability'
+    ],
+    donts: [
+      'Leave intents without commitments',
+      'Create drivers you won\'t execute on',
+      'Skip intent linkage'
+    ]
+  } as TooltipContent,
+
+  BALANCE: {
+    id: 'TT-039',
+    title: 'Balance Check',
+    content: 'Analyzes distribution of commitments across strategic drivers. Reveals where you\'re really placing your strategic bets and identifies over-concentration or under-investment.',
+    example: '✅ Good: Even distribution (e.g., 3 drivers with 33%, 35%, 32%)\n\n❌ Problem: One driver has 70% of commitments (over-concentrated)',
+    dos: [
+      'Review distribution thoughtfully',
+      'Question drivers with zero commitments',
+      'Ensure balance reflects true priorities'
+    ],
+    donts: [
+      'Ignore massive imbalances',
+      'Keep drivers with no commitments',
+      'Force artificial balance'
+    ]
+  } as TooltipContent,
+
+  LANGUAGE_QUALITY: {
+    id: 'TT-040',
+    title: 'Language Quality Check',
+    content: 'Detects vanilla corporate speak and generic jargon. Bold, specific language is more memorable and actionable than vague aspirations.',
+    example: '❌ Avoid: "Leverage synergies to drive excellence and enhance value-add"\n\n✅ Better: "Cut decision time from 2 weeks to 2 days through automated approvals"',
+    dos: [
+      'Use specific, concrete language',
+      'Paint clear pictures of outcomes',
+      'Be bold and memorable'
+    ],
+    donts: [
+      'Use buzzwords like "synergy", "leverage"',
+      'Write vague statements like "drive excellence"',
+      'Default to generic corporate speak'
+    ]
+  } as TooltipContent,
+
+  COMMITMENT_QUALITY: {
+    id: 'TT-041',
+    title: 'Commitment Quality Check',
+    content: 'Ensures iconic commitments are specific, measurable, and well-defined. Quality commitments have clear owners, target dates, and detailed descriptions.',
+    dos: [
+      'Make commitments specific and measurable',
+      'Assign clear owners',
+      'Set realistic target dates',
+      'Write detailed descriptions (>20 chars)'
+    ],
+    donts: [
+      'Use vague commitments like "Improve satisfaction"',
+      'Leave commitments without owners',
+      'Skip target dates',
+      'Write one-word descriptions'
+    ]
+  } as TooltipContent,
+
+  WEIGHTING: {
+    id: 'TT-042',
+    title: 'Weighting Check',
+    content: 'Validates that primary and secondary driver alignments are properly set. Ensures every commitment has ONE primary driver (the core innovation of this approach).',
+    dos: [
+      'Assign ONE primary driver per commitment',
+      'Use secondary alignments sparingly (1-2 max)',
+      'Make the hard choice on ownership'
+    ],
+    donts: [
+      'Split ownership equally (defeats the purpose)',
+      'Mark everything as secondary to avoid decisions',
+      'Skip primary driver assignment'
+    ]
+  } as TooltipContent,
+
+  CASCADE_ALIGNMENT: {
+    id: 'TT-043',
+    title: 'Cascade Alignment Check',
+    content: 'Verifies traceability from strategic drivers down through intents to commitments. Ensures your execution ladder connects all the way from vision to action.',
+    dos: [
+      'Ensure clear line of sight from vision to action',
+      'Link commitments to intents',
+      'Create complete strategic threads'
+    ],
+    donts: [
+      'Break the cascade chain',
+      'Skip intermediate connections',
+      'Create isolated commitments'
+    ]
+  } as TooltipContent,
+
+  SEVERITY_ERROR: {
+    id: 'TT-044',
+    title: 'Error Severity',
+    content: 'Critical issues that must be fixed before your pyramid is considered complete. Errors indicate missing required content or broken structure.',
+    dos: [
+      'Fix errors before moving to exports',
+      'Prioritize error resolution',
+      'Review error suggestions carefully'
+    ]
+  } as TooltipContent,
+
+  SEVERITY_WARNING: {
+    id: 'TT-045',
+    title: 'Warning Severity',
+    content: 'Issues that should be addressed to improve strategic clarity and quality. Warnings highlight imbalances, orphaned items, or quality concerns.',
+    dos: [
+      'Review warnings thoughtfully',
+      'Address strategic gaps',
+      'Improve weak areas'
+    ]
+  } as TooltipContent,
+
+  SEVERITY_INFO: {
+    id: 'TT-046',
+    title: 'Info Severity',
+    content: 'Suggestions for improvement and best practices. Info items are optional enhancements that can strengthen your strategy.',
+    dos: [
+      'Consider info suggestions',
+      'Use as learning opportunities',
+      'Apply where relevant'
+    ]
+  } as TooltipContent
+};
+
+// ============================================================================
+// EXPORTS PAGE TOOLTIPS
+// ============================================================================
+
+export const EXPORTS_TOOLTIPS = {
+  AUDIENCE_EXECUTIVE: {
+    id: 'TT-047',
+    title: 'Executive Audience',
+    content: '1-page summary designed for board members, C-suite executives, and investors. Focuses on vision, strategic drivers, and key commitments only.',
+    example: 'Use for: Board meetings, investor updates, executive town halls, annual reports',
+    dos: [
+      'Use for high-level strategic communication',
+      'Share with external stakeholders',
+      'Present to senior leadership'
+    ],
+    donts: [
+      'Use for detailed planning sessions',
+      'Share with teams needing execution details',
+      'Expect operational granularity'
+    ]
+  } as TooltipContent,
+
+  AUDIENCE_LEADERSHIP: {
+    id: 'TT-048',
+    title: 'Leadership Audience',
+    content: 'Comprehensive view for leadership teams including all strategic layers. Includes vision, values, behaviors, drivers, intents, and commitments with full context.',
+    example: 'Use for: Leadership offsites, strategic planning workshops, quarterly reviews, department heads',
+    dos: [
+      'Use for strategic planning sessions',
+      'Share with VP-level and above',
+      'Include in leadership onboarding'
+    ],
+    donts: [
+      'Overwhelm board with too much detail',
+      'Use for individual contributor comms',
+      'Expect quick readability'
+    ]
+  } as TooltipContent,
+
+  AUDIENCE_DETAILED: {
+    id: 'TT-049',
+    title: 'Detailed Audience',
+    content: 'Complete pyramid documentation including all 9 tiers from vision to individual objectives. Contains full traceability, connections, and implementation details.',
+    example: 'Use for: Program management, detailed planning, documentation archives, compliance, audits',
+    dos: [
+      'Use for comprehensive documentation',
+      'Share with program/project managers',
+      'Keep as master reference document'
+    ],
+    donts: [
+      'Use for quick executive updates',
+      'Share without context or training',
+      'Expect casual reading'
+    ]
+  } as TooltipContent,
+
+  AUDIENCE_TEAM: {
+    id: 'TT-050',
+    title: 'Team Audience',
+    content: 'Team-focused view showing how team and individual objectives connect to strategic commitments. Emphasizes execution layer with clear line of sight to strategy.',
+    example: 'Use for: Team planning, OKR setting, performance reviews, team onboarding',
+    dos: [
+      'Use for team-level planning',
+      'Share in team meetings',
+      'Connect individual work to strategy'
+    ],
+    donts: [
+      'Use for board presentations',
+      'Share without strategic context',
+      'Skip the vision/mission context'
+    ]
+  } as TooltipContent,
+
+  FORMAT_WORD: {
+    id: 'TT-051',
+    title: 'Word Document Export',
+    content: 'Exports as .docx format ideal for detailed documentation, editing, and internal distribution. Maintains full formatting and structure.',
+    dos: [
+      'Use for documents that need editing',
+      'Share for collaboration and feedback',
+      'Distribute internally'
+    ]
+  } as TooltipContent,
+
+  FORMAT_POWERPOINT: {
+    id: 'TT-052',
+    title: 'PowerPoint Export',
+    content: 'Exports as .pptx presentation format with each section on separate slides. Perfect for board presentations and strategic reviews.',
+    dos: [
+      'Use for presentations',
+      'Share for board meetings',
+      'Present to stakeholders'
+    ]
+  } as TooltipContent,
+
+  FORMAT_MARKDOWN: {
+    id: 'TT-053',
+    title: 'Markdown Export',
+    content: 'Exports as plain text markdown format. Ideal for version control, wikis, and developer-friendly documentation.',
+    dos: [
+      'Use for version control (Git)',
+      'Share in wikis or Confluence',
+      'Archive in documentation systems'
+    ]
+  } as TooltipContent,
+
+  FORMAT_JSON: {
+    id: 'TT-054',
+    title: 'JSON Export',
+    content: 'Exports the complete pyramid data structure as JSON. Use for backups, importing to other systems, or AI processing.',
+    dos: [
+      'Use for backups',
+      'Import to other tools',
+      'Process with AI or scripts'
+    ]
+  } as TooltipContent
+};
+
+// ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
 
@@ -565,6 +855,8 @@ export function getTooltipById(id: string): TooltipContent | undefined {
     ...Object.values(TIER7_TOOLTIPS),
     ...Object.values(TIER8_TOOLTIPS),
     ...Object.values(TIER9_TOOLTIPS),
+    ...Object.values(VALIDATION_TOOLTIPS),
+    ...Object.values(EXPORTS_TOOLTIPS),
   ];
   return allTooltips.find((tooltip) => tooltip.id === id);
 }
@@ -583,6 +875,8 @@ export function getAllTooltipIds(): string[] {
     ...Object.values(TIER7_TOOLTIPS),
     ...Object.values(TIER8_TOOLTIPS),
     ...Object.values(TIER9_TOOLTIPS),
+    ...Object.values(VALIDATION_TOOLTIPS),
+    ...Object.values(EXPORTS_TOOLTIPS),
   ];
   return allTooltips.map((tooltip) => tooltip.id);
 }
