@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { StrategyPyramid, IconicCommitment, Horizon } from "@/types/pyramid";
 import { Sparkles, AlertCircle, TrendingUp, Layers, ChevronRight, Edit, X, Save } from "lucide-react";
 import { commitmentsApi } from "@/lib/api-client";
@@ -74,6 +74,8 @@ export default function CommitmentTraceabilityFlow({ pyramid }: CommitmentTracea
     e.preventDefault();
     if (!editingCommitment || !sessionId) return;
 
+    console.log('Updating commitment with intents:', editForm.primary_intent_ids);
+
     try {
       setLoading(true);
       await commitmentsApi.update(
@@ -88,14 +90,23 @@ export default function CommitmentTraceabilityFlow({ pyramid }: CommitmentTracea
         editForm.primary_intent_ids
       );
 
+      console.log('Update API call succeeded, refreshing pyramid...');
+
       // Refresh pyramid data
       const { pyramidApi } = await import("@/lib/api-client");
       const updated = await pyramidApi.get(sessionId);
+
+      console.log('Updated pyramid received:', {
+        commitmentCount: updated.iconic_commitments.length,
+        updatedCommitment: updated.iconic_commitments.find(c => c.id === editingCommitment.id)
+      });
+
       setPyramid(updated);
 
       showToast("Commitment updated successfully", "success");
       closeEditModal();
     } catch (err: any) {
+      console.error('Update failed:', err);
       showToast(err.response?.data?.detail || "Failed to update commitment", "error");
     } finally {
       setLoading(false);
@@ -156,7 +167,11 @@ export default function CommitmentTraceabilityFlow({ pyramid }: CommitmentTracea
     });
   };
 
-  const traceabilityData = calculateTraceability();
+  // Use useMemo to recalculate when pyramid changes
+  const traceabilityData = useMemo(() => {
+    console.log('Recalculating traceability data...');
+    return calculateTraceability();
+  }, [pyramid.iconic_commitments, pyramid.strategic_intents, pyramid.strategic_drivers, pyramid.vision]);
 
   // Get selected commitment details
   const getCommitmentTrace = (commitmentId: string) => {
