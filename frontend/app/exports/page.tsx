@@ -6,7 +6,7 @@ import { usePyramidStore } from "@/lib/store";
 import { exportsApi } from "@/lib/api-client";
 import { Button } from "@/components/ui/Button";
 import { downloadBlob } from "@/lib/utils";
-import { FileText, Presentation, FileCode, Download, ArrowLeft } from "lucide-react";
+import { FileText, Presentation, FileCode, Download, ArrowLeft, Sparkles } from "lucide-react";
 
 type AudienceType = "executive" | "leadership" | "detailed" | "team";
 
@@ -63,6 +63,18 @@ export default function ExportsPage() {
     }
   };
 
+  const handleDownloadAIGuide = async () => {
+    try {
+      setIsExporting(true);
+      const blob = await exportsApi.downloadAIGuide();
+      downloadBlob(blob, "AI_Strategy_Guide.md");
+    } catch (err) {
+      console.error("Guide download failed:", err);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   if (!pyramid) {
     return null;
   }
@@ -83,6 +95,34 @@ export default function ExportsPage() {
           <p className="text-gray-600">
             Download your strategic pyramid in different formats for various audiences.
           </p>
+        </div>
+
+        {/* AI Guide Section */}
+        <div className="card mb-6 bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0">
+              <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <div className="flex-1">
+              <h2 className="text-xl font-bold text-gray-900 mb-2">
+                Use AI to Build Your Strategy
+              </h2>
+              <p className="text-gray-700 mb-4">
+                Download our comprehensive guide to generate strategic pyramids using ChatGPT, Claude, or any AI tool.
+                Includes complete JSON schema, tier-by-tier prompt templates, and import instructions.
+              </p>
+              <Button
+                onClick={handleDownloadAIGuide}
+                disabled={isExporting}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download AI Strategy Guide
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* Audience Selection */}

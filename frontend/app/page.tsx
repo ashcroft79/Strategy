@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePyramidStore } from "@/lib/store";
-import { pyramidApi } from "@/lib/api-client";
-import { readFileAsText } from "@/lib/utils";
-import { Upload, Plus } from "lucide-react";
+import { pyramidApi, exportsApi } from "@/lib/api-client";
+import { readFileAsText, downloadBlob } from "@/lib/utils";
+import { Upload, Plus, Sparkles } from "lucide-react";
 
 export default function HomePage() {
   const router = useRouter();
-  const { sessionId, setPyramid, setLoading, setError } = usePyramidStore();
+  const { sessionId, setPyramid, setLoading, setError, error } = usePyramidStore();
 
   const [projectName, setProjectName] = useState("");
   const [organization, setOrganization] = useState("");
@@ -70,6 +70,19 @@ export default function HomePage() {
     }
   };
 
+  const handleDownloadAIGuide = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const blob = await exportsApi.downloadAIGuide();
+      downloadBlob(blob, "AI_Strategy_Guide.md");
+    } catch (err: any) {
+      setError("Failed to download AI guide");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="max-w-4xl w-full">
@@ -81,6 +94,33 @@ export default function HomePage() {
           <p className="text-xl text-gray-600">
             Build coherent strategies that cascade from purpose to execution
           </p>
+        </div>
+
+        {/* AI Guide Banner */}
+        <div className="card mb-8 bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200">
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            <div className="flex-shrink-0">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                <Sparkles className="w-8 h-8 text-white" />
+              </div>
+            </div>
+            <div className="flex-1 text-center md:text-left">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                ✨ Build Your Strategy with AI
+              </h2>
+              <p className="text-gray-700 mb-4">
+                Download our comprehensive guide to generate strategic pyramids using ChatGPT, Claude, or any AI tool.
+                Includes complete JSON schema, tier-by-tier prompt templates, and import instructions.
+              </p>
+              <button
+                onClick={handleDownloadAIGuide}
+                className="btn-primary inline-flex items-center gap-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                Download Free AI Strategy Guide
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
@@ -198,9 +238,9 @@ export default function HomePage() {
         </div>
 
         {/* Error Display */}
-        {usePyramidStore((state) => state.error) && (
+        {error && (
           <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-            {usePyramidStore((state) => state.error)}
+            {error}
           </div>
         )}
 
