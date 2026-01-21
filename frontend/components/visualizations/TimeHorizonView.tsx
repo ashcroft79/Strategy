@@ -1,7 +1,7 @@
-import { IconicCommitment, StrategicDriver, Pyramid } from "@/types/pyramid";
+import { IconicCommitment, StrategicDriver, StrategyPyramid } from "@/types/pyramid";
 
 interface TimeHorizonViewProps {
-  pyramid: Pyramid;
+  pyramid: StrategyPyramid;
 }
 
 interface HorizonColumn {
