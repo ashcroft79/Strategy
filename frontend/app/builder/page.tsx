@@ -1427,59 +1427,145 @@ export default function BuilderPage() {
                   </label>
                 </div>
 
-                <div className="space-y-4">
-                  {pyramid.enablers?.map((enabler) => {
-                    // Upstream connections to drivers
-                    const upstreamConnections = enabler.driver_ids
-                      ?.map((driverId) => {
-                        const driver = pyramid.strategic_drivers.find((d) => d.id === driverId);
-                        return driver ? {
-                          id: driver.id,
-                          name: driver.name,
-                          type: 'upstream' as const,
-                        } : null;
-                      })
-                      .filter((conn): conn is NonNullable<typeof conn> => conn !== null) || [];
+                <div className="space-y-6">
+                  {(() => {
+                    // Group enablers by strategic driver
+                    const enablersByDriver = new Map<string, any[]>();
+                    const orphanedEnablers: any[] = [];
+
+                    pyramid.enablers?.forEach((enabler) => {
+                      if (!enabler.driver_ids || enabler.driver_ids.length === 0) {
+                        orphanedEnablers.push(enabler);
+                      } else {
+                        enabler.driver_ids.forEach((driverId) => {
+                          if (!enablersByDriver.has(driverId)) {
+                            enablersByDriver.set(driverId, []);
+                          }
+                          enablersByDriver.get(driverId)!.push(enabler);
+                        });
+                      }
+                    });
 
                     return (
-                      <div key={enabler.id} id={`item-${enabler.id}`}>
-                        <TierCard
-                          variant="purple"
-                          connections={upstreamConnections}
-                          onEdit={() => openEditModal('enabler', enabler.id, enabler)}
-                          onDelete={() => handleDeleteEnabler(enabler.id)}
-                          onConnectionClick={handleConnectionClick}
-                        showConnections={showThreadLabels}
-                        >
-                          <div>
-                            <div className="flex items-start justify-between mb-2">
-                              <div className="text-lg font-bold text-purple-900">{enabler.name}</div>
-                              {enabler.enabler_type && (
-                                <span className="px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-xs font-medium">
-                                  {enabler.enabler_type}
-                                </span>
-                              )}
+                      <>
+                        {/* Render enablers grouped by driver */}
+                        {pyramid.strategic_drivers.map((driver) => {
+                          const enablers = enablersByDriver.get(driver.id) || [];
+                          if (enablers.length === 0) return null;
+
+                          return (
+                            <div key={driver.id}>
+                              <div className="mb-3 pb-2 border-b-2 border-purple-300">
+                                <h3 className="text-md font-bold text-purple-900 flex items-center gap-2">
+                                  <span className="text-purple-600">↑</span>
+                                  {driver.name}
+                                  <span className="ml-auto text-xs font-normal text-gray-500">
+                                    {enablers.length} enabler{enablers.length !== 1 ? 's' : ''}
+                                  </span>
+                                </h3>
+                              </div>
+                              <div className="space-y-4 ml-4">
+                                {enablers.map((enabler) => {
+                                  const upstreamConnections = enabler.driver_ids
+                                    ?.map((driverId: string) => {
+                                      const drv = pyramid.strategic_drivers.find((d) => d.id === driverId);
+                                      return drv ? {
+                                        id: drv.id,
+                                        name: drv.name,
+                                        type: 'upstream' as const,
+                                      } : null;
+                                    })
+                                    .filter((conn: any): conn is NonNullable<typeof conn> => conn !== null) || [];
+
+                                  return (
+                                    <div key={enabler.id} id={`item-${enabler.id}`}>
+                                      <TierCard
+                                        variant="purple"
+                                        connections={upstreamConnections}
+                                        onEdit={() => openEditModal('enabler', enabler.id, enabler)}
+                                        onDelete={() => handleDeleteEnabler(enabler.id)}
+                                        onConnectionClick={handleConnectionClick}
+                                        showConnections={showThreadLabels}
+                                      >
+                                        <div>
+                                          <div className="flex items-start justify-between mb-2">
+                                            <div className="text-lg font-bold text-purple-900">{enabler.name}</div>
+                                            {enabler.enabler_type && (
+                                              <span className="px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-xs font-medium">
+                                                {enabler.enabler_type}
+                                              </span>
+                                            )}
+                                          </div>
+                                          <div className="text-gray-700 leading-relaxed">
+                                            {enabler.description}
+                                          </div>
+                                        </div>
+                                      </TierCard>
+                                    </div>
+                                  );
+                                })}
+                              </div>
                             </div>
-                            <div className="text-gray-700 leading-relaxed">
-                              {enabler.description}
+                          );
+                        })}
+
+                        {/* Render orphaned enablers if any */}
+                        {orphanedEnablers.length > 0 && (
+                          <div>
+                            <div className="mb-3 pb-2 border-b-2 border-gray-300">
+                              <h3 className="text-md font-bold text-gray-700 flex items-center gap-2">
+                                <span className="text-amber-600">⚠️</span>
+                                Not Linked to Any Driver
+                                <span className="ml-auto text-xs font-normal text-gray-500">
+                                  {orphanedEnablers.length} enabler{orphanedEnablers.length !== 1 ? 's' : ''}
+                                </span>
+                              </h3>
+                            </div>
+                            <div className="space-y-4 ml-4">
+                              {orphanedEnablers.map((enabler) => (
+                                <div key={enabler.id} id={`item-${enabler.id}`}>
+                                  <TierCard
+                                    variant="purple"
+                                    connections={[]}
+                                    onEdit={() => openEditModal('enabler', enabler.id, enabler)}
+                                    onDelete={() => handleDeleteEnabler(enabler.id)}
+                                    onConnectionClick={handleConnectionClick}
+                                    showConnections={showThreadLabels}
+                                  >
+                                    <div>
+                                      <div className="flex items-start justify-between mb-2">
+                                        <div className="text-lg font-bold text-purple-900">{enabler.name}</div>
+                                        {enabler.enabler_type && (
+                                          <span className="px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-xs font-medium">
+                                            {enabler.enabler_type}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div className="text-gray-700 leading-relaxed">
+                                        {enabler.description}
+                                      </div>
+                                    </div>
+                                  </TierCard>
+                                </div>
+                              ))}
                             </div>
                           </div>
-                        </TierCard>
-                      </div>
-                    );
-                  })}
+                        )}
 
-                  {(!pyramid.enablers || pyramid.enablers.length === 0) && (
-                    <div className="text-center py-12 bg-purple-50 rounded-xl border-2 border-dashed border-purple-200">
-                      <div className="text-4xl mb-3">🛠️</div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No enablers yet</h3>
-                      <p className="text-gray-600 mb-4">Define the capabilities needed to execute your strategy</p>
-                      <Button onClick={() => openAddModal('enabler')}>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add First Enabler
-                      </Button>
-                    </div>
-                  )}
+                        {(!pyramid.enablers || pyramid.enablers.length === 0) && (
+                          <div className="text-center py-12 bg-purple-50 rounded-xl border-2 border-dashed border-purple-200">
+                            <div className="text-4xl mb-3">🛠️</div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">No enablers yet</h3>
+                            <p className="text-gray-600 mb-4">Define the capabilities needed to execute your strategy</p>
+                            <Button onClick={() => openAddModal('enabler')}>
+                              <Plus className="w-4 h-4 mr-2" />
+                              Add First Enabler
+                            </Button>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </>
             )}
