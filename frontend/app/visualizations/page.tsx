@@ -1,60 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
 import { usePyramidStore } from "@/lib/store";
-import { visualizationsApi } from "@/lib/api-client";
 import { Button } from "@/components/ui/Button";
 import TimeHorizonView from "@/components/visualizations/TimeHorizonView";
-import { ArrowLeft, Calendar, PieChart, Network, Loader2 } from "lucide-react";
-
-// Dynamically import Plotly to avoid SSR issues
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+import StrategicHealthDashboard from "@/components/visualizations/StrategicHealthDashboard";
+import StrategicBalanceScorecard from "@/components/visualizations/StrategicBalanceScorecard";
+import { ArrowLeft, Calendar, Activity, BarChart2 } from "lucide-react";
+import { useState } from "react";
 
 export default function VisualizationsPage() {
   const router = useRouter();
-  const { sessionId, pyramid } = usePyramidStore();
-  const [activeTab, setActiveTab] = useState<"horizon" | "sunburst" | "network">("horizon");
-  const [sunburstData, setSunburstData] = useState<any>(null);
-  const [networkData, setNetworkData] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { pyramid } = usePyramidStore();
+  const [activeTab, setActiveTab] = useState<"horizon" | "health" | "balance">("horizon");
 
   useEffect(() => {
     if (!pyramid) {
       router.push("/");
     }
   }, [pyramid, router]);
-
-  // Load visualization data when tabs are clicked
-  useEffect(() => {
-    if (!sessionId) return;
-
-    const loadVisualization = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        if (activeTab === "sunburst" && !sunburstData) {
-          const data = await visualizationsApi.getDistributionSunburst(sessionId);
-          setSunburstData(data);
-        } else if (activeTab === "network" && !networkData) {
-          const data = await visualizationsApi.getNetworkDiagram(sessionId);
-          setNetworkData(data);
-        }
-      } catch (err: any) {
-        console.error("Failed to load visualization:", err);
-        setError(err.response?.data?.detail || "Failed to load visualization");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (activeTab !== "horizon") {
-      loadVisualization();
-    }
-  }, [activeTab, sessionId, sunburstData, networkData]);
 
   if (!pyramid) {
     return null;
@@ -65,19 +30,19 @@ export default function VisualizationsPage() {
       id: "horizon" as const,
       label: "Time Horizon",
       icon: Calendar,
-      description: "View commitments organized by delivery timeline"
+      description: "View commitments organized by delivery timeline (H1/H2/H3)"
     },
     {
-      id: "sunburst" as const,
-      label: "Distribution",
-      icon: PieChart,
-      description: "See how commitments are distributed across strategic drivers"
+      id: "health" as const,
+      label: "Strategic Health",
+      icon: Activity,
+      description: "Driver-level health metrics with actionable insights"
     },
     {
-      id: "network" as const,
-      label: "Network View",
-      icon: Network,
-      description: "Visualize strategic intents and commitments per driver"
+      id: "balance" as const,
+      label: "Balance Scorecard",
+      icon: BarChart2,
+      description: "Overall pyramid balance, completeness, and coverage gaps"
     }
   ];
 
@@ -168,95 +133,39 @@ export default function VisualizationsPage() {
           </div>
         )}
 
-        {/* Distribution Sunburst Tab */}
-        {activeTab === "sunburst" && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-2">
-                Commitment Distribution by Strategic Driver
-              </h2>
-              <p className="text-sm text-gray-600">
-                Interactive sunburst chart showing how commitments are distributed across your strategic drivers.
-              </p>
-            </div>
+        {/* Strategic Health Dashboard Tab */}
+        {activeTab === "health" && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="mb-6">
+                <h2 className="text-xl font-bold text-gray-800 mb-2">
+                  Strategic Health Dashboard
+                </h2>
+                <p className="text-sm text-gray-600">
+                  Monitor the health of each strategic driver with actionable insights and metrics.
+                </p>
+              </div>
 
-            {isLoading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              </div>
-            ) : error ? (
-              <div className="text-center py-12 bg-red-50 rounded-xl">
-                <p className="text-red-600">{error}</p>
-              </div>
-            ) : sunburstData ? (
-              <div className="flex justify-center">
-                <Plot
-                  data={sunburstData.data}
-                  layout={{
-                    ...sunburstData.layout,
-                    autosize: true,
-                    margin: { l: 0, r: 0, t: 40, b: 0 }
-                  }}
-                  config={{
-                    responsive: true,
-                    displayModeBar: true,
-                    displaylogo: false,
-                    modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d']
-                  }}
-                  style={{ width: "100%", height: "600px" }}
-                />
-              </div>
-            ) : (
-              <div className="text-center py-12 bg-gray-50 rounded-xl">
-                <p className="text-gray-600">Loading visualization...</p>
-              </div>
-            )}
+              <StrategicHealthDashboard pyramid={pyramid} />
+            </div>
           </div>
         )}
 
-        {/* Network Diagram Tab */}
-        {activeTab === "network" && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-2">
-                Strategic Network View
-              </h2>
-              <p className="text-sm text-gray-600">
-                Compare the number of strategic intents and iconic commitments across each driver.
-              </p>
-            </div>
+        {/* Strategic Balance Scorecard Tab */}
+        {activeTab === "balance" && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="mb-6">
+                <h2 className="text-xl font-bold text-gray-800 mb-2">
+                  Strategic Balance Scorecard
+                </h2>
+                <p className="text-sm text-gray-600">
+                  Assess overall pyramid balance, completeness, and identify coverage gaps.
+                </p>
+              </div>
 
-            {isLoading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              </div>
-            ) : error ? (
-              <div className="text-center py-12 bg-red-50 rounded-xl">
-                <p className="text-red-600">{error}</p>
-              </div>
-            ) : networkData ? (
-              <div className="flex justify-center">
-                <Plot
-                  data={networkData.data}
-                  layout={{
-                    ...networkData.layout,
-                    autosize: true,
-                    margin: { l: 120, r: 40, t: 40, b: 80 }
-                  }}
-                  config={{
-                    responsive: true,
-                    displayModeBar: true,
-                    displaylogo: false,
-                    modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d', 'zoom2d']
-                  }}
-                  style={{ width: "100%", height: "500px" }}
-                />
-              </div>
-            ) : (
-              <div className="text-center py-12 bg-gray-50 rounded-xl">
-                <p className="text-gray-600">Loading visualization...</p>
-              </div>
-            )}
+              <StrategicBalanceScorecard pyramid={pyramid} />
+            </div>
           </div>
         )}
       </div>
