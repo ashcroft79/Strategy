@@ -440,7 +440,8 @@ export default function BuilderPage() {
             editFormData.horizon,
             editFormData.target_date,
             editFormData.primary_driver_id,
-            editFormData.owner
+            editFormData.owner,
+            editFormData.primary_intent_ids
           );
           break;
         case "team_objective":

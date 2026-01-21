@@ -35,6 +35,7 @@ export default function CommitmentTraceabilityFlow({ pyramid }: CommitmentTracea
     horizon: Horizon.H1,
     target_date: "",
     primary_driver_id: "",
+    primary_intent_ids: [] as string[],
     owner: ""
   });
 
@@ -47,6 +48,7 @@ export default function CommitmentTraceabilityFlow({ pyramid }: CommitmentTracea
       horizon: commitment.horizon,
       target_date: commitment.target_date || "",
       primary_driver_id: commitment.primary_driver_id,
+      primary_intent_ids: commitment.primary_intent_ids || [],
       owner: commitment.owner || ""
     });
     setIsEditModalOpen(true);
@@ -62,6 +64,7 @@ export default function CommitmentTraceabilityFlow({ pyramid }: CommitmentTracea
       horizon: Horizon.H1,
       target_date: "",
       primary_driver_id: "",
+      primary_intent_ids: [],
       owner: ""
     });
   };
@@ -81,7 +84,8 @@ export default function CommitmentTraceabilityFlow({ pyramid }: CommitmentTracea
         editForm.horizon,
         editForm.target_date || undefined,
         editForm.primary_driver_id,
-        editForm.owner || undefined
+        editForm.owner || undefined,
+        editForm.primary_intent_ids
       );
 
       // Refresh pyramid data
@@ -556,7 +560,14 @@ export default function CommitmentTraceabilityFlow({ pyramid }: CommitmentTracea
             </label>
             <select
               value={editForm.primary_driver_id}
-              onChange={(e) => setEditForm({ ...editForm, primary_driver_id: e.target.value })}
+              onChange={(e) => {
+                // Reset intent selection when driver changes
+                setEditForm({
+                  ...editForm,
+                  primary_driver_id: e.target.value,
+                  primary_intent_ids: []
+                });
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               required
             >
@@ -568,6 +579,56 @@ export default function CommitmentTraceabilityFlow({ pyramid }: CommitmentTracea
               ))}
             </select>
           </div>
+
+          {/* Strategic Intents */}
+          {editForm.primary_driver_id && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Strategic Intents <span className="text-red-500">*</span>
+                <span className="text-xs text-gray-500 ml-2">(Select at least one)</span>
+              </label>
+              <div className="border border-gray-300 rounded-lg p-3 max-h-48 overflow-y-auto space-y-2 bg-gray-50">
+                {pyramid.strategic_intents
+                  .filter(intent => intent.driver_id === editForm.primary_driver_id)
+                  .map((intent) => (
+                    <label
+                      key={intent.id}
+                      className="flex items-start gap-2 p-2 hover:bg-white rounded cursor-pointer transition-colors"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={editForm.primary_intent_ids.includes(intent.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setEditForm({
+                              ...editForm,
+                              primary_intent_ids: [...editForm.primary_intent_ids, intent.id]
+                            });
+                          } else {
+                            setEditForm({
+                              ...editForm,
+                              primary_intent_ids: editForm.primary_intent_ids.filter(id => id !== intent.id)
+                            });
+                          }
+                        }}
+                        className="mt-1 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                      />
+                      <span className="text-sm text-gray-700 flex-1">{intent.statement}</span>
+                    </label>
+                  ))}
+                {pyramid.strategic_intents.filter(intent => intent.driver_id === editForm.primary_driver_id).length === 0 && (
+                  <p className="text-sm text-gray-500 text-center py-2">
+                    No strategic intents for this driver yet
+                  </p>
+                )}
+              </div>
+              {editForm.primary_intent_ids.length === 0 && (
+                <p className="text-xs text-amber-600 mt-1">
+                  ⚠️ This commitment will be marked as "orphaned" without intent linkage
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Target Date */}
           <div>
