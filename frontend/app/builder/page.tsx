@@ -23,7 +23,7 @@ import TierHeader from "@/components/ui/TierHeader";
 import TierCard from "@/components/ui/TierCard";
 import PyramidVisualization from "@/components/visualizations/PyramidVisualization";
 import { StatementType, Horizon } from "@/types/pyramid";
-import { Save, Home, CheckCircle, FileDown, Eye, Trash2, Edit, Plus } from "lucide-react";
+import { Save, Home, CheckCircle, FileDown, Eye, Trash2, Edit, BarChart3 } from "lucide-react";
 
 export default function BuilderPage() {
   const router = useRouter();
@@ -684,6 +684,10 @@ export default function BuilderPage() {
               <Button variant="ghost" onClick={handleHomeClick}>
                 <Home className="w-4 h-4 mr-2" />
                 Home
+              </Button>
+              <Button variant="secondary" onClick={() => router.push("/visualizations")}>
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Visualizations
               </Button>
               <Button variant="secondary" onClick={() => router.push("/validation")}>
                 <CheckCircle className="w-4 h-4 mr-2" />
