@@ -279,6 +279,8 @@ async def batch_import_elements(request: BatchImportRequest):
         "strategic_drivers": [],
         "strategic_intents": [],
         "iconic_commitments": [],
+        "team_objectives": [],
+        "individual_objectives": [],
         "errors": []
     }
 
@@ -403,6 +405,82 @@ async def batch_import_elements(request: BatchImportRequest):
                 except Exception as e:
                     results["errors"].append(f"Commitment import failed ({commitment_data.get('name')}): {str(e)}")
 
+        # 6. Add Team Objectives
+        # Team objectives link to commitments
+        commitment_ids = [c["id"] for c in results["iconic_commitments"]]
+
+        if elements.get("team_objectives"):
+            for idx, team_obj_data in enumerate(elements["team_objectives"]):
+                try:
+                    # Try to match linked_commitment or use first commitment
+                    linked_commitment = team_obj_data.get("linked_commitment", "")
+                    commitment_id = None
+
+                    if linked_commitment:
+                        # Try to find matching commitment by name
+                        for commitment in results["iconic_commitments"]:
+                            if linked_commitment.lower() in commitment["name"].lower():
+                                commitment_id = commitment["id"]
+                                break
+
+                    # If no match, distribute objectives across commitments
+                    if not commitment_id and commitment_ids:
+                        commitment_id = commitment_ids[idx % len(commitment_ids)]
+
+                    if commitment_id:
+                        team_obj = manager.add_team_objective(
+                            name=team_obj_data.get("name", ""),
+                            description=team_obj_data.get("description", ""),
+                            team_name=team_obj_data.get("team_name", "Unspecified Team"),
+                            primary_commitment_id=commitment_id,
+                            metrics=team_obj_data.get("metrics"),
+                            owner=team_obj_data.get("owner"),
+                            created_by=request.created_by
+                        )
+                        results["team_objectives"].append(team_obj.model_dump(mode="json"))
+                    else:
+                        results["errors"].append(f"Team objective skipped ({team_obj_data.get('name')}): No commitment available")
+                except Exception as e:
+                    results["errors"].append(f"Team objective import failed ({team_obj_data.get('name')}): {str(e)}")
+
+        # 7. Add Individual Objectives
+        # Individual objectives link to team objectives
+        team_objective_ids = [t["id"] for t in results["team_objectives"]]
+
+        if elements.get("individual_objectives"):
+            for idx, ind_obj_data in enumerate(elements["individual_objectives"]):
+                try:
+                    # Try to match linked_team_objective
+                    linked_team_obj = ind_obj_data.get("linked_team_objective", "")
+                    team_obj_ids_to_link = []
+
+                    if linked_team_obj:
+                        # Try to find matching team objective by name
+                        for team_obj in results["team_objectives"]:
+                            if linked_team_obj.lower() in team_obj["name"].lower():
+                                team_obj_ids_to_link = [team_obj["id"]]
+                                break
+
+                    # If no match, distribute across available team objectives
+                    if not team_obj_ids_to_link and team_objective_ids:
+                        # Link to one team objective (distribute round-robin)
+                        team_obj_ids_to_link = [team_objective_ids[idx % len(team_objective_ids)]]
+
+                    if team_obj_ids_to_link:
+                        ind_obj = manager.add_individual_objective(
+                            name=ind_obj_data.get("name", ""),
+                            description=ind_obj_data.get("description", ""),
+                            individual_name=ind_obj_data.get("individual_name", "Unspecified Individual"),
+                            team_objective_ids=team_obj_ids_to_link,
+                            success_criteria=ind_obj_data.get("success_criteria"),
+                            created_by=request.created_by
+                        )
+                        results["individual_objectives"].append(ind_obj.model_dump(mode="json"))
+                    else:
+                        results["errors"].append(f"Individual objective skipped ({ind_obj_data.get('name')}): No team objective available")
+                except Exception as e:
+                    results["errors"].append(f"Individual objective import failed ({ind_obj_data.get('name')}): {str(e)}")
+
         return {
             "success": True,
             "results": results,
@@ -412,6 +490,8 @@ async def batch_import_elements(request: BatchImportRequest):
                 "drivers_added": len(results["strategic_drivers"]),
                 "intents_added": len(results["strategic_intents"]),
                 "commitments_added": len(results["iconic_commitments"]),
+                "team_objectives_added": len(results["team_objectives"]),
+                "individual_objectives_added": len(results["individual_objectives"]),
                 "errors_count": len(results["errors"])
             }
         }

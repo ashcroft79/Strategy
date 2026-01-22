@@ -153,6 +153,18 @@ Extract the following tiers:
 - Should have clear timeframes if mentioned
 - Link to drivers and horizons (H1: 0-12m, H2: 12-24m, H3: 24-36m)
 
+**TEAM OBJECTIVES** (Tier 8):
+- Extract objectives for specific teams or departments
+- Should be concrete, measurable goals
+- Link to commitments if possible
+- Include team name if mentioned
+
+**INDIVIDUAL OBJECTIVES** (Tier 9):
+- Extract objectives for specific individuals or roles
+- Should be specific, actionable goals
+- Link to team objectives if possible
+- Include individual/role name if mentioned
+
 **FORMAT:** Respond ONLY with valid JSON (no markdown, no code blocks):
 {{
   "vision": {{
@@ -193,6 +205,29 @@ Extract the following tiers:
       "description": "Specific deliverable",
       "linked_driver": "Driver name if identifiable",
       "horizon": "H1|H2|H3 (if timeframe mentioned)",
+      "confidence": "HIGH|MEDIUM|LOW",
+      "source_quote": "Direct quote"
+    }}
+  ],
+  "team_objectives": [
+    {{
+      "name": "Objective name",
+      "description": "Concrete, measurable goal",
+      "team_name": "Team/Department name",
+      "linked_commitment": "Commitment name if identifiable",
+      "metrics": "Success metrics if mentioned",
+      "owner": "Owner name if mentioned",
+      "confidence": "HIGH|MEDIUM|LOW",
+      "source_quote": "Direct quote"
+    }}
+  ],
+  "individual_objectives": [
+    {{
+      "name": "Objective name",
+      "description": "Specific, actionable goal",
+      "individual_name": "Person name or role",
+      "linked_team_objective": "Team objective name if identifiable",
+      "success_criteria": "Success criteria if mentioned",
       "confidence": "HIGH|MEDIUM|LOW",
       "source_quote": "Direct quote"
     }}
@@ -374,6 +409,10 @@ Extract the following tiers:
                 "message": "No iconic commitments found. Commitments are specific deliverables."
             })
 
+        # Get objectives counts
+        team_objectives = elements.get("team_objectives", [])
+        individual_objectives = elements.get("individual_objectives", [])
+
         return {
             "valid": len(issues) == 0,
             "issues": issues,
@@ -383,6 +422,8 @@ Extract the following tiers:
                 "values_count": len(values),
                 "drivers_count": len(drivers),
                 "intents_count": len(intents),
-                "commitments_count": len(commitments)
+                "commitments_count": len(commitments),
+                "team_objectives_count": len(team_objectives),
+                "individual_objectives_count": len(individual_objectives)
             }
         }

@@ -697,6 +697,25 @@ export interface ExtractedElements {
     confidence: string;
     source_quote: string;
   }>;
+  team_objectives?: Array<{
+    name: string;
+    description: string;
+    team_name: string;
+    linked_commitment?: string;
+    metrics?: string;
+    owner?: string;
+    confidence: string;
+    source_quote: string;
+  }>;
+  individual_objectives?: Array<{
+    name: string;
+    description: string;
+    individual_name: string;
+    linked_team_objective?: string;
+    success_criteria?: string;
+    confidence: string;
+    source_quote: string;
+  }>;
   extraction_notes?: string;
 }
 
@@ -715,6 +734,8 @@ export interface ImportDocumentsResponse {
       drivers_count: number;
       intents_count: number;
       commitments_count: number;
+      team_objectives_count: number;
+      individual_objectives_count: number;
     };
   };
   error?: string;
@@ -728,6 +749,8 @@ export interface BatchImportResults {
     strategic_drivers: any[];
     strategic_intents: any[];
     iconic_commitments: any[];
+    team_objectives: any[];
+    individual_objectives: any[];
     errors: string[];
   };
   summary: {
@@ -736,6 +759,8 @@ export interface BatchImportResults {
     drivers_added: number;
     intents_added: number;
     commitments_added: number;
+    team_objectives_added: number;
+    individual_objectives_added: number;
     errors_count: number;
   };
 }

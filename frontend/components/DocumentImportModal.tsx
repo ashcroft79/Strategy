@@ -299,7 +299,7 @@ export function DocumentImportModal({
               {importResult.success && importResult.validation && (
                 <div className="space-y-3">
                   <h3 className="font-medium text-gray-900">Extraction Summary</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="p-3 bg-gray-50 rounded-lg text-center">
                       <div className="text-2xl font-bold text-blue-600">
                         {importResult.validation.summary.vision_found ? "1" : "0"}
@@ -329,6 +329,18 @@ export function DocumentImportModal({
                         {importResult.validation.summary.commitments_count}
                       </div>
                       <div className="text-xs text-gray-600 mt-1">Commitments</div>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-lg text-center">
+                      <div className="text-2xl font-bold text-indigo-600">
+                        {importResult.validation.summary.team_objectives_count}
+                      </div>
+                      <div className="text-xs text-gray-600 mt-1">Team Objectives</div>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-lg text-center">
+                      <div className="text-2xl font-bold text-pink-600">
+                        {importResult.validation.summary.individual_objectives_count}
+                      </div>
+                      <div className="text-xs text-gray-600 mt-1">Individual Objectives</div>
                     </div>
                   </div>
 
