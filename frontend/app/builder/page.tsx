@@ -1936,7 +1936,24 @@ export default function BuilderPage() {
                           return (
                             <>
                               {pyramid.strategic_drivers.map((driver) => {
-                                const commitments = commitmentsByDriver.get(driver.id) || [];
+                                const commitments = (commitmentsByDriver.get(driver.id) || []).sort((a, b) => {
+                                  const horizonPriority: { [key: string]: number } = { H1: 1, H2: 2, H3: 3 };
+                                  const priorityA = horizonPriority[a.horizon] || 999;
+                                  const priorityB = horizonPriority[b.horizon] || 999;
+
+                                  if (priorityA !== priorityB) {
+                                    return priorityA - priorityB;
+                                  }
+
+                                  if (a.target_date && b.target_date) {
+                                    return new Date(a.target_date).getTime() - new Date(b.target_date).getTime();
+                                  }
+
+                                  if (a.target_date && !b.target_date) return -1;
+                                  if (!a.target_date && b.target_date) return 1;
+
+                                  return 0;
+                                });
                                 if (commitments.length === 0) return null;
 
                                 return (
@@ -2018,7 +2035,24 @@ export default function BuilderPage() {
                                     </h3>
                                   </div>
                                   <div className="space-y-4 ml-4">
-                                    {orphanedCommitments.map((commitment) => {
+                                    {orphanedCommitments.sort((a, b) => {
+                                      const horizonPriority: { [key: string]: number } = { H1: 1, H2: 2, H3: 3 };
+                                      const priorityA = horizonPriority[a.horizon] || 999;
+                                      const priorityB = horizonPriority[b.horizon] || 999;
+
+                                      if (priorityA !== priorityB) {
+                                        return priorityA - priorityB;
+                                      }
+
+                                      if (a.target_date && b.target_date) {
+                                        return new Date(a.target_date).getTime() - new Date(b.target_date).getTime();
+                                      }
+
+                                      if (a.target_date && !b.target_date) return -1;
+                                      if (!a.target_date && b.target_date) return 1;
+
+                                      return 0;
+                                    }).map((commitment) => {
                                       const downstreamConnections = pyramid.team_objectives
                                         ?.filter((obj) => obj.primary_commitment_id === commitment.id)
                                         .map((obj) => ({
@@ -2088,7 +2122,24 @@ export default function BuilderPage() {
                           return (
                             <>
                               {pyramid.strategic_intents.map((intent) => {
-                                const commitments = commitmentsByIntent.get(intent.id) || [];
+                                const commitments = (commitmentsByIntent.get(intent.id) || []).sort((a, b) => {
+                                  const horizonPriority: { [key: string]: number } = { H1: 1, H2: 2, H3: 3 };
+                                  const priorityA = horizonPriority[a.horizon] || 999;
+                                  const priorityB = horizonPriority[b.horizon] || 999;
+
+                                  if (priorityA !== priorityB) {
+                                    return priorityA - priorityB;
+                                  }
+
+                                  if (a.target_date && b.target_date) {
+                                    return new Date(a.target_date).getTime() - new Date(b.target_date).getTime();
+                                  }
+
+                                  if (a.target_date && !b.target_date) return -1;
+                                  if (!a.target_date && b.target_date) return 1;
+
+                                  return 0;
+                                });
                                 if (commitments.length === 0) return null;
 
                                 const driver = pyramid.strategic_drivers.find(d => d.id === intent.driver_id);
@@ -2177,7 +2228,24 @@ export default function BuilderPage() {
                                     </h3>
                                   </div>
                                   <div className="space-y-4 ml-4">
-                                    {orphanedCommitments.map((commitment) => {
+                                    {orphanedCommitments.sort((a, b) => {
+                                      const horizonPriority: { [key: string]: number } = { H1: 1, H2: 2, H3: 3 };
+                                      const priorityA = horizonPriority[a.horizon] || 999;
+                                      const priorityB = horizonPriority[b.horizon] || 999;
+
+                                      if (priorityA !== priorityB) {
+                                        return priorityA - priorityB;
+                                      }
+
+                                      if (a.target_date && b.target_date) {
+                                        return new Date(a.target_date).getTime() - new Date(b.target_date).getTime();
+                                      }
+
+                                      if (a.target_date && !b.target_date) return -1;
+                                      if (!a.target_date && b.target_date) return 1;
+
+                                      return 0;
+                                    }).map((commitment) => {
                                       const driver = pyramid.strategic_drivers.find(d => d.id === commitment.primary_driver_id);
                                       const upstreamConnections = driver ? [{
                                         id: driver.id,
@@ -2317,7 +2385,26 @@ export default function BuilderPage() {
                     return (
                       <>
                         {/* Render objectives grouped by commitment */}
-                        {pyramid.iconic_commitments.map((commitment) => {
+                        {pyramid.iconic_commitments
+                          .sort((a, b) => {
+                            const horizonPriority: { [key: string]: number } = { H1: 1, H2: 2, H3: 3 };
+                            const priorityA = horizonPriority[a.horizon] || 999;
+                            const priorityB = horizonPriority[b.horizon] || 999;
+
+                            if (priorityA !== priorityB) {
+                              return priorityA - priorityB;
+                            }
+
+                            if (a.target_date && b.target_date) {
+                              return new Date(a.target_date).getTime() - new Date(b.target_date).getTime();
+                            }
+
+                            if (a.target_date && !b.target_date) return -1;
+                            if (!a.target_date && b.target_date) return 1;
+
+                            return 0;
+                          })
+                          .map((commitment) => {
                           const objectives = objectivesByCommitment.get(commitment.id) || [];
                           if (objectives.length === 0) return null;
 
@@ -2524,7 +2611,33 @@ export default function BuilderPage() {
                     return (
                       <>
                         {/* Render objectives grouped by team objective */}
-                        {pyramid.team_objectives?.map((teamObj) => {
+                        {pyramid.team_objectives
+                          ?.sort((a, b) => {
+                            const commitmentA = pyramid.iconic_commitments.find(c => c.id === a.primary_commitment_id);
+                            const commitmentB = pyramid.iconic_commitments.find(c => c.id === b.primary_commitment_id);
+
+                            if (!commitmentA && !commitmentB) return 0;
+                            if (!commitmentA) return 1;
+                            if (!commitmentB) return -1;
+
+                            const horizonPriority: { [key: string]: number } = { H1: 1, H2: 2, H3: 3 };
+                            const priorityA = horizonPriority[commitmentA.horizon] || 999;
+                            const priorityB = horizonPriority[commitmentB.horizon] || 999;
+
+                            if (priorityA !== priorityB) {
+                              return priorityA - priorityB;
+                            }
+
+                            if (commitmentA.target_date && commitmentB.target_date) {
+                              return new Date(commitmentA.target_date).getTime() - new Date(commitmentB.target_date).getTime();
+                            }
+
+                            if (commitmentA.target_date && !commitmentB.target_date) return -1;
+                            if (!commitmentA.target_date && commitmentB.target_date) return 1;
+
+                            return 0;
+                          })
+                          .map((teamObj) => {
                           const objectives = objectivesByTeamObjective.get(teamObj.id) || [];
                           if (objectives.length === 0) return null;
 
