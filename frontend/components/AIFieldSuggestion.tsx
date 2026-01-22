@@ -122,16 +122,16 @@ export function AIFieldSuggestionIndicator({
 }: AIFieldSuggestionIndicatorProps) {
   if (isLoading) {
     return (
-      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+      <div className="absolute right-2 top-2 flex items-center gap-1 bg-white/95 backdrop-blur-sm px-2 py-1 rounded-md shadow-sm border border-blue-200">
         <Sparkles className="w-4 h-4 text-blue-500 animate-pulse" />
-        <span className="text-xs text-gray-500">AI analyzing...</span>
+        <span className="text-xs font-medium text-blue-600">AI analyzing...</span>
       </div>
     );
   }
 
   if (hasSuggestion) {
     return (
-      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+      <div className="absolute right-2 top-2 bg-white/95 backdrop-blur-sm p-1.5 rounded-md shadow-sm border border-yellow-200">
         <Sparkles className="w-4 h-4 text-yellow-500" />
       </div>
     );

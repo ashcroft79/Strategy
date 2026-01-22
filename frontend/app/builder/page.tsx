@@ -258,6 +258,87 @@ export default function BuilderPage() {
     }
   );
 
+  // Enabler AI suggestions
+  const enablerNameSuggestion = useAIFieldSuggestion(
+    modalMode === 'edit' ? editFormData.name || '' : enablerName,
+    {
+      sessionId,
+      tier: "enabler",
+      fieldName: "name",
+      enabled: isModalOpen && modalItemType === 'enabler',
+      minLength: 2,
+    }
+  );
+
+  const enablerDescSuggestion = useAIFieldSuggestion(
+    modalMode === 'edit' ? editFormData.description || '' : enablerDescription,
+    {
+      sessionId,
+      tier: "enabler",
+      fieldName: "description",
+      enabled: isModalOpen && modalItemType === 'enabler',
+      minLength: 10,
+      context: {
+        name: modalMode === 'edit' ? editFormData.name : enablerName,
+        enabler_type: modalMode === 'edit' ? editFormData.enabler_type : enablerType
+      },
+    }
+  );
+
+  // Team Objective AI suggestions
+  const teamObjectiveNameSuggestion = useAIFieldSuggestion(
+    modalMode === 'edit' ? editFormData.name || '' : teamObjectiveName,
+    {
+      sessionId,
+      tier: "team_objective",
+      fieldName: "name",
+      enabled: isModalOpen && modalItemType === 'team_objective',
+      minLength: 3,
+    }
+  );
+
+  const teamObjectiveDescSuggestion = useAIFieldSuggestion(
+    modalMode === 'edit' ? editFormData.description || '' : teamObjectiveDescription,
+    {
+      sessionId,
+      tier: "team_objective",
+      fieldName: "description",
+      enabled: isModalOpen && modalItemType === 'team_objective',
+      minLength: 10,
+      context: {
+        name: modalMode === 'edit' ? editFormData.name : teamObjectiveName,
+        team_name: modalMode === 'edit' ? editFormData.team_name : teamName
+      },
+    }
+  );
+
+  // Individual Objective AI suggestions
+  const individualObjectiveNameSuggestion = useAIFieldSuggestion(
+    modalMode === 'edit' ? editFormData.name || '' : individualObjectiveName,
+    {
+      sessionId,
+      tier: "individual_objective",
+      fieldName: "name",
+      enabled: isModalOpen && modalItemType === 'individual_objective',
+      minLength: 3,
+    }
+  );
+
+  const individualObjectiveDescSuggestion = useAIFieldSuggestion(
+    modalMode === 'edit' ? editFormData.description || '' : individualObjectiveDescription,
+    {
+      sessionId,
+      tier: "individual_objective",
+      fieldName: "description",
+      enabled: isModalOpen && modalItemType === 'individual_objective',
+      minLength: 10,
+      context: {
+        name: modalMode === 'edit' ? editFormData.name : individualObjectiveName,
+        individual_name: modalMode === 'edit' ? editFormData.individual_name : individualName
+      },
+    }
+  );
+
   useEffect(() => {
     if (!pyramid) {
       // Redirect to home if no pyramid loaded
@@ -3114,32 +3195,30 @@ export default function BuilderPage() {
         {modalItemType === 'intent' && (
           <>
             {/* Draft Generation Button */}
-            {(modalMode === 'add' ? selectedDriver : editFormData.driver_id) && (
-              <div className="mb-4 flex justify-end">
-                <AIDraftGenerator
-                  sessionId={sessionId}
-                  tier="strategic_intent"
-                  tierLabel="Strategic Intent"
-                  context={{
-                    driver_id: modalMode === 'edit' ? editFormData.driver_id : selectedDriver,
-                    driver_name: pyramid?.strategic_drivers?.find(d => d.id === (modalMode === 'edit' ? editFormData.driver_id : selectedDriver))?.name,
-                    vision: pyramid?.vision?.statements?.[0]?.statement || "",
-                  }}
-                  onAccept={(draft) => {
-                    if (draft.name || draft.statement) {
-                      const generatedValue = draft.name || draft.statement || draft.description;
-                      if (modalMode === 'edit') {
-                        setEditFormData((prev: any) => ({ ...prev, statement: generatedValue }));
-                      } else {
-                        setIntentStatement(generatedValue);
-                      }
-                      intentSuggestion.markAsAiGenerated(generatedValue);
+            <div className="mb-4 flex justify-end">
+              <AIDraftGenerator
+                sessionId={sessionId}
+                tier="strategic_intent"
+                tierLabel="Strategic Intent"
+                context={{
+                  driver_id: modalMode === 'edit' ? editFormData.driver_id : selectedDriver,
+                  driver_name: pyramid?.strategic_drivers?.find(d => d.id === (modalMode === 'edit' ? editFormData.driver_id : selectedDriver))?.name,
+                  vision: pyramid?.vision?.statements?.[0]?.statement || "",
+                }}
+                onAccept={(draft) => {
+                  if (draft.name || draft.statement) {
+                    const generatedValue = draft.name || draft.statement || draft.description;
+                    if (modalMode === 'edit') {
+                      setEditFormData((prev: any) => ({ ...prev, statement: generatedValue }));
+                    } else {
+                      setIntentStatement(generatedValue);
                     }
-                  }}
-                  buttonSize="sm"
-                />
-              </div>
-            )}
+                    intentSuggestion.markAsAiGenerated(generatedValue);
+                  }
+                }}
+                buttonSize="sm"
+              />
+            </div>
 
             <form onSubmit={modalMode === 'add' ? handleAddIntent : (e) => { e.preventDefault(); handleSaveEdit('intent'); }} className="space-y-4">
               <div>
@@ -3225,10 +3304,47 @@ export default function BuilderPage() {
 
         {/* Enabler Form */}
         {modalItemType === 'enabler' && (
+          <>
+            {/* Draft Generation Button */}
+            <div className="mb-4 flex justify-end">
+              <AIDraftGenerator
+                sessionId={sessionId}
+                tier="enabler"
+                tierLabel="Enabler"
+                context={{
+                  commitments: pyramid?.iconic_commitments?.map(c => ({ id: c.id, name: c.name })) || [],
+                }}
+                onAccept={(draft) => {
+                  if (modalMode === 'edit') {
+                    if (draft.name) {
+                      setEditFormData((prev: any) => ({ ...prev, name: draft.name }));
+                      enablerNameSuggestion.markAsAiGenerated(draft.name);
+                    }
+                    if (draft.description) {
+                      setEditFormData((prev: any) => ({ ...prev, description: draft.description }));
+                      enablerDescSuggestion.markAsAiGenerated(draft.description);
+                    }
+                  } else {
+                    if (draft.name) {
+                      setEnablerName(draft.name);
+                      enablerNameSuggestion.markAsAiGenerated(draft.name);
+                    }
+                    if (draft.description) {
+                      setEnablerDescription(draft.description);
+                      enablerDescSuggestion.markAsAiGenerated(draft.description);
+                    }
+                  }
+                }}
+                buttonSize="sm"
+              />
+            </div>
+
           <form onSubmit={modalMode === 'add' ? handleAddEnabler : (e) => { e.preventDefault(); handleSaveEdit('enabler'); }} className="space-y-4">
-            <Input
-              label="Enabler Name"
-              value={modalMode === 'edit' ? editFormData.name : enablerName}
+            <div>
+              <div className="relative">
+                <Input
+                  label="Enabler Name"
+                  value={modalMode === 'edit' ? editFormData.name : enablerName}
               onChange={(e) => {
                 if (modalMode === 'edit') {
                   setEditFormData({ ...editFormData, name: e.target.value });
@@ -3240,6 +3356,33 @@ export default function BuilderPage() {
               tooltipContent={TIER6_TOOLTIPS.ENABLER_NAME}
               required
             />
+            <AIFieldSuggestionIndicator
+              isLoading={enablerNameSuggestion.isLoading}
+              hasSuggestion={enablerNameSuggestion.hasSuggestion}
+            />
+          </div>
+          {enablerNameSuggestion.hasSuggestion && enablerNameSuggestion.suggestion?.has_suggestion && (
+            <AIFieldSuggestion
+              severity={enablerNameSuggestion.suggestion.severity || "info"}
+              message={enablerNameSuggestion.suggestion.message || ""}
+              suggestion={enablerNameSuggestion.suggestion.suggestion}
+              examples={enablerNameSuggestion.suggestion.examples}
+              reasoning={enablerNameSuggestion.suggestion.reasoning}
+              onDismiss={enablerNameSuggestion.dismissSuggestion}
+              onApply={(text) => {
+                if (modalMode === 'edit') {
+                  setEditFormData({ ...editFormData, name: text });
+                } else {
+                  setEnablerName(text);
+                }
+                enablerNameSuggestion.dismissSuggestion();
+              }}
+            />
+          )}
+        </div>
+
+        <div>
+          <div className="relative">
             <Textarea
               label="Description"
               value={modalMode === 'edit' ? editFormData.description : enablerDescription}
@@ -3255,7 +3398,32 @@ export default function BuilderPage() {
               rows={3}
               required
             />
-            <div>
+            <AIFieldSuggestionIndicator
+              isLoading={enablerDescSuggestion.isLoading}
+              hasSuggestion={enablerDescSuggestion.hasSuggestion}
+            />
+          </div>
+          {enablerDescSuggestion.hasSuggestion && enablerDescSuggestion.suggestion?.has_suggestion && (
+            <AIFieldSuggestion
+              severity={enablerDescSuggestion.suggestion.severity || "info"}
+              message={enablerDescSuggestion.suggestion.message || ""}
+              suggestion={enablerDescSuggestion.suggestion.suggestion}
+              examples={enablerDescSuggestion.suggestion.examples}
+              reasoning={enablerDescSuggestion.suggestion.reasoning}
+              onDismiss={enablerDescSuggestion.dismissSuggestion}
+              onApply={(text) => {
+                if (modalMode === 'edit') {
+                  setEditFormData({ ...editFormData, description: text });
+                } else {
+                  setEnablerDescription(text);
+                }
+                enablerDescSuggestion.dismissSuggestion();
+              }}
+            />
+          )}
+        </div>
+
+        <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Enabler Type (Optional)
               </label>
@@ -3318,51 +3486,50 @@ export default function BuilderPage() {
               </Button>
             </div>
           </form>
+          </>
         )}
 
         {/* Commitment Form */}
         {modalItemType === 'commitment' && (
           <>
             {/* Draft Generation Button */}
-            {(modalMode === 'add' ? selectedDriver : editFormData.primary_driver_id) && (
-              <div className="mb-4 flex justify-end">
-                <AIDraftGenerator
-                  sessionId={sessionId}
-                  tier="iconic_commitment"
-                  tierLabel="Iconic Commitment"
-                  context={{
-                    vision: pyramid?.vision?.statements?.[0]?.statement || "",
-                    drivers: pyramid?.strategic_drivers?.map(d => ({ id: d.id, name: d.name })) || [],
-                    intents: pyramid?.strategic_intents?.filter(i => i.driver_id === (modalMode === 'edit' ? editFormData.primary_driver_id : selectedDriver)).map(i => ({ id: i.id, statement: i.statement })) || [],
-                    primary_driver_id: modalMode === 'edit' ? editFormData.primary_driver_id : selectedDriver,
-                    primary_driver_name: pyramid?.strategic_drivers?.find(d => d.id === (modalMode === 'edit' ? editFormData.primary_driver_id : selectedDriver))?.name,
-                    horizon: modalMode === 'edit' ? editFormData.target_horizon : commitmentHorizon,
-                  }}
-                  onAccept={(draft) => {
-                    if (modalMode === 'edit') {
-                      if (draft.name) {
-                        setEditFormData((prev: any) => ({ ...prev, name: draft.name }));
-                        commitmentNameSuggestion.markAsAiGenerated(draft.name);
-                      }
-                      if (draft.description) {
-                        setEditFormData((prev: any) => ({ ...prev, description: draft.description }));
-                        commitmentDescSuggestion.markAsAiGenerated(draft.description);
-                      }
-                    } else {
-                      if (draft.name) {
-                        setCommitmentName(draft.name);
-                        commitmentNameSuggestion.markAsAiGenerated(draft.name);
-                      }
-                      if (draft.description) {
-                        setCommitmentDescription(draft.description);
-                        commitmentDescSuggestion.markAsAiGenerated(draft.description);
-                      }
+            <div className="mb-4 flex justify-end">
+              <AIDraftGenerator
+                sessionId={sessionId}
+                tier="iconic_commitment"
+                tierLabel="Iconic Commitment"
+                context={{
+                  vision: pyramid?.vision?.statements?.[0]?.statement || "",
+                  drivers: pyramid?.strategic_drivers?.map(d => ({ id: d.id, name: d.name })) || [],
+                  intents: pyramid?.strategic_intents?.filter(i => i.driver_id === (modalMode === 'edit' ? editFormData.primary_driver_id : selectedDriver)).map(i => ({ id: i.id, statement: i.statement })) || [],
+                  primary_driver_id: modalMode === 'edit' ? editFormData.primary_driver_id : selectedDriver,
+                  primary_driver_name: pyramid?.strategic_drivers?.find(d => d.id === (modalMode === 'edit' ? editFormData.primary_driver_id : selectedDriver))?.name,
+                  horizon: modalMode === 'edit' ? editFormData.target_horizon : commitmentHorizon,
+                }}
+                onAccept={(draft) => {
+                  if (modalMode === 'edit') {
+                    if (draft.name) {
+                      setEditFormData((prev: any) => ({ ...prev, name: draft.name }));
+                      commitmentNameSuggestion.markAsAiGenerated(draft.name);
                     }
-                  }}
-                  buttonSize="sm"
-                />
-              </div>
-            )}
+                    if (draft.description) {
+                      setEditFormData((prev: any) => ({ ...prev, description: draft.description }));
+                      commitmentDescSuggestion.markAsAiGenerated(draft.description);
+                    }
+                  } else {
+                    if (draft.name) {
+                      setCommitmentName(draft.name);
+                      commitmentNameSuggestion.markAsAiGenerated(draft.name);
+                    }
+                    if (draft.description) {
+                      setCommitmentDescription(draft.description);
+                      commitmentDescSuggestion.markAsAiGenerated(draft.description);
+                    }
+                  }
+                }}
+                buttonSize="sm"
+              />
+            </div>
 
             <form onSubmit={modalMode === 'add' ? handleAddCommitment : (e) => { e.preventDefault(); handleSaveEdit('commitment'); }} className="space-y-4">
               {/* Commitment Name with AI */}
@@ -3591,35 +3758,124 @@ export default function BuilderPage() {
 
         {/* Team Objective Form */}
         {modalItemType === 'team_objective' && (
+          <>
+            {/* Draft Generation Button */}
+            <div className="mb-4 flex justify-end">
+              <AIDraftGenerator
+                sessionId={sessionId}
+                tier="team_objective"
+                tierLabel="Team Objective"
+                context={{
+                  commitments: pyramid?.iconic_commitments?.map(c => ({ id: c.id, name: c.name })) || [],
+                  team_name: modalMode === 'edit' ? editFormData.team_name : teamName,
+                }}
+                onAccept={(draft) => {
+                  if (modalMode === 'edit') {
+                    if (draft.name) {
+                      setEditFormData((prev: any) => ({ ...prev, name: draft.name }));
+                      teamObjectiveNameSuggestion.markAsAiGenerated(draft.name);
+                    }
+                    if (draft.description) {
+                      setEditFormData((prev: any) => ({ ...prev, description: draft.description }));
+                      teamObjectiveDescSuggestion.markAsAiGenerated(draft.description);
+                    }
+                  } else {
+                    if (draft.name) {
+                      setTeamObjectiveName(draft.name);
+                      teamObjectiveNameSuggestion.markAsAiGenerated(draft.name);
+                    }
+                    if (draft.description) {
+                      setTeamObjectiveDescription(draft.description);
+                      teamObjectiveDescSuggestion.markAsAiGenerated(draft.description);
+                    }
+                  }
+                }}
+                buttonSize="sm"
+              />
+            </div>
+
           <form onSubmit={modalMode === 'add' ? handleAddTeamObjective : (e) => { e.preventDefault(); handleSaveEdit('team_objective'); }} className="space-y-4">
-            <Input
-              label="Objective Name"
-              value={modalMode === 'edit' ? editFormData.name : teamObjectiveName}
-              onChange={(e) => {
-                if (modalMode === 'edit') {
-                  setEditFormData({ ...editFormData, name: e.target.value });
-                } else {
-                  setTeamObjectiveName(e.target.value);
-                }
-              }}
-              placeholder="e.g., Complete Mobile Backend API"
-              tooltipContent={TIER8_TOOLTIPS.TEAM_OBJECTIVE_NAME}
-              required
-            />
-            <Textarea
-              label="Description"
-              value={modalMode === 'edit' ? editFormData.description : teamObjectiveDescription}
-              onChange={(e) => {
-                if (modalMode === 'edit') {
-                  setEditFormData({ ...editFormData, description: e.target.value });
-                } else {
-                  setTeamObjectiveDescription(e.target.value);
-                }
-              }}
-              placeholder="What will be achieved..."
-              rows={3}
-              required
-            />
+            <div>
+              <div className="relative">
+                <Input
+                  label="Objective Name"
+                  value={modalMode === 'edit' ? editFormData.name : teamObjectiveName}
+                  onChange={(e) => {
+                    if (modalMode === 'edit') {
+                      setEditFormData({ ...editFormData, name: e.target.value });
+                    } else {
+                      setTeamObjectiveName(e.target.value);
+                    }
+                  }}
+                  placeholder="e.g., Complete Mobile Backend API"
+                  tooltipContent={TIER8_TOOLTIPS.TEAM_OBJECTIVE_NAME}
+                  required
+                />
+                <AIFieldSuggestionIndicator
+                  isLoading={teamObjectiveNameSuggestion.isLoading}
+                  hasSuggestion={teamObjectiveNameSuggestion.hasSuggestion}
+                />
+              </div>
+              {teamObjectiveNameSuggestion.hasSuggestion && teamObjectiveNameSuggestion.suggestion?.has_suggestion && (
+                <AIFieldSuggestion
+                  severity={teamObjectiveNameSuggestion.suggestion.severity || "info"}
+                  message={teamObjectiveNameSuggestion.suggestion.message || ""}
+                  suggestion={teamObjectiveNameSuggestion.suggestion.suggestion}
+                  examples={teamObjectiveNameSuggestion.suggestion.examples}
+                  reasoning={teamObjectiveNameSuggestion.suggestion.reasoning}
+                  onDismiss={teamObjectiveNameSuggestion.dismissSuggestion}
+                  onApply={(text) => {
+                    if (modalMode === 'edit') {
+                      setEditFormData({ ...editFormData, name: text });
+                    } else {
+                      setTeamObjectiveName(text);
+                    }
+                    teamObjectiveNameSuggestion.dismissSuggestion();
+                  }}
+                />
+              )}
+            </div>
+
+            <div>
+              <div className="relative">
+                <Textarea
+                  label="Description"
+                  value={modalMode === 'edit' ? editFormData.description : teamObjectiveDescription}
+                  onChange={(e) => {
+                    if (modalMode === 'edit') {
+                      setEditFormData({ ...editFormData, description: e.target.value });
+                    } else {
+                      setTeamObjectiveDescription(e.target.value);
+                    }
+                  }}
+                  placeholder="What will be achieved..."
+                  rows={3}
+                  required
+                />
+                <AIFieldSuggestionIndicator
+                  isLoading={teamObjectiveDescSuggestion.isLoading}
+                  hasSuggestion={teamObjectiveDescSuggestion.hasSuggestion}
+                />
+              </div>
+              {teamObjectiveDescSuggestion.hasSuggestion && teamObjectiveDescSuggestion.suggestion?.has_suggestion && (
+                <AIFieldSuggestion
+                  severity={teamObjectiveDescSuggestion.suggestion.severity || "info"}
+                  message={teamObjectiveDescSuggestion.suggestion.message || ""}
+                  suggestion={teamObjectiveDescSuggestion.suggestion.suggestion}
+                  examples={teamObjectiveDescSuggestion.suggestion.examples}
+                  reasoning={teamObjectiveDescSuggestion.suggestion.reasoning}
+                  onDismiss={teamObjectiveDescSuggestion.dismissSuggestion}
+                  onApply={(text) => {
+                    if (modalMode === 'edit') {
+                      setEditFormData({ ...editFormData, description: text });
+                    } else {
+                      setTeamObjectiveDescription(text);
+                    }
+                    teamObjectiveDescSuggestion.dismissSuggestion();
+                  }}
+                />
+              )}
+            </div>
             <Input
               label="Team Name"
               value={modalMode === 'edit' ? editFormData.team_name : teamName}
@@ -3686,39 +3942,129 @@ export default function BuilderPage() {
               </Button>
             </div>
           </form>
+          </>
         )}
 
         {/* Individual Objective Form */}
         {modalItemType === 'individual_objective' && (
+          <>
+            {/* Draft Generation Button */}
+            <div className="mb-4 flex justify-end">
+              <AIDraftGenerator
+                sessionId={sessionId}
+                tier="individual_objective"
+                tierLabel="Individual Objective"
+                context={{
+                  team_objectives: pyramid?.team_objectives?.map(to => ({ id: to.id, name: to.name })) || [],
+                  individual_name: modalMode === 'edit' ? editFormData.individual_name : individualName,
+                }}
+                onAccept={(draft) => {
+                  if (modalMode === 'edit') {
+                    if (draft.name) {
+                      setEditFormData((prev: any) => ({ ...prev, name: draft.name }));
+                      individualObjectiveNameSuggestion.markAsAiGenerated(draft.name);
+                    }
+                    if (draft.description) {
+                      setEditFormData((prev: any) => ({ ...prev, description: draft.description }));
+                      individualObjectiveDescSuggestion.markAsAiGenerated(draft.description);
+                    }
+                  } else {
+                    if (draft.name) {
+                      setIndividualObjectiveName(draft.name);
+                      individualObjectiveNameSuggestion.markAsAiGenerated(draft.name);
+                    }
+                    if (draft.description) {
+                      setIndividualObjectiveDescription(draft.description);
+                      individualObjectiveDescSuggestion.markAsAiGenerated(draft.description);
+                    }
+                  }
+                }}
+                buttonSize="sm"
+              />
+            </div>
+
           <form onSubmit={modalMode === 'add' ? handleAddIndividualObjective : (e) => { e.preventDefault(); handleSaveEdit('individual_objective'); }} className="space-y-4">
-            <Input
-              label="Objective Name"
-              value={modalMode === 'edit' ? editFormData.name : individualObjectiveName}
-              onChange={(e) => {
-                if (modalMode === 'edit') {
-                  setEditFormData({ ...editFormData, name: e.target.value });
-                } else {
-                  setIndividualObjectiveName(e.target.value);
-                }
-              }}
-              placeholder="e.g., Implement OAuth 2.0 Authentication"
-              tooltipContent={TIER9_TOOLTIPS.INDIVIDUAL_OBJECTIVE_NAME}
-              required
-            />
-            <Textarea
-              label="Description"
-              value={modalMode === 'edit' ? editFormData.description : individualObjectiveDescription}
-              onChange={(e) => {
-                if (modalMode === 'edit') {
-                  setEditFormData({ ...editFormData, description: e.target.value });
-                } else {
-                  setIndividualObjectiveDescription(e.target.value);
-                }
-              }}
-              placeholder="What will be achieved and how it contributes..."
-              rows={3}
-              required
-            />
+            <div>
+              <div className="relative">
+                <Input
+                  label="Objective Name"
+                  value={modalMode === 'edit' ? editFormData.name : individualObjectiveName}
+                  onChange={(e) => {
+                    if (modalMode === 'edit') {
+                      setEditFormData({ ...editFormData, name: e.target.value });
+                    } else {
+                      setIndividualObjectiveName(e.target.value);
+                    }
+                  }}
+                  placeholder="e.g., Implement OAuth 2.0 Authentication"
+                  tooltipContent={TIER9_TOOLTIPS.INDIVIDUAL_OBJECTIVE_NAME}
+                  required
+                />
+                <AIFieldSuggestionIndicator
+                  isLoading={individualObjectiveNameSuggestion.isLoading}
+                  hasSuggestion={individualObjectiveNameSuggestion.hasSuggestion}
+                />
+              </div>
+              {individualObjectiveNameSuggestion.hasSuggestion && individualObjectiveNameSuggestion.suggestion?.has_suggestion && (
+                <AIFieldSuggestion
+                  severity={individualObjectiveNameSuggestion.suggestion.severity || "info"}
+                  message={individualObjectiveNameSuggestion.suggestion.message || ""}
+                  suggestion={individualObjectiveNameSuggestion.suggestion.suggestion}
+                  examples={individualObjectiveNameSuggestion.suggestion.examples}
+                  reasoning={individualObjectiveNameSuggestion.suggestion.reasoning}
+                  onDismiss={individualObjectiveNameSuggestion.dismissSuggestion}
+                  onApply={(text) => {
+                    if (modalMode === 'edit') {
+                      setEditFormData({ ...editFormData, name: text });
+                    } else {
+                      setIndividualObjectiveName(text);
+                    }
+                    individualObjectiveNameSuggestion.dismissSuggestion();
+                  }}
+                />
+              )}
+            </div>
+
+            <div>
+              <div className="relative">
+                <Textarea
+                  label="Description"
+                  value={modalMode === 'edit' ? editFormData.description : individualObjectiveDescription}
+                  onChange={(e) => {
+                    if (modalMode === 'edit') {
+                      setEditFormData({ ...editFormData, description: e.target.value });
+                    } else {
+                      setIndividualObjectiveDescription(e.target.value);
+                    }
+                  }}
+                  placeholder="What will be achieved and how it contributes..."
+                  rows={3}
+                  required
+                />
+                <AIFieldSuggestionIndicator
+                  isLoading={individualObjectiveDescSuggestion.isLoading}
+                  hasSuggestion={individualObjectiveDescSuggestion.hasSuggestion}
+                />
+              </div>
+              {individualObjectiveDescSuggestion.hasSuggestion && individualObjectiveDescSuggestion.suggestion?.has_suggestion && (
+                <AIFieldSuggestion
+                  severity={individualObjectiveDescSuggestion.suggestion.severity || "info"}
+                  message={individualObjectiveDescSuggestion.suggestion.message || ""}
+                  suggestion={individualObjectiveDescSuggestion.suggestion.suggestion}
+                  examples={individualObjectiveDescSuggestion.suggestion.examples}
+                  reasoning={individualObjectiveDescSuggestion.suggestion.reasoning}
+                  onDismiss={individualObjectiveDescSuggestion.dismissSuggestion}
+                  onApply={(text) => {
+                    if (modalMode === 'edit') {
+                      setEditFormData({ ...editFormData, description: text });
+                    } else {
+                      setIndividualObjectiveDescription(text);
+                    }
+                    individualObjectiveDescSuggestion.dismissSuggestion();
+                  }}
+                />
+              )}
+            </div>
             <Input
               label="Individual Name"
               value={modalMode === 'edit' ? editFormData.individual_name : individualName}
@@ -3784,6 +4130,7 @@ export default function BuilderPage() {
               </Button>
             </div>
           </form>
+          </>
         )}
       </Modal>
 

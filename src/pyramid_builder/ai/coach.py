@@ -491,5 +491,33 @@ Iconic Commitment Best Practices:
 - Success criteria in description
 - Avoid vague language like "improve", "enhance"
             """,
+            "enabler": """
+Enabler Best Practices:
+- Name: Clear, specific capability (e.g., "Real-Time Data Platform")
+- Description: What it provides and why it's needed
+- Should enable multiple commitments (not single-use)
+- Avoid generic labels like "Infrastructure" or "Platform"
+- Be specific about the capability it provides
+- Can be people, process, technology, or data
+            """,
+            "team_objective": """
+Team Objective Best Practices:
+- Name: Specific, measurable objective
+- Description: What will be achieved and how it contributes
+- Team-level scope (multiple people working together)
+- Clear contribution to parent commitment
+- Realistic for team capacity
+- Specific enough to assign and track
+            """,
+            "individual_objective": """
+Individual Objective Best Practices:
+- Name: Specific, actionable task
+- Description: What will be achieved and impact
+- Individual-level scope (single person can complete)
+- Clear contribution to team objective
+- Realistic for individual capacity
+- Specific enough to complete and verify
+- Avoid vague language
+            """,
         }
         return guidance.get(tier, "")
