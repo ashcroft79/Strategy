@@ -376,6 +376,32 @@ Keep responses concise (2-3 sentences) unless user asks for detail."""
     def _get_tier_guidance(self, tier: str) -> str:
         """Get specific guidance for a tier type."""
         guidance = {
+            "vision": """
+Vision/Mission/Belief/Passion Best Practices:
+- Paint a picture of the future, not a list of capabilities
+- Inspirational and aspirational
+- Timeless (not date-bound)
+- Memorable and concise
+- Avoid jargon and buzzwords
+- Focus on impact and aspiration, not features
+            """,
+            "value": """
+Value Best Practices:
+- Name: Single word or short phrase (e.g., "Integrity", "Customer Obsession")
+- Limit to 4-6 values total (forces prioritization)
+- Specific to your organization, not generic platitudes
+- Description explains what it means in practice
+- Avoid: "Excellence", "Innovation" without context
+            """,
+            "behaviour": """
+Behaviour Best Practices:
+- Observable actions, not aspirations
+- Specific and measurable
+- Directly linked to selected value(s)
+- Written as "We..." statements
+- Describes what people will actually DO
+- Avoid vague language like "strive to" or "try to"
+            """,
             "strategic_driver": """
 Strategic Driver Best Practices:
 - Name: 1-3 words, Adjective + Noun (e.g., "Customer Excellence")

@@ -204,6 +204,60 @@ export default function BuilderPage() {
     }
   );
 
+  // Vision, Value, Behaviour AI suggestions
+  const visionStatementSuggestion = useAIFieldSuggestion(
+    modalMode === 'edit' ? editFormData.statement || '' : visionStatement,
+    {
+      sessionId,
+      tier: "vision",
+      fieldName: "statement",
+      enabled: isModalOpen && modalItemType === 'vision',
+      minLength: 10,
+      context: {
+        statement_type: modalMode === 'edit' ? editFormData.statement_type : visionStatementType
+      },
+    }
+  );
+
+  const valueNameSuggestion = useAIFieldSuggestion(
+    modalMode === 'edit' ? editFormData.name || '' : valueName,
+    {
+      sessionId,
+      tier: "value",
+      fieldName: "name",
+      enabled: isModalOpen && modalItemType === 'value',
+      minLength: 2,
+    }
+  );
+
+  const valueDescSuggestion = useAIFieldSuggestion(
+    modalMode === 'edit' ? editFormData.description || '' : valueDescription,
+    {
+      sessionId,
+      tier: "value",
+      fieldName: "description",
+      enabled: isModalOpen && modalItemType === 'value',
+      minLength: 10,
+      context: {
+        name: modalMode === 'edit' ? editFormData.name : valueName
+      },
+    }
+  );
+
+  const behaviourStatementSuggestion = useAIFieldSuggestion(
+    modalMode === 'edit' ? editFormData.statement || '' : behaviourStatement,
+    {
+      sessionId,
+      tier: "behaviour",
+      fieldName: "statement",
+      enabled: isModalOpen && modalItemType === 'behaviour',
+      minLength: 10,
+      context: {
+        values: selectedValueIds.map(id => pyramid?.values?.find(v => v.id === id)?.name).filter(Boolean)
+      },
+    }
+  );
+
   useEffect(() => {
     if (!pyramid) {
       // Redirect to home if no pyramid loaded
@@ -2517,6 +2571,31 @@ export default function BuilderPage() {
       >
         {/* Vision Form */}
         {modalItemType === 'vision' && (
+          <>
+            {/* Draft Generation Button */}
+            <div className="mb-4 flex justify-end">
+              <AIDraftGenerator
+                sessionId={sessionId}
+                tier="vision"
+                tierLabel={(modalMode === 'edit' ? editFormData.statement_type : visionStatementType) || "Vision"}
+                context={{
+                  statement_type: modalMode === 'edit' ? editFormData.statement_type : visionStatementType,
+                }}
+                onAccept={(draft) => {
+                  if (draft.statement || draft.description) {
+                    const generatedValue = draft.statement || draft.description || "";
+                    if (modalMode === 'edit') {
+                      setEditFormData((prev: any) => ({ ...prev, statement: generatedValue }));
+                    } else {
+                      setVisionStatement(generatedValue);
+                    }
+                    visionStatementSuggestion.markAsAiGenerated(generatedValue);
+                  }
+                }}
+                buttonSize="sm"
+              />
+            </div>
+
           <form onSubmit={modalMode === 'add' ? handleAddVision : (e) => { e.preventDefault(); handleSaveEdit('vision'); }} className="space-y-4">
             <div>
               <LabelWithTooltip
@@ -2542,17 +2621,19 @@ export default function BuilderPage() {
                 <option value={StatementType.PASSION}>Passion</option>
               </select>
             </div>
-            <Textarea
-              label="Statement"
-              value={modalMode === 'edit' ? editFormData.statement : visionStatement}
-              onChange={(e) => {
-                if (modalMode === 'edit') {
-                  setEditFormData({ ...editFormData, statement: e.target.value });
-                } else {
-                  setVisionStatement(e.target.value);
-                }
-              }}
-              placeholder="Enter your inspiring statement here..."
+            <div>
+              <div className="relative">
+                <Textarea
+                  label="Statement"
+                  value={modalMode === 'edit' ? editFormData.statement : visionStatement}
+                  onChange={(e) => {
+                    if (modalMode === 'edit') {
+                      setEditFormData({ ...editFormData, statement: e.target.value });
+                    } else {
+                      setVisionStatement(e.target.value);
+                    }
+                  }}
+                  placeholder="Enter your inspiring statement here..."
               tooltipContent={
                 (modalMode === 'edit' ? editFormData.statement_type : visionStatementType) === StatementType.VISION
                   ? TIER1_TOOLTIPS.VISION
@@ -2562,9 +2643,33 @@ export default function BuilderPage() {
                   ? TIER1_TOOLTIPS.BELIEF
                   : TIER1_TOOLTIPS.VISION
               }
-              rows={4}
-              required
-            />
+                  rows={4}
+                  required
+                />
+                <AIFieldSuggestionIndicator
+                  isLoading={visionStatementSuggestion.isLoading}
+                  hasSuggestion={visionStatementSuggestion.hasSuggestion}
+                />
+              </div>
+              {visionStatementSuggestion.hasSuggestion && visionStatementSuggestion.suggestion?.has_suggestion && (
+                <AIFieldSuggestion
+                  severity={visionStatementSuggestion.suggestion.severity || "info"}
+                  message={visionStatementSuggestion.suggestion.message || ""}
+                  suggestion={visionStatementSuggestion.suggestion.suggestion}
+                  examples={visionStatementSuggestion.suggestion.examples}
+                  reasoning={visionStatementSuggestion.suggestion.reasoning}
+                  onDismiss={visionStatementSuggestion.dismissSuggestion}
+                  onApply={(text) => {
+                    if (modalMode === 'edit') {
+                      setEditFormData({ ...editFormData, statement: text });
+                    } else {
+                      setVisionStatement(text);
+                    }
+                    visionStatementSuggestion.dismissSuggestion();
+                  }}
+                />
+              )}
+            </div>
             <div className="flex gap-3 justify-end pt-4 border-t">
               <Button type="button" variant="ghost" onClick={closeModal}>
                 Cancel
@@ -2574,14 +2679,52 @@ export default function BuilderPage() {
               </Button>
             </div>
           </form>
+          </>
         )}
 
         {/* Values Form */}
         {modalItemType === 'value' && (
+          <>
+            {/* Draft Generation Button */}
+            <div className="mb-4 flex justify-end">
+              <AIDraftGenerator
+                sessionId={sessionId}
+                tier="value"
+                tierLabel="Value"
+                context={{
+                  existing_values: pyramid?.values?.map(v => v.name) || [],
+                }}
+                onAccept={(draft) => {
+                  if (modalMode === 'edit') {
+                    if (draft.name) {
+                      setEditFormData((prev: any) => ({ ...prev, name: draft.name }));
+                      valueNameSuggestion.markAsAiGenerated(draft.name);
+                    }
+                    if (draft.description) {
+                      setEditFormData((prev: any) => ({ ...prev, description: draft.description }));
+                      valueDescSuggestion.markAsAiGenerated(draft.description);
+                    }
+                  } else {
+                    if (draft.name) {
+                      setValueName(draft.name);
+                      valueNameSuggestion.markAsAiGenerated(draft.name);
+                    }
+                    if (draft.description) {
+                      setValueDescription(draft.description);
+                      valueDescSuggestion.markAsAiGenerated(draft.description);
+                    }
+                  }
+                }}
+                buttonSize="sm"
+              />
+            </div>
+
           <form onSubmit={modalMode === 'add' ? handleAddValue : (e) => { e.preventDefault(); handleSaveEdit('value'); }} className="space-y-4">
-            <Input
-              label="Value Name"
-              value={modalMode === 'edit' ? editFormData.name : valueName}
+            <div>
+              <div className="relative">
+                <Input
+                  label="Value Name"
+                  value={modalMode === 'edit' ? editFormData.name : valueName}
               onChange={(e) => {
                 if (modalMode === 'edit') {
                   setEditFormData({ ...editFormData, name: e.target.value });
@@ -2589,13 +2732,40 @@ export default function BuilderPage() {
                   setValueName(e.target.value);
                 }
               }}
-              placeholder="e.g., Speed Over Perfection, Transparent by Default"
-              tooltipContent={TIER2_TOOLTIPS.VALUE_NAME}
-              required
-            />
-            <Textarea
-              label="Description (Optional)"
-              value={modalMode === 'edit' ? editFormData.description : valueDescription}
+                  placeholder="e.g., Speed Over Perfection, Transparent by Default"
+                  tooltipContent={TIER2_TOOLTIPS.VALUE_NAME}
+                  required
+                />
+                <AIFieldSuggestionIndicator
+                  isLoading={valueNameSuggestion.isLoading}
+                  hasSuggestion={valueNameSuggestion.hasSuggestion}
+                />
+              </div>
+              {valueNameSuggestion.hasSuggestion && valueNameSuggestion.suggestion?.has_suggestion && (
+                <AIFieldSuggestion
+                  severity={valueNameSuggestion.suggestion.severity || "info"}
+                  message={valueNameSuggestion.suggestion.message || ""}
+                  suggestion={valueNameSuggestion.suggestion.suggestion}
+                  examples={valueNameSuggestion.suggestion.examples}
+                  reasoning={valueNameSuggestion.suggestion.reasoning}
+                  onDismiss={valueNameSuggestion.dismissSuggestion}
+                  onApply={(text) => {
+                    if (modalMode === 'edit') {
+                      setEditFormData({ ...editFormData, name: text });
+                    } else {
+                      setValueName(text);
+                    }
+                    valueNameSuggestion.dismissSuggestion();
+                  }}
+                />
+              )}
+            </div>
+
+            <div>
+              <div className="relative">
+                <Textarea
+                  label="Description (Optional)"
+                  value={modalMode === 'edit' ? editFormData.description : valueDescription}
               onChange={(e) => {
                 if (modalMode === 'edit') {
                   setEditFormData({ ...editFormData, description: e.target.value });
@@ -2603,10 +2773,34 @@ export default function BuilderPage() {
                   setValueDescription(e.target.value);
                 }
               }}
-              placeholder="What this value means to your organization..."
-              tooltipContent={TIER2_TOOLTIPS.VALUE_DESCRIPTION}
-              rows={3}
-            />
+                  placeholder="What this value means to your organization..."
+                  tooltipContent={TIER2_TOOLTIPS.VALUE_DESCRIPTION}
+                  rows={3}
+                />
+                <AIFieldSuggestionIndicator
+                  isLoading={valueDescSuggestion.isLoading}
+                  hasSuggestion={valueDescSuggestion.hasSuggestion}
+                />
+              </div>
+              {valueDescSuggestion.hasSuggestion && valueDescSuggestion.suggestion?.has_suggestion && (
+                <AIFieldSuggestion
+                  severity={valueDescSuggestion.suggestion.severity || "info"}
+                  message={valueDescSuggestion.suggestion.message || ""}
+                  suggestion={valueDescSuggestion.suggestion.suggestion}
+                  examples={valueDescSuggestion.suggestion.examples}
+                  reasoning={valueDescSuggestion.suggestion.reasoning}
+                  onDismiss={valueDescSuggestion.dismissSuggestion}
+                  onApply={(text) => {
+                    if (modalMode === 'edit') {
+                      setEditFormData({ ...editFormData, description: text });
+                    } else {
+                      setValueDescription(text);
+                    }
+                    valueDescSuggestion.dismissSuggestion();
+                  }}
+                />
+              )}
+            </div>
             <div className="flex gap-3 justify-end pt-4 border-t">
               <Button type="button" variant="ghost" onClick={closeModal}>
                 Cancel
@@ -2616,14 +2810,42 @@ export default function BuilderPage() {
               </Button>
             </div>
           </form>
+          </>
         )}
 
         {/* Behaviours Form */}
         {modalItemType === 'behaviour' && (
+          <>
+            {/* Draft Generation Button */}
+            <div className="mb-4 flex justify-end">
+              <AIDraftGenerator
+                sessionId={sessionId}
+                tier="behaviour"
+                tierLabel="Behaviour"
+                context={{
+                  values: selectedValueIds.map(id => pyramid?.values?.find(v => v.id === id)?.name).filter(Boolean),
+                }}
+                onAccept={(draft) => {
+                  if (draft.statement || draft.description) {
+                    const generatedValue = draft.statement || draft.description || "";
+                    if (modalMode === 'edit') {
+                      setEditFormData((prev: any) => ({ ...prev, statement: generatedValue }));
+                    } else {
+                      setBehaviourStatement(generatedValue);
+                    }
+                    behaviourStatementSuggestion.markAsAiGenerated(generatedValue);
+                  }
+                }}
+                buttonSize="sm"
+              />
+            </div>
+
           <form onSubmit={modalMode === 'add' ? handleAddBehaviour : (e) => { e.preventDefault(); handleSaveEdit('behaviour'); }} className="space-y-4">
-            <Textarea
-              label="Behaviour Statement"
-              value={modalMode === 'edit' ? editFormData.statement : behaviourStatement}
+            <div>
+              <div className="relative">
+                <Textarea
+                  label="Behaviour Statement"
+                  value={modalMode === 'edit' ? editFormData.statement : behaviourStatement}
               onChange={(e) => {
                 if (modalMode === 'edit') {
                   setEditFormData({ ...editFormData, statement: e.target.value });
@@ -2631,11 +2853,35 @@ export default function BuilderPage() {
                   setBehaviourStatement(e.target.value);
                 }
               }}
-              placeholder="e.g., We share work-in-progress early and often, inviting feedback..."
-              tooltipContent={TIER3_TOOLTIPS.BEHAVIOUR_STATEMENT}
-              rows={4}
-              required
-            />
+                  placeholder="e.g., We share work-in-progress early and often, inviting feedback..."
+                  tooltipContent={TIER3_TOOLTIPS.BEHAVIOUR_STATEMENT}
+                  rows={4}
+                  required
+                />
+                <AIFieldSuggestionIndicator
+                  isLoading={behaviourStatementSuggestion.isLoading}
+                  hasSuggestion={behaviourStatementSuggestion.hasSuggestion}
+                />
+              </div>
+              {behaviourStatementSuggestion.hasSuggestion && behaviourStatementSuggestion.suggestion?.has_suggestion && (
+                <AIFieldSuggestion
+                  severity={behaviourStatementSuggestion.suggestion.severity || "info"}
+                  message={behaviourStatementSuggestion.suggestion.message || ""}
+                  suggestion={behaviourStatementSuggestion.suggestion.suggestion}
+                  examples={behaviourStatementSuggestion.suggestion.examples}
+                  reasoning={behaviourStatementSuggestion.suggestion.reasoning}
+                  onDismiss={behaviourStatementSuggestion.dismissSuggestion}
+                  onApply={(text) => {
+                    if (modalMode === 'edit') {
+                      setEditFormData({ ...editFormData, statement: text });
+                    } else {
+                      setBehaviourStatement(text);
+                    }
+                    behaviourStatementSuggestion.dismissSuggestion();
+                  }}
+                />
+              )}
+            </div>
             <div>
               <LabelWithTooltip
                 label="Link to Values (select one or more)"
@@ -2676,6 +2922,7 @@ export default function BuilderPage() {
               </Button>
             </div>
           </form>
+          </>
         )}
 
         {/* Driver Form */}
