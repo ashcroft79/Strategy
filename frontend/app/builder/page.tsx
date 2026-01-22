@@ -118,19 +118,37 @@ export default function BuilderPage() {
   // Display preferences
   const [showThreadLabels, setShowThreadLabels] = useState(true);
 
+  // AI feature toggle (default: off)
+  const [aiEnabled, setAiEnabled] = useState(false);
+
+  // Load AI preference from localStorage
+  useEffect(() => {
+    const savedAiPref = localStorage.getItem('ai-enabled');
+    if (savedAiPref !== null) {
+      setAiEnabled(savedAiPref === 'true');
+    }
+  }, []);
+
+  // Save AI preference to localStorage
+  const toggleAI = () => {
+    const newValue = !aiEnabled;
+    setAiEnabled(newValue);
+    localStorage.setItem('ai-enabled', newValue.toString());
+  };
+
   // Edit states
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editType, setEditType] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<any>({});
 
-  // AI field suggestions (enabled in both add and edit modes)
+  // AI field suggestions (enabled in both add and edit modes, and when AI is globally enabled)
   const driverNameSuggestion = useAIFieldSuggestion(
     modalMode === 'edit' ? editFormData.name || '' : driverName,
     {
       sessionId,
       tier: "strategic_driver",
       fieldName: "name",
-      enabled: isModalOpen && modalItemType === 'driver',
+      enabled: aiEnabled && isModalOpen && modalItemType === 'driver',
       minLength: 3,
     }
   );
@@ -141,7 +159,7 @@ export default function BuilderPage() {
       sessionId,
       tier: "strategic_driver",
       fieldName: "description",
-      enabled: isModalOpen && modalItemType === 'driver',
+      enabled: aiEnabled && isModalOpen && modalItemType === 'driver',
       minLength: 10,
       context: {
         name: modalMode === 'edit' ? editFormData.name : driverName
@@ -155,7 +173,7 @@ export default function BuilderPage() {
       sessionId,
       tier: "strategic_driver",
       fieldName: "rationale",
-      enabled: isModalOpen && modalItemType === 'driver',
+      enabled: aiEnabled && isModalOpen && modalItemType === 'driver',
       minLength: 10,
       context: {
         name: modalMode === 'edit' ? editFormData.name : driverName,
@@ -170,7 +188,7 @@ export default function BuilderPage() {
       sessionId,
       tier: "strategic_intent",
       fieldName: "statement",
-      enabled: isModalOpen && modalItemType === 'intent',
+      enabled: aiEnabled && isModalOpen && modalItemType ==='intent',
       minLength: 10,
       context: {
         driver_id: modalMode === 'edit' ? editFormData.driver_id : selectedDriver
@@ -184,7 +202,7 @@ export default function BuilderPage() {
       sessionId,
       tier: "iconic_commitment",
       fieldName: "name",
-      enabled: isModalOpen && modalItemType === 'commitment',
+      enabled: aiEnabled && isModalOpen && modalItemType ==='commitment',
       minLength: 5,
     }
   );
@@ -195,7 +213,7 @@ export default function BuilderPage() {
       sessionId,
       tier: "iconic_commitment",
       fieldName: "description",
-      enabled: isModalOpen && modalItemType === 'commitment',
+      enabled: aiEnabled && isModalOpen && modalItemType ==='commitment',
       minLength: 15,
       context: {
         name: modalMode === 'edit' ? editFormData.name : commitmentName,
@@ -211,7 +229,7 @@ export default function BuilderPage() {
       sessionId,
       tier: "vision",
       fieldName: "statement",
-      enabled: isModalOpen && modalItemType === 'vision',
+      enabled: aiEnabled && isModalOpen && modalItemType ==='vision',
       minLength: 10,
       context: {
         statement_type: modalMode === 'edit' ? editFormData.statement_type : visionStatementType
@@ -225,7 +243,7 @@ export default function BuilderPage() {
       sessionId,
       tier: "value",
       fieldName: "name",
-      enabled: isModalOpen && modalItemType === 'value',
+      enabled: aiEnabled && isModalOpen && modalItemType ==='value',
       minLength: 2,
     }
   );
@@ -236,7 +254,7 @@ export default function BuilderPage() {
       sessionId,
       tier: "value",
       fieldName: "description",
-      enabled: isModalOpen && modalItemType === 'value',
+      enabled: aiEnabled && isModalOpen && modalItemType ==='value',
       minLength: 10,
       context: {
         name: modalMode === 'edit' ? editFormData.name : valueName
@@ -250,7 +268,7 @@ export default function BuilderPage() {
       sessionId,
       tier: "behaviour",
       fieldName: "statement",
-      enabled: isModalOpen && modalItemType === 'behaviour',
+      enabled: aiEnabled && isModalOpen && modalItemType ==='behaviour',
       minLength: 10,
       context: {
         values: selectedValueIds.map(id => pyramid?.values?.find(v => v.id === id)?.name).filter(Boolean)
@@ -265,7 +283,7 @@ export default function BuilderPage() {
       sessionId,
       tier: "enabler",
       fieldName: "name",
-      enabled: isModalOpen && modalItemType === 'enabler',
+      enabled: aiEnabled && isModalOpen && modalItemType ==='enabler',
       minLength: 2,
     }
   );
@@ -276,7 +294,7 @@ export default function BuilderPage() {
       sessionId,
       tier: "enabler",
       fieldName: "description",
-      enabled: isModalOpen && modalItemType === 'enabler',
+      enabled: aiEnabled && isModalOpen && modalItemType ==='enabler',
       minLength: 10,
       context: {
         name: modalMode === 'edit' ? editFormData.name : enablerName,
@@ -292,7 +310,7 @@ export default function BuilderPage() {
       sessionId,
       tier: "team_objective",
       fieldName: "name",
-      enabled: isModalOpen && modalItemType === 'team_objective',
+      enabled: aiEnabled && isModalOpen && modalItemType ==='team_objective',
       minLength: 3,
     }
   );
@@ -303,7 +321,7 @@ export default function BuilderPage() {
       sessionId,
       tier: "team_objective",
       fieldName: "description",
-      enabled: isModalOpen && modalItemType === 'team_objective',
+      enabled: aiEnabled && isModalOpen && modalItemType ==='team_objective',
       minLength: 10,
       context: {
         name: modalMode === 'edit' ? editFormData.name : teamObjectiveName,
@@ -319,7 +337,7 @@ export default function BuilderPage() {
       sessionId,
       tier: "individual_objective",
       fieldName: "name",
-      enabled: isModalOpen && modalItemType === 'individual_objective',
+      enabled: aiEnabled && isModalOpen && modalItemType ==='individual_objective',
       minLength: 3,
     }
   );
@@ -330,7 +348,7 @@ export default function BuilderPage() {
       sessionId,
       tier: "individual_objective",
       fieldName: "description",
-      enabled: isModalOpen && modalItemType === 'individual_objective',
+      enabled: aiEnabled && isModalOpen && modalItemType ==='individual_objective',
       minLength: 10,
       context: {
         name: modalMode === 'edit' ? editFormData.name : individualObjectiveName,
@@ -981,7 +999,25 @@ export default function BuilderPage() {
               <h1 className="text-2xl font-bold text-gray-800">{pyramid.metadata.project_name}</h1>
               <p className="text-sm text-gray-600">{pyramid.metadata.organization}</p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-3 items-center">
+              {/* AI Toggle */}
+              <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg border border-gray-200">
+                <span className="text-sm font-medium text-gray-700">AI Support</span>
+                <button
+                  onClick={toggleAI}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    aiEnabled ? 'bg-blue-600' : 'bg-gray-300'
+                  }`}
+                  aria-label="Toggle AI support"
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      aiEnabled ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+
               <Button variant="ghost" onClick={handleHomeClick}>
                 <Home className="w-4 h-4 mr-2" />
                 Home
@@ -2654,28 +2690,30 @@ export default function BuilderPage() {
         {modalItemType === 'vision' && (
           <>
             {/* Draft Generation Button */}
-            <div className="mb-4 flex justify-end">
-              <AIDraftGenerator
-                sessionId={sessionId}
-                tier="vision"
-                tierLabel={(modalMode === 'edit' ? editFormData.statement_type : visionStatementType) || "Vision"}
-                context={{
-                  statement_type: modalMode === 'edit' ? editFormData.statement_type : visionStatementType,
-                }}
-                onAccept={(draft) => {
-                  if (draft.statement || draft.description) {
-                    const generatedValue = draft.statement || draft.description || "";
-                    if (modalMode === 'edit') {
-                      setEditFormData((prev: any) => ({ ...prev, statement: generatedValue }));
-                    } else {
-                      setVisionStatement(generatedValue);
+            {aiEnabled && (
+              <div className="mb-4 flex justify-end">
+                <AIDraftGenerator
+                  sessionId={sessionId}
+                  tier="vision"
+                  tierLabel={(modalMode === 'edit' ? editFormData.statement_type : visionStatementType) || "Vision"}
+                  context={{
+                    statement_type: modalMode === 'edit' ? editFormData.statement_type : visionStatementType,
+                  }}
+                  onAccept={(draft) => {
+                    if (draft.statement || draft.description) {
+                      const generatedValue = draft.statement || draft.description || "";
+                      if (modalMode === 'edit') {
+                        setEditFormData((prev: any) => ({ ...prev, statement: generatedValue }));
+                      } else {
+                        setVisionStatement(generatedValue);
+                      }
+                      visionStatementSuggestion.markAsAiGenerated(generatedValue);
                     }
-                    visionStatementSuggestion.markAsAiGenerated(generatedValue);
-                  }
-                }}
-                buttonSize="sm"
-              />
-            </div>
+                  }}
+                  buttonSize="sm"
+                />
+              </div>
+            )}
 
           <form onSubmit={modalMode === 'add' ? handleAddVision : (e) => { e.preventDefault(); handleSaveEdit('vision'); }} className="space-y-4">
             <div>
@@ -2767,8 +2805,9 @@ export default function BuilderPage() {
         {modalItemType === 'value' && (
           <>
             {/* Draft Generation Button */}
-            <div className="mb-4 flex justify-end">
-              <AIDraftGenerator
+            {aiEnabled && (
+              <div className="mb-4 flex justify-end">
+                <AIDraftGenerator
                 sessionId={sessionId}
                 tier="value"
                 tierLabel="Value"
@@ -2799,6 +2838,7 @@ export default function BuilderPage() {
                 buttonSize="sm"
               />
             </div>
+            )}
 
           <form onSubmit={modalMode === 'add' ? handleAddValue : (e) => { e.preventDefault(); handleSaveEdit('value'); }} className="space-y-4">
             <div>
@@ -2898,8 +2938,9 @@ export default function BuilderPage() {
         {modalItemType === 'behaviour' && (
           <>
             {/* Draft Generation Button */}
-            <div className="mb-4 flex justify-end">
-              <AIDraftGenerator
+            {aiEnabled && (
+              <div className="mb-4 flex justify-end">
+                <AIDraftGenerator
                 sessionId={sessionId}
                 tier="behaviour"
                 tierLabel="Behaviour"
@@ -2920,6 +2961,7 @@ export default function BuilderPage() {
                 buttonSize="sm"
               />
             </div>
+            )}
 
           <form onSubmit={modalMode === 'add' ? handleAddBehaviour : (e) => { e.preventDefault(); handleSaveEdit('behaviour'); }} className="space-y-4">
             <div>
@@ -3010,8 +3052,9 @@ export default function BuilderPage() {
         {modalItemType === 'driver' && (
           <>
             {/* Draft Generation Button */}
-            <div className="mb-4 flex justify-end">
-              <AIDraftGenerator
+            {aiEnabled && (
+              <div className="mb-4 flex justify-end">
+                <AIDraftGenerator
                   sessionId={sessionId}
                   tier="strategic_driver"
                   tierLabel="Strategic Driver"
@@ -3195,8 +3238,9 @@ export default function BuilderPage() {
         {modalItemType === 'intent' && (
           <>
             {/* Draft Generation Button */}
-            <div className="mb-4 flex justify-end">
-              <AIDraftGenerator
+            {aiEnabled && (
+              <div className="mb-4 flex justify-end">
+                <AIDraftGenerator
                 sessionId={sessionId}
                 tier="strategic_intent"
                 tierLabel="Strategic Intent"
@@ -3306,8 +3350,9 @@ export default function BuilderPage() {
         {modalItemType === 'enabler' && (
           <>
             {/* Draft Generation Button */}
-            <div className="mb-4 flex justify-end">
-              <AIDraftGenerator
+            {aiEnabled && (
+              <div className="mb-4 flex justify-end">
+                <AIDraftGenerator
                 sessionId={sessionId}
                 tier="enabler"
                 tierLabel="Enabler"
@@ -3338,6 +3383,7 @@ export default function BuilderPage() {
                 buttonSize="sm"
               />
             </div>
+            )}
 
           <form onSubmit={modalMode === 'add' ? handleAddEnabler : (e) => { e.preventDefault(); handleSaveEdit('enabler'); }} className="space-y-4">
             <div>
@@ -3493,8 +3539,9 @@ export default function BuilderPage() {
         {modalItemType === 'commitment' && (
           <>
             {/* Draft Generation Button */}
-            <div className="mb-4 flex justify-end">
-              <AIDraftGenerator
+            {aiEnabled && (
+              <div className="mb-4 flex justify-end">
+                <AIDraftGenerator
                 sessionId={sessionId}
                 tier="iconic_commitment"
                 tierLabel="Iconic Commitment"
@@ -3760,8 +3807,9 @@ export default function BuilderPage() {
         {modalItemType === 'team_objective' && (
           <>
             {/* Draft Generation Button */}
-            <div className="mb-4 flex justify-end">
-              <AIDraftGenerator
+            {aiEnabled && (
+              <div className="mb-4 flex justify-end">
+                <AIDraftGenerator
                 sessionId={sessionId}
                 tier="team_objective"
                 tierLabel="Team Objective"
@@ -3793,6 +3841,7 @@ export default function BuilderPage() {
                 buttonSize="sm"
               />
             </div>
+            )}
 
           <form onSubmit={modalMode === 'add' ? handleAddTeamObjective : (e) => { e.preventDefault(); handleSaveEdit('team_objective'); }} className="space-y-4">
             <div>
@@ -3949,8 +3998,9 @@ export default function BuilderPage() {
         {modalItemType === 'individual_objective' && (
           <>
             {/* Draft Generation Button */}
-            <div className="mb-4 flex justify-end">
-              <AIDraftGenerator
+            {aiEnabled && (
+              <div className="mb-4 flex justify-end">
+                <AIDraftGenerator
                 sessionId={sessionId}
                 tier="individual_objective"
                 tierLabel="Individual Objective"
@@ -3982,6 +4032,7 @@ export default function BuilderPage() {
                 buttonSize="sm"
               />
             </div>
+            )}
 
           <form onSubmit={modalMode === 'add' ? handleAddIndividualObjective : (e) => { e.preventDefault(); handleSaveEdit('individual_objective'); }} className="space-y-4">
             <div>
