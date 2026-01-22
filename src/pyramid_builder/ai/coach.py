@@ -252,8 +252,9 @@ IMPORTANT: Focus your draft on this specific request while following best practi
 
         prompt = f"""You are a strategic planning expert helping someone build a {tier}.
 
-Current Pyramid Context:
+Current Pyramid Context (REAL-TIME STATE):
 {pyramid_context}
+(Note: This context reflects the pyramid's current state including any recent additions, edits, or removals)
 
 User Context:
 {json.dumps({k: v for k, v in context.items() if k != 'user_guidance'}, indent=2)}
@@ -436,7 +437,11 @@ Suggest specific, measurable alternatives. Respond in JSON:
             if self.pyramid.individual_objectives:
                 summary.append(f"Individual Objectives: {len(self.pyramid.individual_objectives)}")
 
-            pyramid_context = f"\nCurrent Pyramid: {' | '.join(summary)}"
+            pyramid_context = f"""
+## CURRENT PYRAMID STATE (ALWAYS FRESH - TRUST THIS OVER CHAT HISTORY)
+{' | '.join(summary)}
+
+IMPORTANT: This pyramid state is updated in real-time. If the user just added, edited, or removed elements, the counts and details above reflect those changes. Always refer to this fresh state, not previous mentions in our conversation."""
 
         system_prompt = f"""You are a strategic planning coach helping someone build a strategic pyramid.
 
