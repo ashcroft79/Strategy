@@ -675,6 +675,18 @@ export interface ExtractedElements {
     confidence: string;
     source_quote: string;
   }>;
+  behaviours?: Array<{
+    statement: string;
+    linked_values?: string[];
+    confidence: string;
+    source_quote: string;
+  }>;
+  strategic_intents?: Array<{
+    name: string;
+    description: string;
+    confidence: string;
+    source_quote: string;
+  }>;
   strategic_drivers?: Array<{
     name: string;
     description: string;
@@ -682,10 +694,11 @@ export interface ExtractedElements {
     confidence: string;
     source_quote: string;
   }>;
-  strategic_intents?: Array<{
+  enablers?: Array<{
     name: string;
     description: string;
-    linked_driver?: string;
+    linked_drivers?: string[];
+    enabler_type?: string;
     confidence: string;
     source_quote: string;
   }>;
@@ -731,8 +744,10 @@ export interface ImportDocumentsResponse {
     summary: {
       vision_found: boolean;
       values_count: number;
-      drivers_count: number;
+      behaviours_count: number;
       intents_count: number;
+      drivers_count: number;
+      enablers_count: number;
       commitments_count: number;
       team_objectives_count: number;
       individual_objectives_count: number;
@@ -746,8 +761,10 @@ export interface BatchImportResults {
   results: {
     vision: any;
     values: any[];
-    strategic_drivers: any[];
+    behaviours: any[];
     strategic_intents: any[];
+    strategic_drivers: any[];
+    enablers: any[];
     iconic_commitments: any[];
     team_objectives: any[];
     individual_objectives: any[];
@@ -756,8 +773,10 @@ export interface BatchImportResults {
   summary: {
     vision_added: boolean;
     values_added: number;
-    drivers_added: number;
+    behaviours_added: number;
     intents_added: number;
+    drivers_added: number;
+    enablers_added: number;
     commitments_added: number;
     team_objectives_added: number;
     individual_objectives_added: number;

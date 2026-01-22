@@ -276,8 +276,10 @@ async def batch_import_elements(request: BatchImportRequest):
     results = {
         "vision": None,
         "values": [],
-        "strategic_drivers": [],
+        "behaviours": [],
         "strategic_intents": [],
+        "strategic_drivers": [],
+        "enablers": [],
         "iconic_commitments": [],
         "team_objectives": [],
         "individual_objectives": [],
@@ -316,7 +318,39 @@ async def batch_import_elements(request: BatchImportRequest):
                 except Exception as e:
                     results["errors"].append(f"Value import failed ({value_data.get('name')}): {str(e)}")
 
-        # 3. Add Strategic Drivers
+        # 3. Add Behaviours
+        # Behaviours link to values
+        value_ids = [v["id"] for v in results["values"]]
+
+        if elements.get("behaviours"):
+            for behaviour_data in elements["behaviours"]:
+                try:
+                    # Try to match linked_values
+                    linked_values = behaviour_data.get("linked_values", [])
+                    behaviour_value_ids = []
+
+                    if linked_values:
+                        # Try to find matching values by name
+                        for value_name in linked_values:
+                            for value in results["values"]:
+                                if value_name.lower() in value["name"].lower():
+                                    behaviour_value_ids.append(value["id"])
+                                    break
+
+                    # If no matches, link to all values (behaviours typically relate to multiple values)
+                    if not behaviour_value_ids and value_ids:
+                        behaviour_value_ids = value_ids  # Link to all values
+
+                    behaviour = manager.add_behaviour(
+                        statement=behaviour_data.get("statement", ""),
+                        value_ids=behaviour_value_ids,
+                        created_by=request.created_by
+                    )
+                    results["behaviours"].append(behaviour.model_dump(mode="json"))
+                except Exception as e:
+                    results["errors"].append(f"Behaviour import failed ({behaviour_data.get('statement', '?')[:30]}): {str(e)}")
+
+        # 4. Add Strategic Drivers (Tier 5 - but added first as intents depend on them)
         if elements.get("strategic_drivers"):
             for driver_data in elements["strategic_drivers"]:
                 try:
@@ -330,7 +364,7 @@ async def batch_import_elements(request: BatchImportRequest):
                 except Exception as e:
                     results["errors"].append(f"Driver import failed ({driver_data.get('name')}): {str(e)}")
 
-        # 4. Add Strategic Intents
+        # 5. Add Strategic Intents (Tier 4)
         # Note: Intents require a driver_id, so we'll link to the first driver if available
         driver_ids = [d["id"] for d in results["strategic_drivers"]]
 
@@ -365,7 +399,39 @@ async def batch_import_elements(request: BatchImportRequest):
                 except Exception as e:
                     results["errors"].append(f"Intent import failed ({intent_data.get('name')}): {str(e)}")
 
-        # 5. Add Iconic Commitments
+        # 6. Add Enablers (Tier 6)
+        # Enablers link to drivers
+        if elements.get("enablers"):
+            for enabler_data in elements["enablers"]:
+                try:
+                    # Try to match linked_drivers
+                    linked_drivers = enabler_data.get("linked_drivers", [])
+                    enabler_driver_ids = []
+
+                    if linked_drivers:
+                        # Try to find matching drivers by name
+                        for driver_name in linked_drivers:
+                            for driver in results["strategic_drivers"]:
+                                if driver_name.lower() in driver["name"].lower():
+                                    enabler_driver_ids.append(driver["id"])
+                                    break
+
+                    # If no matches and drivers exist, link to all drivers (enablers often support multiple)
+                    if not enabler_driver_ids and driver_ids:
+                        enabler_driver_ids = driver_ids  # Link to all drivers
+
+                    enabler = manager.add_enabler(
+                        name=enabler_data.get("name", ""),
+                        description=enabler_data.get("description", ""),
+                        driver_ids=enabler_driver_ids,
+                        enabler_type=enabler_data.get("enabler_type"),
+                        created_by=request.created_by
+                    )
+                    results["enablers"].append(enabler.model_dump(mode="json"))
+                except Exception as e:
+                    results["errors"].append(f"Enabler import failed ({enabler_data.get('name')}): {str(e)}")
+
+        # 7. Add Iconic Commitments (Tier 7)
         if elements.get("iconic_commitments"):
             for idx, commitment_data in enumerate(elements["iconic_commitments"]):
                 try:
@@ -487,8 +553,10 @@ async def batch_import_elements(request: BatchImportRequest):
             "summary": {
                 "vision_added": bool(results["vision"]),
                 "values_added": len(results["values"]),
-                "drivers_added": len(results["strategic_drivers"]),
+                "behaviours_added": len(results["behaviours"]),
                 "intents_added": len(results["strategic_intents"]),
+                "drivers_added": len(results["strategic_drivers"]),
+                "enablers_added": len(results["enablers"]),
                 "commitments_added": len(results["iconic_commitments"]),
                 "team_objectives_added": len(results["team_objectives"]),
                 "individual_objectives_added": len(results["individual_objectives"]),

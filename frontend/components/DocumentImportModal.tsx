@@ -298,49 +298,70 @@ export function DocumentImportModal({
               {/* Extraction Summary */}
               {importResult.success && importResult.validation && (
                 <div className="space-y-3">
-                  <h3 className="font-medium text-gray-900">Extraction Summary</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="p-3 bg-gray-50 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-blue-600">
+                  <h3 className="font-medium text-gray-900">Extraction Summary - All 9 Tiers</h3>
+                  <div className="grid grid-cols-3 gap-2">
+                    {/* T1: Vision */}
+                    <div className="p-2 bg-gray-50 rounded-lg text-center">
+                      <div className="text-xl font-bold text-blue-600">
                         {importResult.validation.summary.vision_found ? "1" : "0"}
                       </div>
-                      <div className="text-xs text-gray-600 mt-1">Vision</div>
+                      <div className="text-xs text-gray-600 mt-1">T1: Vision</div>
                     </div>
-                    <div className="p-3 bg-gray-50 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-purple-600">
+                    {/* T2: Values */}
+                    <div className="p-2 bg-gray-50 rounded-lg text-center">
+                      <div className="text-xl font-bold text-purple-600">
                         {importResult.validation.summary.values_count}
                       </div>
-                      <div className="text-xs text-gray-600 mt-1">Values</div>
+                      <div className="text-xs text-gray-600 mt-1">T2: Values</div>
                     </div>
-                    <div className="p-3 bg-gray-50 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-green-600">
-                        {importResult.validation.summary.drivers_count}
+                    {/* T3: Behaviours */}
+                    <div className="p-2 bg-gray-50 rounded-lg text-center">
+                      <div className="text-xl font-bold text-violet-600">
+                        {importResult.validation.summary.behaviours_count}
                       </div>
-                      <div className="text-xs text-gray-600 mt-1">Drivers</div>
+                      <div className="text-xs text-gray-600 mt-1">T3: Behaviours</div>
                     </div>
-                    <div className="p-3 bg-gray-50 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-orange-600">
+                    {/* T4: Intents */}
+                    <div className="p-2 bg-gray-50 rounded-lg text-center">
+                      <div className="text-xl font-bold text-orange-600">
                         {importResult.validation.summary.intents_count}
                       </div>
-                      <div className="text-xs text-gray-600 mt-1">Intents</div>
+                      <div className="text-xs text-gray-600 mt-1">T4: Intents</div>
                     </div>
-                    <div className="p-3 bg-gray-50 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-red-600">
+                    {/* T5: Drivers */}
+                    <div className="p-2 bg-gray-50 rounded-lg text-center">
+                      <div className="text-xl font-bold text-green-600">
+                        {importResult.validation.summary.drivers_count}
+                      </div>
+                      <div className="text-xs text-gray-600 mt-1">T5: Drivers</div>
+                    </div>
+                    {/* T6: Enablers */}
+                    <div className="p-2 bg-gray-50 rounded-lg text-center">
+                      <div className="text-xl font-bold text-teal-600">
+                        {importResult.validation.summary.enablers_count}
+                      </div>
+                      <div className="text-xs text-gray-600 mt-1">T6: Enablers</div>
+                    </div>
+                    {/* T7: Commitments */}
+                    <div className="p-2 bg-gray-50 rounded-lg text-center">
+                      <div className="text-xl font-bold text-red-600">
                         {importResult.validation.summary.commitments_count}
                       </div>
-                      <div className="text-xs text-gray-600 mt-1">Commitments</div>
+                      <div className="text-xs text-gray-600 mt-1">T7: Commitments</div>
                     </div>
-                    <div className="p-3 bg-gray-50 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-indigo-600">
+                    {/* T8: Team Objectives */}
+                    <div className="p-2 bg-gray-50 rounded-lg text-center">
+                      <div className="text-xl font-bold text-indigo-600">
                         {importResult.validation.summary.team_objectives_count}
                       </div>
-                      <div className="text-xs text-gray-600 mt-1">Team Objectives</div>
+                      <div className="text-xs text-gray-600 mt-1">T8: Team Obj</div>
                     </div>
-                    <div className="p-3 bg-gray-50 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-pink-600">
+                    {/* T9: Individual Objectives */}
+                    <div className="p-2 bg-gray-50 rounded-lg text-center">
+                      <div className="text-xl font-bold text-pink-600">
                         {importResult.validation.summary.individual_objectives_count}
                       </div>
-                      <div className="text-xs text-gray-600 mt-1">Individual Objectives</div>
+                      <div className="text-xs text-gray-600 mt-1">T9: Individual Obj</div>
                     </div>
                   </div>
 

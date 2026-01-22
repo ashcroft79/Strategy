@@ -138,17 +138,29 @@ Extract the following tiers:
 - Each value should have a name and description
 - Confidence based on how explicitly stated
 
-**STRATEGIC DRIVERS** (Tier 3):
-- Extract 3-5 key strategic focus areas
+**BEHAVIOURS** (Tier 3):
+- Extract observable behaviors that embody the values
+- Should be specific actions, not aspirations
+- Link to values if possible
+- Example: "We challenge assumptions respectfully" (not "Be innovative")
+
+**STRATEGIC INTENT** (Tier 4):
+- Extract bold, aspirational outcomes
+- Should be outcome-focused, not activity-focused
+- Will be linked to drivers
+
+**STRATEGIC DRIVERS** (Tier 5):
+- Extract 3-5 key strategic focus areas (themes/pillars)
 - Should be specific, not generic
 - Confidence based on clarity and specificity
 
-**STRATEGIC INTENTS** (Tier 4):
-- Extract bold, aspirational outcomes
-- Should be outcome-focused, not activity-focused
+**ENABLERS** (Tier 6):
+- Extract systems, capabilities, resources, or processes that enable strategy
+- Should describe infrastructure or capabilities needed
 - Link to drivers if possible
+- Classify type: System, Capability, Resource, Process, etc.
 
-**ICONIC COMMITMENTS** (Tier 5):
+**ICONIC COMMITMENTS** (Tier 7):
 - Extract specific, measurable deliverables
 - Should have clear timeframes if mentioned
 - Link to drivers and horizons (H1: 0-12m, H2: 12-24m, H3: 24-36m)
@@ -181,6 +193,22 @@ Extract the following tiers:
       "source_quote": "Direct quote"
     }}
   ],
+  "behaviours": [
+    {{
+      "statement": "Observable behavior statement",
+      "linked_values": ["Value name 1", "Value name 2"],
+      "confidence": "HIGH|MEDIUM|LOW",
+      "source_quote": "Direct quote"
+    }}
+  ],
+  "strategic_intents": [
+    {{
+      "name": "Intent name",
+      "description": "Bold outcome",
+      "confidence": "HIGH|MEDIUM|LOW",
+      "source_quote": "Direct quote"
+    }}
+  ],
   "strategic_drivers": [
     {{
       "name": "Driver name (Adjective + Noun)",
@@ -190,11 +218,12 @@ Extract the following tiers:
       "source_quote": "Direct quote"
     }}
   ],
-  "strategic_intents": [
+  "enablers": [
     {{
-      "name": "Intent name",
-      "description": "Bold outcome",
-      "linked_driver": "Driver name if identifiable",
+      "name": "Enabler name",
+      "description": "What this provides/enables",
+      "linked_drivers": ["Driver name 1", "Driver name 2"],
+      "enabler_type": "System|Capability|Resource|Process|Other",
       "confidence": "HIGH|MEDIUM|LOW",
       "source_quote": "Direct quote"
     }}
@@ -409,7 +438,9 @@ Extract the following tiers:
                 "message": "No iconic commitments found. Commitments are specific deliverables."
             })
 
-        # Get objectives counts
+        # Get all tier counts
+        behaviours = elements.get("behaviours", [])
+        enablers = elements.get("enablers", [])
         team_objectives = elements.get("team_objectives", [])
         individual_objectives = elements.get("individual_objectives", [])
 
@@ -420,8 +451,10 @@ Extract the following tiers:
             "summary": {
                 "vision_found": bool(vision and vision.get("statement")),
                 "values_count": len(values),
-                "drivers_count": len(drivers),
+                "behaviours_count": len(behaviours),
                 "intents_count": len(intents),
+                "drivers_count": len(drivers),
+                "enablers_count": len(enablers),
                 "commitments_count": len(commitments),
                 "team_objectives_count": len(team_objectives),
                 "individual_objectives_count": len(individual_objectives)
