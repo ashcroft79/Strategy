@@ -479,6 +479,26 @@ export const validationApi = {
     const { data } = await api.get(`/api/validation/${sessionId}/quick`);
     return data;
   },
+
+  async aiValidate(sessionId: string): Promise<ValidationResult> {
+    const { data } = await api.get(`/api/validation/${sessionId}/ai`);
+    return data;
+  },
+
+  async aiReview(sessionId: string): Promise<{
+    overall_impression: string;
+    strengths: string[];
+    concerns: string[];
+    recommendations: Array<{
+      priority: number;
+      title: string;
+      description: string;
+    }>;
+    error?: string;
+  }> {
+    const { data } = await api.get(`/api/validation/${sessionId}/ai-review`);
+    return data;
+  },
 };
 
 // ============================================================================
@@ -546,6 +566,266 @@ export const visualizationsApi = {
 
   async getNetworkDiagram(sessionId: string): Promise<any> {
     const { data } = await api.get(`/api/visualizations/${sessionId}/network-diagram`);
+    return data;
+  },
+};
+
+// ============================================================================
+// AI COACHING
+// ============================================================================
+
+export const aiApi = {
+  async suggestField(
+    sessionId: string,
+    tier: string,
+    fieldName: string,
+    currentContent: string,
+    context?: any
+  ): Promise<{
+    has_suggestion: boolean;
+    severity?: string;
+    message?: string;
+    suggestion?: string;
+    examples?: string[];
+    reasoning?: string;
+    error?: string;
+  }> {
+    const { data } = await api.post("/api/ai/suggest-field", {
+      session_id: sessionId,
+      tier,
+      field_name: fieldName,
+      current_content: currentContent,
+      context,
+    });
+    return data;
+  },
+
+  async generateDraft(
+    sessionId: string,
+    tier: string,
+    context: any
+  ): Promise<{
+    name: string;
+    description: string;
+    rationale?: string;
+    additional_fields?: any;
+    error?: string;
+  }> {
+    const { data } = await api.post("/api/ai/generate-draft", {
+      session_id: sessionId,
+      tier,
+      context,
+    });
+    return data;
+  },
+
+  async detectJargon(text: string): Promise<{
+    has_jargon: boolean;
+    jargon_words?: string[];
+    severity?: string;
+    message?: string;
+    alternative?: string;
+    error?: string;
+  }> {
+    const { data } = await api.post("/api/ai/detect-jargon", {
+      text,
+    });
+    return data;
+  },
+
+  async chat(
+    sessionId: string,
+    message: string,
+    chatHistory?: Array<{ role: string; content: string }>
+  ): Promise<{
+    response: string;
+  }> {
+    const { data } = await api.post("/api/ai/chat", {
+      session_id: sessionId,
+      message,
+      chat_history: chatHistory,
+    });
+    return data;
+  },
+};
+
+// ============================================================================
+// DOCUMENT IMPORT
+// ============================================================================
+
+export interface DocumentParseResult {
+  filename: string;
+  success: boolean;
+  format?: string;
+  error?: string;
+  num_pages?: number;
+  num_slides?: number;
+}
+
+export interface ExtractedElements {
+  vision?: {
+    statement_type: string;
+    statement: string;
+    confidence: string;
+    source_quote: string;
+  };
+  values?: Array<{
+    name: string;
+    description: string;
+    confidence: string;
+    source_quote: string;
+  }>;
+  behaviours?: Array<{
+    statement: string;
+    linked_values?: string[];
+    confidence: string;
+    source_quote: string;
+  }>;
+  strategic_intents?: Array<{
+    name: string;
+    description: string;
+    confidence: string;
+    source_quote: string;
+  }>;
+  strategic_drivers?: Array<{
+    name: string;
+    description: string;
+    rationale: string;
+    confidence: string;
+    source_quote: string;
+  }>;
+  enablers?: Array<{
+    name: string;
+    description: string;
+    linked_drivers?: string[];
+    enabler_type?: string;
+    confidence: string;
+    source_quote: string;
+  }>;
+  iconic_commitments?: Array<{
+    name: string;
+    description: string;
+    linked_driver?: string;
+    horizon?: string;
+    confidence: string;
+    source_quote: string;
+  }>;
+  team_objectives?: Array<{
+    name: string;
+    description: string;
+    team_name: string;
+    linked_commitment?: string;
+    metrics?: string;
+    owner?: string;
+    confidence: string;
+    source_quote: string;
+  }>;
+  individual_objectives?: Array<{
+    name: string;
+    description: string;
+    individual_name: string;
+    linked_team_objective?: string;
+    success_criteria?: string;
+    confidence: string;
+    source_quote: string;
+  }>;
+  extraction_notes?: string;
+}
+
+export interface ImportDocumentsResponse {
+  success: boolean;
+  documents_processed: number;
+  parse_results: DocumentParseResult[];
+  extracted_elements?: ExtractedElements;
+  validation?: {
+    valid: boolean;
+    issues: Array<{ tier: string; severity: string; message: string }>;
+    warnings: Array<{ tier: string; severity: string; message: string }>;
+    summary: {
+      vision_found: boolean;
+      values_count: number;
+      behaviours_count: number;
+      intents_count: number;
+      drivers_count: number;
+      enablers_count: number;
+      commitments_count: number;
+      team_objectives_count: number;
+      individual_objectives_count: number;
+    };
+  };
+  error?: string;
+}
+
+export interface BatchImportResults {
+  success: boolean;
+  results: {
+    vision: any;
+    values: any[];
+    behaviours: any[];
+    strategic_intents: any[];
+    strategic_drivers: any[];
+    enablers: any[];
+    iconic_commitments: any[];
+    team_objectives: any[];
+    individual_objectives: any[];
+    errors: string[];
+  };
+  summary: {
+    vision_added: boolean;
+    values_added: number;
+    behaviours_added: number;
+    intents_added: number;
+    drivers_added: number;
+    enablers_added: number;
+    commitments_added: number;
+    team_objectives_added: number;
+    individual_objectives_added: number;
+    errors_count: number;
+  };
+}
+
+export const documentsApi = {
+  async importDocuments(
+    files: File[],
+    organizationName?: string
+  ): Promise<ImportDocumentsResponse> {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
+    if (organizationName) {
+      formData.append("organization_name", organizationName);
+    }
+
+    const { data } = await api.post("/api/documents/import", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return data;
+  },
+
+  async batchImportElements(
+    sessionId: string,
+    extractedElements: ExtractedElements,
+    createdBy?: string
+  ): Promise<BatchImportResults> {
+    const { data } = await api.post("/api/documents/batch-import", {
+      session_id: sessionId,
+      extracted_elements: extractedElements,
+      created_by: createdBy || "Document Import",
+    });
+    return data;
+  },
+
+  async getSupportedFormats(): Promise<{
+    formats: string[];
+    max_file_size_mb: number;
+    max_files_per_upload: number;
+    max_pages_per_pdf: number;
+    max_slides_per_pptx: number;
+  }> {
+    const { data } = await api.get("/api/documents/supported-formats");
     return data;
   },
 };

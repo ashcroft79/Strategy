@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePyramidStore } from "@/lib/store";
-import { pyramidApi, exportsApi } from "@/lib/api-client";
+import { pyramidApi, exportsApi, documentsApi, type ExtractedElements } from "@/lib/api-client";
 import { readFileAsText, downloadBlob } from "@/lib/utils";
-import { Upload, Plus, Sparkles } from "lucide-react";
+import { Upload, Plus, Sparkles, FileText } from "lucide-react";
+import { DocumentImportModal } from "@/components/DocumentImportModal";
 
 export default function HomePage() {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function HomePage() {
   const [organization, setOrganization] = useState("");
   const [createdBy, setCreatedBy] = useState("");
   const [description, setDescription] = useState("");
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const handleCreatePyramid = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,6 +80,46 @@ export default function HomePage() {
       downloadBlob(blob, "AI_Strategy_Guide.md");
     } catch (err: any) {
       setError("Failed to download AI guide");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImportComplete = async (extractedElements: ExtractedElements) => {
+    // Must have project name and organization to import
+    if (!projectName || !organization) {
+      setError("Please fill in Project Name and Organization first before importing");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Create new pyramid
+      const pyramid = await pyramidApi.create({
+        session_id: sessionId,
+        project_name: projectName,
+        organization,
+        created_by: createdBy || "Imported",
+        description: description || "Imported from documents",
+      });
+
+      // Batch import extracted elements into the pyramid
+      const importResults = await documentsApi.batchImportElements(
+        sessionId,
+        extractedElements,
+        createdBy || "Document Import"
+      );
+
+      // Refresh pyramid to get updated data with imported elements
+      const updatedPyramid = await pyramidApi.get(sessionId);
+      setPyramid(updatedPyramid);
+
+      // Navigate to builder
+      router.push("/builder");
+    } catch (err: any) {
+      setError(err.response?.data?.detail || "Failed to import pyramid");
     } finally {
       setLoading(false);
     }
@@ -152,7 +194,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-3 gap-6">
           {/* Create New Pyramid */}
           <div className="card">
             <div className="flex items-center gap-3 mb-6">
@@ -222,6 +264,51 @@ export default function HomePage() {
                 Create Pyramid
               </button>
             </form>
+          </div>
+
+          {/* Import from Documents (NEW - Phase 3) */}
+          <div className="card bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-200">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-800">Import from Documents</h2>
+            </div>
+
+            <div className="space-y-4">
+              <div className="bg-white/70 rounded-lg p-4 border border-purple-200">
+                <div className="flex items-start gap-3 mb-3">
+                  <Sparkles className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="font-semibold text-purple-900 mb-1">AI-Powered Extraction</h3>
+                    <p className="text-sm text-gray-700">
+                      Upload strategic documents (PDF, DOCX, PPTX) and let AI extract vision, values, drivers, and commitments.
+                    </p>
+                  </div>
+                </div>
+                <ul className="text-sm text-gray-600 space-y-1 ml-8">
+                  <li>• Max 5 files, 10MB each</li>
+                  <li>• Supports PDF, Word, PowerPoint</li>
+                  <li>• Review and edit before importing</li>
+                </ul>
+              </div>
+
+              <button
+                onClick={() => setShowImportModal(true)}
+                disabled={!projectName || !organization}
+                className="btn-primary w-full flex items-center justify-center gap-2 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                title={!projectName || !organization ? "Fill in Project Name and Organization first" : ""}
+              >
+                <FileText className="w-5 h-5" />
+                Import Documents
+              </button>
+
+              {(!projectName || !organization) && (
+                <p className="text-xs text-gray-600 text-center">
+                  Fill in Project Name and Organization in the left form first
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Load Existing Pyramid */}
@@ -303,6 +390,14 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+
+        {/* Document Import Modal */}
+        <DocumentImportModal
+          isOpen={showImportModal}
+          onClose={() => setShowImportModal(false)}
+          onImportComplete={handleImportComplete}
+          organizationName={organization}
+        />
       </div>
     </div>
   );
