@@ -93,6 +93,7 @@ export default function BuilderPage() {
   const [selectedValueIds, setSelectedValueIds] = useState<string[]>([]);
   const [driverName, setDriverName] = useState("");
   const [driverDescription, setDriverDescription] = useState("");
+  const [driverRationale, setDriverRationale] = useState("");
   const [intentStatement, setIntentStatement] = useState("");
   const [selectedDriver, setSelectedDriver] = useState("");
   const [enablerName, setEnablerName] = useState("");
@@ -122,49 +123,86 @@ export default function BuilderPage() {
   const [editType, setEditType] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<any>({});
 
-  // AI field suggestions (only enabled when modal is open for add mode)
-  const driverNameSuggestion = useAIFieldSuggestion(driverName, {
-    sessionId,
-    tier: "strategic_driver",
-    fieldName: "name",
-    enabled: isModalOpen && modalMode === 'add' && modalItemType === 'driver',
-    minLength: 3,
-  });
+  // AI field suggestions (enabled in both add and edit modes)
+  const driverNameSuggestion = useAIFieldSuggestion(
+    modalMode === 'edit' ? editFormData.name || '' : driverName,
+    {
+      sessionId,
+      tier: "strategic_driver",
+      fieldName: "name",
+      enabled: isModalOpen && modalItemType === 'driver',
+      minLength: 3,
+    }
+  );
 
-  const driverDescSuggestion = useAIFieldSuggestion(driverDescription, {
-    sessionId,
-    tier: "strategic_driver",
-    fieldName: "description",
-    enabled: isModalOpen && modalMode === 'add' && modalItemType === 'driver',
-    minLength: 10,
-    context: { name: driverName },
-  });
+  const driverDescSuggestion = useAIFieldSuggestion(
+    modalMode === 'edit' ? editFormData.description || '' : driverDescription,
+    {
+      sessionId,
+      tier: "strategic_driver",
+      fieldName: "description",
+      enabled: isModalOpen && modalItemType === 'driver',
+      minLength: 10,
+      context: {
+        name: modalMode === 'edit' ? editFormData.name : driverName
+      },
+    }
+  );
 
-  const intentSuggestion = useAIFieldSuggestion(intentStatement, {
-    sessionId,
-    tier: "strategic_intent",
-    fieldName: "statement",
-    enabled: isModalOpen && modalMode === 'add' && modalItemType === 'intent',
-    minLength: 10,
-    context: { driver_id: selectedDriver },
-  });
+  const driverRationaleSuggestion = useAIFieldSuggestion(
+    modalMode === 'edit' ? editFormData.rationale || '' : driverRationale,
+    {
+      sessionId,
+      tier: "strategic_driver",
+      fieldName: "rationale",
+      enabled: isModalOpen && modalItemType === 'driver',
+      minLength: 10,
+      context: {
+        name: modalMode === 'edit' ? editFormData.name : driverName,
+        description: modalMode === 'edit' ? editFormData.description : driverDescription,
+      },
+    }
+  );
 
-  const commitmentNameSuggestion = useAIFieldSuggestion(commitmentName, {
-    sessionId,
-    tier: "iconic_commitment",
-    fieldName: "name",
-    enabled: isModalOpen && modalMode === 'add' && modalItemType === 'commitment',
-    minLength: 5,
-  });
+  const intentSuggestion = useAIFieldSuggestion(
+    modalMode === 'edit' ? editFormData.statement || '' : intentStatement,
+    {
+      sessionId,
+      tier: "strategic_intent",
+      fieldName: "statement",
+      enabled: isModalOpen && modalItemType === 'intent',
+      minLength: 10,
+      context: {
+        driver_id: modalMode === 'edit' ? editFormData.driver_id : selectedDriver
+      },
+    }
+  );
 
-  const commitmentDescSuggestion = useAIFieldSuggestion(commitmentDescription, {
-    sessionId,
-    tier: "iconic_commitment",
-    fieldName: "description",
-    enabled: isModalOpen && modalMode === 'add' && modalItemType === 'commitment',
-    minLength: 15,
-    context: { name: commitmentName, primary_driver_id: selectedDriver },
-  });
+  const commitmentNameSuggestion = useAIFieldSuggestion(
+    modalMode === 'edit' ? editFormData.name || '' : commitmentName,
+    {
+      sessionId,
+      tier: "iconic_commitment",
+      fieldName: "name",
+      enabled: isModalOpen && modalItemType === 'commitment',
+      minLength: 5,
+    }
+  );
+
+  const commitmentDescSuggestion = useAIFieldSuggestion(
+    modalMode === 'edit' ? editFormData.description || '' : commitmentDescription,
+    {
+      sessionId,
+      tier: "iconic_commitment",
+      fieldName: "description",
+      enabled: isModalOpen && modalItemType === 'commitment',
+      minLength: 15,
+      context: {
+        name: modalMode === 'edit' ? editFormData.name : commitmentName,
+        primary_driver_id: modalMode === 'edit' ? editFormData.primary_driver_id : selectedDriver
+      },
+    }
+  );
 
   useEffect(() => {
     if (!pyramid) {
@@ -625,9 +663,10 @@ export default function BuilderPage() {
 
     try {
       setLoading(true);
-      await driversApi.add(sessionId, driverName, driverDescription);
+      await driversApi.add(sessionId, driverName, driverDescription, driverRationale || undefined);
       setDriverName("");
       setDriverDescription("");
+      setDriverRationale("");
       await refreshPyramid();
       showToast("Strategic driver added successfully", "success");
       incrementUnsavedChanges();
@@ -2642,10 +2681,9 @@ export default function BuilderPage() {
         {/* Driver Form */}
         {modalItemType === 'driver' && (
           <>
-            {/* Draft Generation Button - Only show in add mode */}
-            {modalMode === 'add' && (
-              <div className="mb-4 flex justify-end">
-                <AIDraftGenerator
+            {/* Draft Generation Button */}
+            <div className="mb-4 flex justify-end">
+              <AIDraftGenerator
                   sessionId={sessionId}
                   tier="strategic_driver"
                   tierLabel="Strategic Driver"
@@ -2654,19 +2692,37 @@ export default function BuilderPage() {
                     existing_drivers: pyramid?.strategic_drivers?.map(d => d.name) || [],
                   }}
                   onAccept={(draft) => {
-                    if (draft.name) {
-                      setDriverName(draft.name);
-                      driverNameSuggestion.markAsAiGenerated(draft.name);
-                    }
-                    if (draft.description) {
-                      setDriverDescription(draft.description);
-                      driverDescSuggestion.markAsAiGenerated(draft.description);
+                    if (modalMode === 'edit') {
+                      if (draft.name) {
+                        setEditFormData((prev: any) => ({ ...prev, name: draft.name }));
+                        driverNameSuggestion.markAsAiGenerated(draft.name);
+                      }
+                      if (draft.description) {
+                        setEditFormData((prev: any) => ({ ...prev, description: draft.description }));
+                        driverDescSuggestion.markAsAiGenerated(draft.description);
+                      }
+                      if (draft.rationale) {
+                        setEditFormData((prev: any) => ({ ...prev, rationale: draft.rationale }));
+                        driverRationaleSuggestion.markAsAiGenerated(draft.rationale);
+                      }
+                    } else {
+                      if (draft.name) {
+                        setDriverName(draft.name);
+                        driverNameSuggestion.markAsAiGenerated(draft.name);
+                      }
+                      if (draft.description) {
+                        setDriverDescription(draft.description);
+                        driverDescSuggestion.markAsAiGenerated(draft.description);
+                      }
+                      if (draft.rationale) {
+                        setDriverRationale(draft.rationale);
+                        driverRationaleSuggestion.markAsAiGenerated(draft.rationale);
+                      }
                     }
                   }}
                   buttonSize="sm"
                 />
-              </div>
-            )}
+            </div>
 
             <form onSubmit={modalMode === 'add' ? handleAddDriver : (e) => { e.preventDefault(); handleSaveEdit('driver'); }} className="space-y-4">
               {/* Driver Name with AI */}
@@ -2686,14 +2742,12 @@ export default function BuilderPage() {
                     tooltipContent={TIER4_TOOLTIPS.DRIVER_NAME}
                     required
                   />
-                  {modalMode === 'add' && (
-                    <AIFieldSuggestionIndicator
-                      isLoading={driverNameSuggestion.isLoading}
-                      hasSuggestion={driverNameSuggestion.hasSuggestion}
-                    />
-                  )}
+                  <AIFieldSuggestionIndicator
+                    isLoading={driverNameSuggestion.isLoading}
+                    hasSuggestion={driverNameSuggestion.hasSuggestion}
+                  />
                 </div>
-                {modalMode === 'add' && driverNameSuggestion.hasSuggestion && driverNameSuggestion.suggestion?.has_suggestion && (
+                {driverNameSuggestion.hasSuggestion && driverNameSuggestion.suggestion?.has_suggestion && (
                   <AIFieldSuggestion
                     severity={driverNameSuggestion.suggestion.severity || "info"}
                     message={driverNameSuggestion.suggestion.message || ""}
@@ -2702,7 +2756,11 @@ export default function BuilderPage() {
                     reasoning={driverNameSuggestion.suggestion.reasoning}
                     onDismiss={driverNameSuggestion.dismissSuggestion}
                     onApply={(text) => {
-                      setDriverName(text);
+                      if (modalMode === 'edit') {
+                        setEditFormData({ ...editFormData, name: text });
+                      } else {
+                        setDriverName(text);
+                      }
                       driverNameSuggestion.dismissSuggestion();
                     }}
                   />
@@ -2727,14 +2785,12 @@ export default function BuilderPage() {
                     rows={3}
                     required
                   />
-                  {modalMode === 'add' && (
-                    <AIFieldSuggestionIndicator
-                      isLoading={driverDescSuggestion.isLoading}
-                      hasSuggestion={driverDescSuggestion.hasSuggestion}
-                    />
-                  )}
+                  <AIFieldSuggestionIndicator
+                    isLoading={driverDescSuggestion.isLoading}
+                    hasSuggestion={driverDescSuggestion.hasSuggestion}
+                  />
                 </div>
-                {modalMode === 'add' && driverDescSuggestion.hasSuggestion && driverDescSuggestion.suggestion?.has_suggestion && (
+                {driverDescSuggestion.hasSuggestion && driverDescSuggestion.suggestion?.has_suggestion && (
                   <AIFieldSuggestion
                     severity={driverDescSuggestion.suggestion.severity || "info"}
                     message={driverDescSuggestion.suggestion.message || ""}
@@ -2742,19 +2798,59 @@ export default function BuilderPage() {
                     examples={driverDescSuggestion.suggestion.examples}
                     reasoning={driverDescSuggestion.suggestion.reasoning}
                     onDismiss={driverDescSuggestion.dismissSuggestion}
+                    onApply={(text) => {
+                      if (modalMode === 'edit') {
+                        setEditFormData({ ...editFormData, description: text });
+                      } else {
+                        setDriverDescription(text);
+                      }
+                      driverDescSuggestion.dismissSuggestion();
+                    }}
                   />
                 )}
               </div>
-            {modalMode === 'edit' && (
-              <Textarea
-                label="Rationale (Optional)"
-                value={editFormData.rationale || ''}
-                onChange={(e) => setEditFormData({ ...editFormData, rationale: e.target.value })}
-                placeholder="Why this driver was chosen..."
-                tooltipContent={TIER4_TOOLTIPS.DRIVER_RATIONALE}
-                rows={2}
-              />
-            )}
+
+              {/* Driver Rationale with AI */}
+              <div>
+                <div className="relative">
+                  <Textarea
+                    label="Rationale (Optional)"
+                    value={modalMode === 'edit' ? editFormData.rationale || '' : driverRationale}
+                    onChange={(e) => {
+                      if (modalMode === 'edit') {
+                        setEditFormData({ ...editFormData, rationale: e.target.value });
+                      } else {
+                        setDriverRationale(e.target.value);
+                      }
+                    }}
+                    placeholder="Why this driver was chosen..."
+                    tooltipContent={TIER4_TOOLTIPS.DRIVER_RATIONALE}
+                    rows={2}
+                  />
+                  <AIFieldSuggestionIndicator
+                    isLoading={driverRationaleSuggestion.isLoading}
+                    hasSuggestion={driverRationaleSuggestion.hasSuggestion}
+                  />
+                </div>
+                {driverRationaleSuggestion.hasSuggestion && driverRationaleSuggestion.suggestion?.has_suggestion && (
+                  <AIFieldSuggestion
+                    severity={driverRationaleSuggestion.suggestion.severity || "info"}
+                    message={driverRationaleSuggestion.suggestion.message || ""}
+                    suggestion={driverRationaleSuggestion.suggestion.suggestion}
+                    examples={driverRationaleSuggestion.suggestion.examples}
+                    reasoning={driverRationaleSuggestion.suggestion.reasoning}
+                    onDismiss={driverRationaleSuggestion.dismissSuggestion}
+                    onApply={(text) => {
+                      if (modalMode === 'edit') {
+                        setEditFormData({ ...editFormData, rationale: text });
+                      } else {
+                        setDriverRationale(text);
+                      }
+                      driverRationaleSuggestion.dismissSuggestion();
+                    }}
+                  />
+                )}
+              </div>
               <div className="flex gap-3 justify-end pt-4 border-t">
                 <Button type="button" variant="ghost" onClick={closeModal}>
                   Cancel
@@ -2770,22 +2866,26 @@ export default function BuilderPage() {
         {/* Intent Form */}
         {modalItemType === 'intent' && (
           <>
-            {/* Draft Generation Button - Only show in add mode */}
-            {modalMode === 'add' && selectedDriver && (
+            {/* Draft Generation Button */}
+            {(modalMode === 'add' ? selectedDriver : editFormData.driver_id) && (
               <div className="mb-4 flex justify-end">
                 <AIDraftGenerator
                   sessionId={sessionId}
                   tier="strategic_intent"
                   tierLabel="Strategic Intent"
                   context={{
-                    driver_id: selectedDriver,
-                    driver_name: pyramid?.strategic_drivers?.find(d => d.id === selectedDriver)?.name,
+                    driver_id: modalMode === 'edit' ? editFormData.driver_id : selectedDriver,
+                    driver_name: pyramid?.strategic_drivers?.find(d => d.id === (modalMode === 'edit' ? editFormData.driver_id : selectedDriver))?.name,
                     vision: pyramid?.vision?.statements?.[0]?.statement || "",
                   }}
                   onAccept={(draft) => {
                     if (draft.name || draft.statement) {
                       const generatedValue = draft.name || draft.statement || draft.description;
-                      setIntentStatement(generatedValue);
+                      if (modalMode === 'edit') {
+                        setEditFormData((prev: any) => ({ ...prev, statement: generatedValue }));
+                      } else {
+                        setIntentStatement(generatedValue);
+                      }
                       intentSuggestion.markAsAiGenerated(generatedValue);
                     }
                   }}
@@ -2840,14 +2940,12 @@ export default function BuilderPage() {
                     rows={4}
                     required
                   />
-                  {modalMode === 'add' && (
-                    <AIFieldSuggestionIndicator
-                      isLoading={intentSuggestion.isLoading}
-                      hasSuggestion={intentSuggestion.hasSuggestion}
-                    />
-                  )}
+                  <AIFieldSuggestionIndicator
+                    isLoading={intentSuggestion.isLoading}
+                    hasSuggestion={intentSuggestion.hasSuggestion}
+                  />
                 </div>
-                {modalMode === 'add' && intentSuggestion.hasSuggestion && intentSuggestion.suggestion?.has_suggestion && (
+                {intentSuggestion.hasSuggestion && intentSuggestion.suggestion?.has_suggestion && (
                   <AIFieldSuggestion
                     severity={intentSuggestion.suggestion.severity || "info"}
                     message={intentSuggestion.suggestion.message || ""}
@@ -2856,7 +2954,11 @@ export default function BuilderPage() {
                     reasoning={intentSuggestion.suggestion.reasoning}
                     onDismiss={intentSuggestion.dismissSuggestion}
                     onApply={(text) => {
-                      setIntentStatement(text);
+                      if (modalMode === 'edit') {
+                        setEditFormData({ ...editFormData, statement: text });
+                      } else {
+                        setIntentStatement(text);
+                      }
                       intentSuggestion.dismissSuggestion();
                     }}
                   />
@@ -2974,8 +3076,8 @@ export default function BuilderPage() {
         {/* Commitment Form */}
         {modalItemType === 'commitment' && (
           <>
-            {/* Draft Generation Button - Only show in add mode */}
-            {modalMode === 'add' && selectedDriver && (
+            {/* Draft Generation Button */}
+            {(modalMode === 'add' ? selectedDriver : editFormData.primary_driver_id) && (
               <div className="mb-4 flex justify-end">
                 <AIDraftGenerator
                   sessionId={sessionId}
@@ -2984,19 +3086,30 @@ export default function BuilderPage() {
                   context={{
                     vision: pyramid?.vision?.statements?.[0]?.statement || "",
                     drivers: pyramid?.strategic_drivers?.map(d => ({ id: d.id, name: d.name })) || [],
-                    intents: pyramid?.strategic_intents?.filter(i => i.driver_id === selectedDriver).map(i => ({ id: i.id, statement: i.statement })) || [],
-                    primary_driver_id: selectedDriver,
-                    primary_driver_name: pyramid?.strategic_drivers?.find(d => d.id === selectedDriver)?.name,
-                    horizon: commitmentHorizon,
+                    intents: pyramid?.strategic_intents?.filter(i => i.driver_id === (modalMode === 'edit' ? editFormData.primary_driver_id : selectedDriver)).map(i => ({ id: i.id, statement: i.statement })) || [],
+                    primary_driver_id: modalMode === 'edit' ? editFormData.primary_driver_id : selectedDriver,
+                    primary_driver_name: pyramid?.strategic_drivers?.find(d => d.id === (modalMode === 'edit' ? editFormData.primary_driver_id : selectedDriver))?.name,
+                    horizon: modalMode === 'edit' ? editFormData.target_horizon : commitmentHorizon,
                   }}
                   onAccept={(draft) => {
-                    if (draft.name) {
-                      setCommitmentName(draft.name);
-                      commitmentNameSuggestion.markAsAiGenerated(draft.name);
-                    }
-                    if (draft.description) {
-                      setCommitmentDescription(draft.description);
-                      commitmentDescSuggestion.markAsAiGenerated(draft.description);
+                    if (modalMode === 'edit') {
+                      if (draft.name) {
+                        setEditFormData((prev: any) => ({ ...prev, name: draft.name }));
+                        commitmentNameSuggestion.markAsAiGenerated(draft.name);
+                      }
+                      if (draft.description) {
+                        setEditFormData((prev: any) => ({ ...prev, description: draft.description }));
+                        commitmentDescSuggestion.markAsAiGenerated(draft.description);
+                      }
+                    } else {
+                      if (draft.name) {
+                        setCommitmentName(draft.name);
+                        commitmentNameSuggestion.markAsAiGenerated(draft.name);
+                      }
+                      if (draft.description) {
+                        setCommitmentDescription(draft.description);
+                        commitmentDescSuggestion.markAsAiGenerated(draft.description);
+                      }
                     }
                   }}
                   buttonSize="sm"
@@ -3022,14 +3135,12 @@ export default function BuilderPage() {
                     tooltipContent={TIER7_TOOLTIPS.COMMITMENT_NAME}
                     required
                   />
-                  {modalMode === 'add' && (
-                    <AIFieldSuggestionIndicator
-                      isLoading={commitmentNameSuggestion.isLoading}
-                      hasSuggestion={commitmentNameSuggestion.hasSuggestion}
-                    />
-                  )}
+                  <AIFieldSuggestionIndicator
+                    isLoading={commitmentNameSuggestion.isLoading}
+                    hasSuggestion={commitmentNameSuggestion.hasSuggestion}
+                  />
                 </div>
-                {modalMode === 'add' && commitmentNameSuggestion.hasSuggestion && commitmentNameSuggestion.suggestion?.has_suggestion && (
+                {commitmentNameSuggestion.hasSuggestion && commitmentNameSuggestion.suggestion?.has_suggestion && (
                   <AIFieldSuggestion
                     severity={commitmentNameSuggestion.suggestion.severity || "info"}
                     message={commitmentNameSuggestion.suggestion.message || ""}
@@ -3038,7 +3149,11 @@ export default function BuilderPage() {
                     reasoning={commitmentNameSuggestion.suggestion.reasoning}
                     onDismiss={commitmentNameSuggestion.dismissSuggestion}
                     onApply={(text) => {
-                      setCommitmentName(text);
+                      if (modalMode === 'edit') {
+                        setEditFormData({ ...editFormData, name: text });
+                      } else {
+                        setCommitmentName(text);
+                      }
                       commitmentNameSuggestion.dismissSuggestion();
                     }}
                   />
@@ -3063,14 +3178,12 @@ export default function BuilderPage() {
                     rows={3}
                     required
                   />
-                  {modalMode === 'add' && (
-                    <AIFieldSuggestionIndicator
-                      isLoading={commitmentDescSuggestion.isLoading}
-                      hasSuggestion={commitmentDescSuggestion.hasSuggestion}
-                    />
-                  )}
+                  <AIFieldSuggestionIndicator
+                    isLoading={commitmentDescSuggestion.isLoading}
+                    hasSuggestion={commitmentDescSuggestion.hasSuggestion}
+                  />
                 </div>
-                {modalMode === 'add' && commitmentDescSuggestion.hasSuggestion && commitmentDescSuggestion.suggestion?.has_suggestion && (
+                {commitmentDescSuggestion.hasSuggestion && commitmentDescSuggestion.suggestion?.has_suggestion && (
                   <AIFieldSuggestion
                     severity={commitmentDescSuggestion.suggestion.severity || "info"}
                     message={commitmentDescSuggestion.suggestion.message || ""}
@@ -3078,6 +3191,14 @@ export default function BuilderPage() {
                     examples={commitmentDescSuggestion.suggestion.examples}
                     reasoning={commitmentDescSuggestion.suggestion.reasoning}
                     onDismiss={commitmentDescSuggestion.dismissSuggestion}
+                    onApply={(text) => {
+                      if (modalMode === 'edit') {
+                        setEditFormData({ ...editFormData, description: text });
+                      } else {
+                        setCommitmentDescription(text);
+                      }
+                      commitmentDescSuggestion.dismissSuggestion();
+                    }}
                   />
                 )}
               </div>
