@@ -155,7 +155,7 @@ Respond in JSON format:
 
         try:
             response = self.client.messages.create(
-                model="claude-3-5-sonnet-20241022",
+                model="claude-3-5-sonnet-20240620",
                 max_tokens=1024,
                 messages=[{"role": "user", "content": prompt}]
             )
@@ -241,7 +241,7 @@ Respond in JSON format:
 
             try:
                 response = self.client.messages.create(
-                    model="claude-3-5-sonnet-20241022",
+                    model="claude-3-5-sonnet-20240620",
                     max_tokens=512,
                     messages=[{"role": "user", "content": prompt}]
                 )
@@ -314,12 +314,20 @@ Respond in JSON format:
 
         try:
             response = self.client.messages.create(
-                model="claude-sonnet-4-20250514",
+                model="claude-3-5-sonnet-20240620",
                 max_tokens=512,
                 messages=[{"role": "user", "content": prompt}]
             )
 
             content = response.content[0].text
+            print(f"AI Response (Horizon): {content[:200]}")  # Debug logging
+
+            # Try to extract JSON if it's wrapped in markdown code blocks
+            if "```json" in content:
+                content = content.split("```json")[1].split("```")[0].strip()
+            elif "```" in content:
+                content = content.split("```")[1].split("```")[0].strip()
+
             analysis = json.loads(content)
 
             if not analysis.get("is_realistic", True):
@@ -380,7 +388,7 @@ Respond in JSON format:
 
         try:
             response = self.client.messages.create(
-                model="claude-3-5-sonnet-20241022",
+                model="claude-3-5-sonnet-20240620",
                 max_tokens=1024,
                 messages=[{"role": "user", "content": prompt}]
             )
@@ -484,7 +492,7 @@ Respond in JSON format:
 
         try:
             response = self.client.messages.create(
-                model="claude-3-5-sonnet-20241022",
+                model="claude-3-5-sonnet-20240620",
                 max_tokens=2048,
                 messages=[{"role": "user", "content": prompt}]
             )
