@@ -386,14 +386,14 @@ export default function HomePage() {
                 <ul className="space-y-0.5 text-gray-300">
                   <li>• Vision</li>
                   <li>• Values</li>
+                  <li>• Behaviours</li>
                 </ul>
               </div>
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2.5 border border-white/20">
                 <div className="font-semibold text-purple-300 mb-1.5">STRATEGY</div>
                 <ul className="space-y-0.5 text-gray-300">
-                  <li>• Behaviours</li>
-                  <li>• Intent</li>
                   <li>• Drivers</li>
+                  <li>• Intent</li>
                   <li>• Enablers</li>
                 </ul>
               </div>
