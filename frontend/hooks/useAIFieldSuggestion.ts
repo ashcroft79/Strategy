@@ -66,7 +66,13 @@ export function useAIFieldSuggestion(
           context
         );
 
-        setSuggestion(result);
+        // Cast severity to proper type
+        const typedResult: AIFieldSuggestion = {
+          ...result,
+          severity: result.severity as "error" | "warning" | "info" | undefined,
+        };
+
+        setSuggestion(typedResult);
       } catch (err: any) {
         if (err.name !== "AbortError") {
           console.error("AI suggestion error:", err);
