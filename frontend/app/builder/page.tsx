@@ -3093,7 +3093,8 @@ export default function BuilderPage() {
                   }}
                   buttonSize="sm"
                 />
-            </div>
+              </div>
+            )}
 
             <form onSubmit={modalMode === 'add' ? handleAddDriver : (e) => { e.preventDefault(); handleSaveEdit('driver'); }} className="space-y-4">
               {/* Driver Name with AI */}
@@ -3263,6 +3264,7 @@ export default function BuilderPage() {
                 buttonSize="sm"
               />
             </div>
+            )}
 
             <form onSubmit={modalMode === 'add' ? handleAddIntent : (e) => { e.preventDefault(); handleSaveEdit('intent'); }} className="space-y-4">
               <div>
@@ -3577,6 +3579,7 @@ export default function BuilderPage() {
                 buttonSize="sm"
               />
             </div>
+            )}
 
             <form onSubmit={modalMode === 'add' ? handleAddCommitment : (e) => { e.preventDefault(); handleSaveEdit('commitment'); }} className="space-y-4">
               {/* Commitment Name with AI */}
