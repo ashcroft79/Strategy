@@ -2654,8 +2654,14 @@ export default function BuilderPage() {
                     existing_drivers: pyramid?.strategic_drivers?.map(d => d.name) || [],
                   }}
                   onAccept={(draft) => {
-                    if (draft.name) setDriverName(draft.name);
-                    if (draft.description) setDriverDescription(draft.description);
+                    if (draft.name) {
+                      setDriverName(draft.name);
+                      driverNameSuggestion.markAsAiGenerated();
+                    }
+                    if (draft.description) {
+                      setDriverDescription(draft.description);
+                      driverDescSuggestion.markAsAiGenerated();
+                    }
                   }}
                   buttonSize="sm"
                 />
@@ -2674,6 +2680,7 @@ export default function BuilderPage() {
                         setEditFormData({ ...editFormData, name: e.target.value });
                       } else {
                         setDriverName(e.target.value);
+                        driverNameSuggestion.markAsUserEdited();
                       }
                     }}
                     placeholder="e.g., Customer Excellence, Digital Innovation"
@@ -2714,6 +2721,7 @@ export default function BuilderPage() {
                         setEditFormData({ ...editFormData, description: e.target.value });
                       } else {
                         setDriverDescription(e.target.value);
+                        driverDescSuggestion.markAsUserEdited();
                       }
                     }}
                     placeholder="What this driver means and why it matters..."
@@ -2779,6 +2787,7 @@ export default function BuilderPage() {
                   onAccept={(draft) => {
                     if (draft.name || draft.statement) {
                       setIntentStatement(draft.name || draft.statement || draft.description);
+                      intentSuggestion.markAsAiGenerated();
                     }
                   }}
                   buttonSize="sm"
@@ -2826,6 +2835,7 @@ export default function BuilderPage() {
                         setEditFormData({ ...editFormData, statement: e.target.value });
                       } else {
                         setIntentStatement(e.target.value);
+                        intentSuggestion.markAsUserEdited();
                       }
                     }}
                     placeholder="What does success look like for this driver? Describe the aspirational future state..."
@@ -2982,8 +2992,14 @@ export default function BuilderPage() {
                     horizon: commitmentHorizon,
                   }}
                   onAccept={(draft) => {
-                    if (draft.name) setCommitmentName(draft.name);
-                    if (draft.description) setCommitmentDescription(draft.description);
+                    if (draft.name) {
+                      setCommitmentName(draft.name);
+                      commitmentNameSuggestion.markAsAiGenerated();
+                    }
+                    if (draft.description) {
+                      setCommitmentDescription(draft.description);
+                      commitmentDescSuggestion.markAsAiGenerated();
+                    }
                   }}
                   buttonSize="sm"
                 />
@@ -3002,6 +3018,7 @@ export default function BuilderPage() {
                         setEditFormData({ ...editFormData, name: e.target.value });
                       } else {
                         setCommitmentName(e.target.value);
+                        commitmentNameSuggestion.markAsUserEdited();
                       }
                     }}
                     placeholder="e.g., Launch New Platform"
@@ -3042,6 +3059,7 @@ export default function BuilderPage() {
                         setEditFormData({ ...editFormData, description: e.target.value });
                       } else {
                         setCommitmentDescription(e.target.value);
+                        commitmentDescSuggestion.markAsUserEdited();
                       }
                     }}
                     placeholder="What will be delivered..."

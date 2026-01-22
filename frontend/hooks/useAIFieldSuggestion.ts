@@ -41,11 +41,13 @@ export function useAIFieldSuggestion(
 
   const [suggestion, setSuggestion] = useState<AIFieldSuggestion | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAiGenerated, setIsAiGenerated] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchSuggestion = useCallback(
     async (content: string) => {
-      if (!enabled || content.length < minLength) {
+      // Skip if content is AI-generated (don't critique our own generation)
+      if (!enabled || content.length < minLength || isAiGenerated) {
         setSuggestion(null);
         return;
       }
@@ -82,13 +84,18 @@ export function useAIFieldSuggestion(
         setIsLoading(false);
       }
     },
-    [sessionId, tier, fieldName, enabled, minLength, context]
+    [sessionId, tier, fieldName, enabled, minLength, context, isAiGenerated]
   );
 
   useEffect(() => {
     if (!enabled || value.length < minLength) {
       setSuggestion(null);
       setIsLoading(false);
+      return;
+    }
+
+    // If content is marked as AI-generated, skip analysis
+    if (isAiGenerated) {
       return;
     }
 
@@ -100,10 +107,22 @@ export function useAIFieldSuggestion(
     return () => {
       clearTimeout(timerId);
     };
-  }, [value, fetchSuggestion, debounceMs, enabled, minLength]);
+  }, [value, fetchSuggestion, debounceMs, enabled, minLength, isAiGenerated]);
 
   const dismissSuggestion = useCallback(() => {
     setSuggestion(null);
+  }, []);
+
+  const markAsAiGenerated = useCallback(() => {
+    // Mark content as AI-generated to skip analysis
+    setIsAiGenerated(true);
+    setSuggestion(null);
+    setIsLoading(false);
+  }, []);
+
+  const markAsUserEdited = useCallback(() => {
+    // User started editing - re-enable suggestions
+    setIsAiGenerated(false);
   }, []);
 
   return {
@@ -111,5 +130,7 @@ export function useAIFieldSuggestion(
     isLoading,
     hasSuggestion: suggestion?.has_suggestion ?? false,
     dismissSuggestion,
+    markAsAiGenerated,
+    markAsUserEdited,
   };
 }
