@@ -105,6 +105,7 @@ class DocumentExtractor:
             org_context = f"Organization: {organization_name}\n"
 
         # Create extraction prompt
+        # Limit document text to 8000 chars for token efficiency
         prompt = f"""You are a strategic planning expert analyzing a document to extract strategic pyramid elements.
 
 {org_context}
@@ -112,7 +113,7 @@ Document Format: {parsed_content.get('format', 'unknown')}
 Document Length: {len(document_text)} characters
 
 Document Content:
-{document_text[:8000]}  {# Limit to first 8000 chars for token efficiency #}
+{document_text[:8000]}
 
 {self.tooltips_guidance}
 
