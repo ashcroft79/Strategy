@@ -56,16 +56,16 @@ class AICoach:
     def _load_tooltips_summary(self) -> str:
         """Load key tooltip guidance for context."""
         return """
-        Key Strategic Pyramid Principles (from tooltips):
+        Key Strategic Pyramid Principles:
 
-        VISION (TT-002): Paint a picture of the future, not list capabilities.
-        VALUES (TT-005): 4-6 values max, specific to your organization.
-        BEHAVIORS (TT-007): Observable actions, not aspirations.
-        DRIVERS (TT-009): 3-5 focus areas, forces prioritization.
-        INTENTS (TT-014): Bold, aspirational, outcome-focused. Outside-in perspective.
-        PRIMARY DRIVER (TT-022): ONE driver per commitment (critical forcing function).
-        HORIZON (TT-024): Balance H1/H2/H3. Don't overload H1.
-        LANGUAGE (TT-040): Avoid jargon: "synergy", "leverage", "drive excellence", "innovative".
+        VISION: Paint a picture of the future, not list capabilities.
+        VALUES: 4-6 values max, specific to your organization.
+        BEHAVIORS: Observable actions, not aspirations.
+        DRIVERS: 3-5 focus areas, forces prioritization.
+        INTENTS: Bold, aspirational, outcome-focused. Outside-in perspective.
+        PRIMARY DRIVER: ONE driver per commitment (critical forcing function).
+        HORIZON: Balance H1/H2/H3. Don't overload H1.
+        LANGUAGE: Avoid jargon: "synergy", "leverage", "drive excellence", "innovative".
 
         Core Methodology:
         - Force Hard Decisions: Primary alignment required
@@ -183,10 +183,53 @@ If content is good and follows best practices, set has_suggestion: false."""
         """
         pyramid_context = ""
         if self.pyramid:
+            # Tier 1: Vision
             if self.pyramid.vision and self.pyramid.vision.statements:
                 pyramid_context += f"Vision: {self.pyramid.vision.statements[0].statement}\n"
+
+            # Tier 2: Values
+            if self.pyramid.values:
+                pyramid_context += f"Values ({len(self.pyramid.values)}): {', '.join([v.name for v in self.pyramid.values])}\n"
+
+            # Tier 3: Behaviours
+            if self.pyramid.behaviours:
+                pyramid_context += f"Behaviours: {len(self.pyramid.behaviours)} defined\n"
+
+            # Tier 5: Strategic Drivers
             if self.pyramid.strategic_drivers:
-                pyramid_context += f"Drivers: {', '.join([d.name for d in self.pyramid.strategic_drivers])}\n"
+                pyramid_context += f"Drivers ({len(self.pyramid.strategic_drivers)}): {', '.join([d.name for d in self.pyramid.strategic_drivers])}\n"
+
+            # Tier 4: Strategic Intents
+            if self.pyramid.strategic_intents:
+                intents_summary = []
+                for intent in self.pyramid.strategic_intents[:3]:  # First 3 for brevity
+                    driver = self.pyramid.get_driver_by_id(intent.driver_id)
+                    driver_name = driver.name if driver else "Unknown"
+                    intents_summary.append(f"{driver_name}: {intent.statement[:60]}...")
+                pyramid_context += f"Strategic Intents ({len(self.pyramid.strategic_intents)}):\n"
+                pyramid_context += "\n".join([f"  - {s}" for s in intents_summary]) + "\n"
+
+            # Tier 6: Enablers
+            if self.pyramid.enablers:
+                pyramid_context += f"Enablers ({len(self.pyramid.enablers)}): {', '.join([e.name for e in self.pyramid.enablers[:5]])}\n"
+
+            # Tier 7: Iconic Commitments
+            if self.pyramid.iconic_commitments:
+                commitments_by_horizon = {}
+                for c in self.pyramid.iconic_commitments:
+                    horizon = c.horizon.value
+                    commitments_by_horizon.setdefault(horizon, []).append(c.name)
+                pyramid_context += f"Iconic Commitments ({len(self.pyramid.iconic_commitments)}): "
+                horizon_summary = [f"{h}: {len(cs)}" for h, cs in sorted(commitments_by_horizon.items())]
+                pyramid_context += ", ".join(horizon_summary) + "\n"
+
+            # Tier 8: Team Objectives
+            if self.pyramid.team_objectives:
+                pyramid_context += f"Team Objectives: {len(self.pyramid.team_objectives)} defined\n"
+
+            # Tier 9: Individual Objectives
+            if self.pyramid.individual_objectives:
+                pyramid_context += f"Individual Objectives: {len(self.pyramid.individual_objectives)} defined\n"
 
         tier_guidance = self._get_tier_guidance(tier, context)
 
@@ -351,12 +394,47 @@ Suggest specific, measurable alternatives. Respond in JSON:
         pyramid_context = ""
         if self.pyramid:
             summary = []
+
+            # Tier 1: Vision
             if self.pyramid.vision and self.pyramid.vision.statements:
                 summary.append(f"Vision: {self.pyramid.vision.statements[0].statement}")
+
+            # Tier 2: Values
+            if self.pyramid.values:
+                summary.append(f"Values ({len(self.pyramid.values)}): {', '.join([v.name for v in self.pyramid.values])}")
+
+            # Tier 3: Behaviours
+            if self.pyramid.behaviours:
+                summary.append(f"Behaviours: {len(self.pyramid.behaviours)}")
+
+            # Tier 5: Strategic Drivers
             if self.pyramid.strategic_drivers:
                 summary.append(f"Drivers ({len(self.pyramid.strategic_drivers)}): {', '.join([d.name for d in self.pyramid.strategic_drivers[:3]])}")
+
+            # Tier 4: Strategic Intents
+            if self.pyramid.strategic_intents:
+                summary.append(f"Intents: {len(self.pyramid.strategic_intents)}")
+
+            # Tier 6: Enablers
+            if self.pyramid.enablers:
+                summary.append(f"Enablers: {len(self.pyramid.enablers)}")
+
+            # Tier 7: Iconic Commitments
             if self.pyramid.iconic_commitments:
-                summary.append(f"Commitments: {len(self.pyramid.iconic_commitments)}")
+                commitments_by_horizon = {}
+                for c in self.pyramid.iconic_commitments:
+                    horizon = c.horizon.value
+                    commitments_by_horizon.setdefault(horizon, []).append(c)
+                horizon_summary = [f"{h}:{len(cs)}" for h, cs in sorted(commitments_by_horizon.items())]
+                summary.append(f"Commitments ({len(self.pyramid.iconic_commitments)}): {','.join(horizon_summary)}")
+
+            # Tier 8: Team Objectives
+            if self.pyramid.team_objectives:
+                summary.append(f"Team Objectives: {len(self.pyramid.team_objectives)}")
+
+            # Tier 9: Individual Objectives
+            if self.pyramid.individual_objectives:
+                summary.append(f"Individual Objectives: {len(self.pyramid.individual_objectives)}")
 
             pyramid_context = f"\nCurrent Pyramid: {' | '.join(summary)}"
 
@@ -366,7 +444,7 @@ Suggest specific, measurable alternatives. Respond in JSON:
 
 {pyramid_context}
 
-Be conversational, encouraging, and specific. Reference tooltips by ID when relevant (e.g., "Per TT-022...").
+Be conversational, encouraging, and specific. Reference best practices naturally without using reference codes.
 Keep responses concise (2-3 sentences) unless user asks for detail."""
 
         # Build message history
