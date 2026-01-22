@@ -102,12 +102,19 @@ class AICoach:
         if context:
             context_str = f"\nContext: {json.dumps(context, indent=2)}"
 
+        # Get tier-specific guidance (same as generation)
+        tier_guidance = self._get_tier_guidance(tier)
+
         prompt = f"""You are a strategic planning coach. A user is building a strategic pyramid and typing in the {field_name} field for a {tier}.
 
 Current content: "{current_content}"
 {context_str}
 
 {self.tooltips_guidance}
+
+{tier_guidance}
+
+**IMPORTANT**: If the content follows the best practices above, is specific and avoids jargon, mark it as good (has_suggestion: false). Content that follows these guidelines should pass favorably.
 
 Provide quick coaching on this content:
 1. Is there jargon or weak language? (e.g., "improve", "enhance", "drive", "leverage")
@@ -124,7 +131,7 @@ Respond in JSON format:
   "reasoning": "Why this matters (reference tooltip if relevant)"
 }}
 
-If content is good, set has_suggestion: false."""
+If content is good and follows best practices, set has_suggestion: false."""
 
         try:
             response = self.client.messages.create(
@@ -195,12 +202,16 @@ User Context:
 
 {user_guidance_section}
 
+{self.tooltips_guidance}
+
 {tier_guidance}
 
+**CRITICAL**: Generate content that strictly follows the best practices above. This content should be specific, actionable, and jargon-free so it passes quality review.
+
 Generate a high-quality draft {tier} that:
-1. Follows best practices from the guidance
-2. Is specific and actionable (not vague)
-3. Avoids jargon
+1. Strictly follows best practices from the guidance above
+2. Is specific and actionable (not vague or generic)
+3. Contains ZERO jargon (no "improve", "enhance", "drive", "leverage", "synergy")
 4. Fits the current pyramid context
 {"5. ADDRESSES THE USER'S SPECIFIC REQUEST ABOVE" if user_guidance else ""}
 

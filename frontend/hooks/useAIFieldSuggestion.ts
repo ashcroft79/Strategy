@@ -42,6 +42,7 @@ export function useAIFieldSuggestion(
   const [suggestion, setSuggestion] = useState<AIFieldSuggestion | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isAiGenerated, setIsAiGenerated] = useState(false);
+  const [aiGeneratedValue, setAiGeneratedValue] = useState<string>("");
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchSuggestion = useCallback(
@@ -94,9 +95,20 @@ export function useAIFieldSuggestion(
       return;
     }
 
-    // If content is marked as AI-generated, skip analysis
+    // If content is marked as AI-generated, check for substantive edits
     if (isAiGenerated) {
-      return;
+      // Calculate edit distance from original AI-generated content
+      const changeSize = Math.abs(value.length - aiGeneratedValue.length);
+      const percentChange = changeSize / Math.max(aiGeneratedValue.length, 1);
+
+      // Only re-enable if substantive change (>20 chars or >10% different)
+      if (changeSize > 20 || percentChange > 0.1) {
+        setIsAiGenerated(false);
+        setAiGeneratedValue("");
+      } else {
+        // Minor edit, keep skipping analysis
+        return;
+      }
     }
 
     setIsLoading(true);
@@ -107,22 +119,27 @@ export function useAIFieldSuggestion(
     return () => {
       clearTimeout(timerId);
     };
-  }, [value, fetchSuggestion, debounceMs, enabled, minLength, isAiGenerated]);
+    // IMPORTANT: Don't include fetchSuggestion to avoid infinite loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, debounceMs, enabled, minLength, isAiGenerated, aiGeneratedValue]);
 
   const dismissSuggestion = useCallback(() => {
     setSuggestion(null);
   }, []);
 
-  const markAsAiGenerated = useCallback(() => {
+  const markAsAiGenerated = useCallback((generatedValue: string) => {
     // Mark content as AI-generated to skip analysis
+    // Store the generated value to detect substantive edits later
     setIsAiGenerated(true);
+    setAiGeneratedValue(generatedValue);
     setSuggestion(null);
     setIsLoading(false);
   }, []);
 
   const markAsUserEdited = useCallback(() => {
-    // User started editing - re-enable suggestions
+    // Force re-enable suggestions (for manual override if needed)
     setIsAiGenerated(false);
+    setAiGeneratedValue("");
   }, []);
 
   return {

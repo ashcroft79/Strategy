@@ -2656,11 +2656,11 @@ export default function BuilderPage() {
                   onAccept={(draft) => {
                     if (draft.name) {
                       setDriverName(draft.name);
-                      driverNameSuggestion.markAsAiGenerated();
+                      driverNameSuggestion.markAsAiGenerated(draft.name);
                     }
                     if (draft.description) {
                       setDriverDescription(draft.description);
-                      driverDescSuggestion.markAsAiGenerated();
+                      driverDescSuggestion.markAsAiGenerated(draft.description);
                     }
                   }}
                   buttonSize="sm"
@@ -2680,7 +2680,6 @@ export default function BuilderPage() {
                         setEditFormData({ ...editFormData, name: e.target.value });
                       } else {
                         setDriverName(e.target.value);
-                        driverNameSuggestion.markAsUserEdited();
                       }
                     }}
                     placeholder="e.g., Customer Excellence, Digital Innovation"
@@ -2721,7 +2720,6 @@ export default function BuilderPage() {
                         setEditFormData({ ...editFormData, description: e.target.value });
                       } else {
                         setDriverDescription(e.target.value);
-                        driverDescSuggestion.markAsUserEdited();
                       }
                     }}
                     placeholder="What this driver means and why it matters..."
@@ -2786,8 +2784,9 @@ export default function BuilderPage() {
                   }}
                   onAccept={(draft) => {
                     if (draft.name || draft.statement) {
-                      setIntentStatement(draft.name || draft.statement || draft.description);
-                      intentSuggestion.markAsAiGenerated();
+                      const generatedValue = draft.name || draft.statement || draft.description;
+                      setIntentStatement(generatedValue);
+                      intentSuggestion.markAsAiGenerated(generatedValue);
                     }
                   }}
                   buttonSize="sm"
@@ -2835,7 +2834,6 @@ export default function BuilderPage() {
                         setEditFormData({ ...editFormData, statement: e.target.value });
                       } else {
                         setIntentStatement(e.target.value);
-                        intentSuggestion.markAsUserEdited();
                       }
                     }}
                     placeholder="What does success look like for this driver? Describe the aspirational future state..."
@@ -2994,11 +2992,11 @@ export default function BuilderPage() {
                   onAccept={(draft) => {
                     if (draft.name) {
                       setCommitmentName(draft.name);
-                      commitmentNameSuggestion.markAsAiGenerated();
+                      commitmentNameSuggestion.markAsAiGenerated(draft.name);
                     }
                     if (draft.description) {
                       setCommitmentDescription(draft.description);
-                      commitmentDescSuggestion.markAsAiGenerated();
+                      commitmentDescSuggestion.markAsAiGenerated(draft.description);
                     }
                   }}
                   buttonSize="sm"
@@ -3018,7 +3016,6 @@ export default function BuilderPage() {
                         setEditFormData({ ...editFormData, name: e.target.value });
                       } else {
                         setCommitmentName(e.target.value);
-                        commitmentNameSuggestion.markAsUserEdited();
                       }
                     }}
                     placeholder="e.g., Launch New Platform"
@@ -3059,7 +3056,6 @@ export default function BuilderPage() {
                         setEditFormData({ ...editFormData, description: e.target.value });
                       } else {
                         setCommitmentDescription(e.target.value);
-                        commitmentDescSuggestion.markAsUserEdited();
                       }
                     }}
                     placeholder="What will be delivered..."
