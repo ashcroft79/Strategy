@@ -155,12 +155,20 @@ Respond in JSON format:
 
         try:
             response = self.client.messages.create(
-                model="claude-sonnet-4-20250514",
+                model="claude-3-5-sonnet-20241022",
                 max_tokens=1024,
                 messages=[{"role": "user", "content": prompt}]
             )
 
             content = response.content[0].text
+            print(f"AI Response: {content[:200]}")  # Debug logging
+
+            # Try to extract JSON if it's wrapped in markdown code blocks
+            if "```json" in content:
+                content = content.split("```json")[1].split("```")[0].strip()
+            elif "```" in content:
+                content = content.split("```")[1].split("```")[0].strip()
+
             analysis = json.loads(content)
 
             if not analysis.get("is_coherent", True):
@@ -233,12 +241,20 @@ Respond in JSON format:
 
             try:
                 response = self.client.messages.create(
-                    model="claude-sonnet-4-20250514",
+                    model="claude-3-5-sonnet-20241022",
                     max_tokens=512,
                     messages=[{"role": "user", "content": prompt}]
                 )
 
                 content = response.content[0].text
+                print(f"AI Response: {content[:200]}")  # Debug logging
+
+                # Try to extract JSON if it's wrapped in markdown code blocks
+                if "```json" in content:
+                    content = content.split("```json")[1].split("```")[0].strip()
+                elif "```" in content:
+                    content = content.split("```")[1].split("```")[0].strip()
+
                 analysis = json.loads(content)
 
                 if not analysis.get("is_aligned", True) and analysis.get("confidence") in ["high", "medium"]:
@@ -364,12 +380,20 @@ Respond in JSON format:
 
         try:
             response = self.client.messages.create(
-                model="claude-sonnet-4-20250514",
+                model="claude-3-5-sonnet-20241022",
                 max_tokens=1024,
                 messages=[{"role": "user", "content": prompt}]
             )
 
             content = response.content[0].text
+            print(f"AI Response: {content[:200]}")  # Debug logging
+
+            # Try to extract JSON if it's wrapped in markdown code blocks
+            if "```json" in content:
+                content = content.split("```json")[1].split("```")[0].strip()
+            elif "```" in content:
+                content = content.split("```")[1].split("```")[0].strip()
+
             analysis = json.loads(content)
 
             if analysis.get("overall_boldness") == "weak":
@@ -460,12 +484,20 @@ Respond in JSON format:
 
         try:
             response = self.client.messages.create(
-                model="claude-sonnet-4-20250514",
+                model="claude-3-5-sonnet-20241022",
                 max_tokens=2048,
                 messages=[{"role": "user", "content": prompt}]
             )
 
             content = response.content[0].text
+            print(f"AI Review Response: {content[:200]}")  # Debug logging
+
+            # Try to extract JSON if it's wrapped in markdown code blocks
+            if "```json" in content:
+                content = content.split("```json")[1].split("```")[0].strip()
+            elif "```" in content:
+                content = content.split("```")[1].split("```")[0].strip()
+
             review = json.loads(content)
             return review
 
