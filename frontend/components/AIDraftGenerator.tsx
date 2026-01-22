@@ -29,15 +29,21 @@ export function AIDraftGenerator({
   const [isGenerating, setIsGenerating] = useState(false);
   const [draft, setDraft] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [userGuidance, setUserGuidance] = useState("");
 
   const handleGenerate = async () => {
-    setIsModalOpen(true);
     setIsGenerating(true);
     setError(null);
     setDraft(null);
 
     try {
-      const result = await aiApi.generateDraft(sessionId, tier, context || {});
+      // Add user guidance to context
+      const enrichedContext = {
+        ...context,
+        user_guidance: userGuidance.trim() || undefined,
+      };
+
+      const result = await aiApi.generateDraft(sessionId, tier, enrichedContext);
 
       if (result.error) {
         setError(result.error);
@@ -53,6 +59,13 @@ export function AIDraftGenerator({
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+    setUserGuidance("");
+    setDraft(null);
+    setError(null);
   };
 
   const handleAccept = () => {
@@ -72,7 +85,7 @@ export function AIDraftGenerator({
   return (
     <>
       <Button
-        onClick={handleGenerate}
+        onClick={handleOpenModal}
         size={buttonSize}
         className={buttonClassName}
         variant="secondary"
@@ -82,6 +95,39 @@ export function AIDraftGenerator({
       </Button>
 
       <Modal isOpen={isModalOpen} onClose={handleClose} title={`AI Draft: ${tierLabel}`}>
+        {!isGenerating && !draft && !error && (
+          <div className="space-y-4">
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="w-5 h-5 text-blue-600" />
+                <p className="text-sm font-medium text-blue-800">
+                  Guide the AI (Optional)
+                </p>
+              </div>
+              <p className="text-xs text-blue-600 mb-3">
+                Tell the AI what you want to focus on. Be specific!
+              </p>
+              <textarea
+                value={userGuidance}
+                onChange={(e) => setUserGuidance(e.target.value)}
+                placeholder={`e.g., "Focus on operations and quality management" or "Customer retention and loyalty program" or leave blank for AI to decide`}
+                className="w-full p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                rows={3}
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <Button variant="secondary" onClick={handleClose} className="flex-1">
+                Cancel
+              </Button>
+              <Button onClick={handleGenerate} className="flex-1">
+                <Sparkles className="w-4 h-4 mr-2" />
+                Generate
+              </Button>
+            </div>
+          </div>
+        )}
+
         {isGenerating && (
           <div className="flex flex-col items-center justify-center py-12">
             <Loader className="w-12 h-12 text-blue-600 animate-spin mb-4" />
@@ -167,6 +213,16 @@ export function AIDraftGenerator({
             <div className="flex gap-3 pt-4">
               <Button variant="secondary" onClick={handleClose} className="flex-1">
                 Cancel
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setDraft(null);
+                  setError(null);
+                }}
+                className="flex-1"
+              >
+                ↻ Try Again
               </Button>
               <Button onClick={handleAccept} className="flex-1">
                 <Sparkles className="w-4 h-4 mr-2" />

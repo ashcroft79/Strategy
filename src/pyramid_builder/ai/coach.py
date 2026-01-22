@@ -160,7 +160,7 @@ If content is good, set has_suggestion: false."""
 
         Args:
             tier: Tier type (e.g., "strategic_driver", "iconic_commitment")
-            context: Context including pyramid state, user inputs so far
+            context: Context including pyramid state, user inputs so far, and optional user_guidance
 
         Returns:
             Dict with generated draft content
@@ -174,13 +174,26 @@ If content is good, set has_suggestion: false."""
 
         tier_guidance = self._get_tier_guidance(tier)
 
+        # Extract user guidance if provided
+        user_guidance = context.get("user_guidance", "")
+        user_guidance_section = ""
+        if user_guidance:
+            user_guidance_section = f"""
+**USER REQUEST:**
+The user specifically wants: "{user_guidance}"
+
+IMPORTANT: Focus your draft on this specific request while following best practices.
+"""
+
         prompt = f"""You are a strategic planning expert helping someone build a {tier}.
 
 Current Pyramid Context:
 {pyramid_context}
 
 User Context:
-{json.dumps(context, indent=2)}
+{json.dumps({k: v for k, v in context.items() if k != 'user_guidance'}, indent=2)}
+
+{user_guidance_section}
 
 {tier_guidance}
 
@@ -189,6 +202,7 @@ Generate a high-quality draft {tier} that:
 2. Is specific and actionable (not vague)
 3. Avoids jargon
 4. Fits the current pyramid context
+{"5. ADDRESSES THE USER'S SPECIFIC REQUEST ABOVE" if user_guidance else ""}
 
 Respond in JSON format with the draft fields:
 {{
