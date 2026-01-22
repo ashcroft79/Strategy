@@ -648,3 +648,107 @@ export const aiApi = {
     return data;
   },
 };
+
+// ============================================================================
+// DOCUMENT IMPORT
+// ============================================================================
+
+export interface DocumentParseResult {
+  filename: string;
+  success: boolean;
+  format?: string;
+  error?: string;
+  num_pages?: number;
+  num_slides?: number;
+}
+
+export interface ExtractedElements {
+  vision?: {
+    statement_type: string;
+    statement: string;
+    confidence: string;
+    source_quote: string;
+  };
+  values?: Array<{
+    name: string;
+    description: string;
+    confidence: string;
+    source_quote: string;
+  }>;
+  strategic_drivers?: Array<{
+    name: string;
+    description: string;
+    rationale: string;
+    confidence: string;
+    source_quote: string;
+  }>;
+  strategic_intents?: Array<{
+    name: string;
+    description: string;
+    linked_driver?: string;
+    confidence: string;
+    source_quote: string;
+  }>;
+  iconic_commitments?: Array<{
+    name: string;
+    description: string;
+    linked_driver?: string;
+    horizon?: string;
+    confidence: string;
+    source_quote: string;
+  }>;
+  extraction_notes?: string;
+}
+
+export interface ImportDocumentsResponse {
+  success: boolean;
+  documents_processed: number;
+  parse_results: DocumentParseResult[];
+  extracted_elements?: ExtractedElements;
+  validation?: {
+    valid: boolean;
+    issues: Array<{ tier: string; severity: string; message: string }>;
+    warnings: Array<{ tier: string; severity: string; message: string }>;
+    summary: {
+      vision_found: boolean;
+      values_count: number;
+      drivers_count: number;
+      intents_count: number;
+      commitments_count: number;
+    };
+  };
+  error?: string;
+}
+
+export const documentsApi = {
+  async importDocuments(
+    files: File[],
+    organizationName?: string
+  ): Promise<ImportDocumentsResponse> {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
+    if (organizationName) {
+      formData.append("organization_name", organizationName);
+    }
+
+    const { data } = await api.post("/api/documents/import", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return data;
+  },
+
+  async getSupportedFormats(): Promise<{
+    formats: string[];
+    max_file_size_mb: number;
+    max_files_per_upload: number;
+    max_pages_per_pdf: number;
+    max_slides_per_pptx: number;
+  }> {
+    const { data } = await api.get("/api/documents/supported-formats");
+    return data;
+  },
+};
