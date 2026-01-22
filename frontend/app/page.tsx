@@ -353,22 +353,22 @@ export default function HomePage() {
               </div>
               <div>
                 <h2 className="text-base font-bold text-gray-900">
-                  AI Strategy Guide
+                  Generative AI Instructions Pack
                 </h2>
                 <p className="text-xs text-gray-700">
-                  Generate strategies with ChatGPT or Claude
+                  Generate strategies with ChatGPT or Claude or CoPilot
                 </p>
               </div>
             </div>
             <p className="text-gray-700 text-xs mb-3 leading-relaxed">
-              Complete JSON schema, tier-by-tier prompts, and import instructions included.
+              Complete JSON schema, tier-by-tier prompts, and generation instructions included. Simply add this as a reference source and use your own AI tool to build the first draft JSON file that you can load in above.
             </p>
             <button
               onClick={handleDownloadAIGuide}
               className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold px-4 py-2 rounded-lg hover:from-violet-700 hover:to-purple-700 transform hover:scale-105 transition-all shadow-md text-sm"
             >
               <Sparkles className="w-3 h-3" />
-              Download Free Guide
+              Download Instruction Pack
             </button>
           </div>
 
