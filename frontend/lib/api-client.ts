@@ -569,3 +569,82 @@ export const visualizationsApi = {
     return data;
   },
 };
+
+// ============================================================================
+// AI COACHING
+// ============================================================================
+
+export const aiApi = {
+  async suggestField(
+    sessionId: string,
+    tier: string,
+    fieldName: string,
+    currentContent: string,
+    context?: any
+  ): Promise<{
+    has_suggestion: boolean;
+    severity?: string;
+    message?: string;
+    suggestion?: string;
+    examples?: string[];
+    reasoning?: string;
+    error?: string;
+  }> {
+    const { data } = await api.post("/api/ai/suggest-field", {
+      session_id: sessionId,
+      tier,
+      field_name: fieldName,
+      current_content: currentContent,
+      context,
+    });
+    return data;
+  },
+
+  async generateDraft(
+    sessionId: string,
+    tier: string,
+    context: any
+  ): Promise<{
+    name: string;
+    description: string;
+    rationale?: string;
+    additional_fields?: any;
+    error?: string;
+  }> {
+    const { data } = await api.post("/api/ai/generate-draft", {
+      session_id: sessionId,
+      tier,
+      context,
+    });
+    return data;
+  },
+
+  async detectJargon(text: string): Promise<{
+    has_jargon: boolean;
+    jargon_words?: string[];
+    severity?: string;
+    message?: string;
+    alternative?: string;
+    error?: string;
+  }> {
+    const { data } = await api.post("/api/ai/detect-jargon", {
+      text,
+    });
+    return data;
+  },
+
+  async chat(
+    sessionId: string,
+    message: string,
+    chatHistory?: Array<{ role: string; content: string }>
+  ): Promise<{
+    response: string;
+  }> {
+    const { data } = await api.post("/api/ai/chat", {
+      session_id: sessionId,
+      message,
+      chat_history: chatHistory,
+    });
+    return data;
+  },
+};

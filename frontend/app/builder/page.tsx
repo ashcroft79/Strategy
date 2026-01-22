@@ -25,6 +25,7 @@ import TierHeader from "@/components/ui/TierHeader";
 import TierCard from "@/components/ui/TierCard";
 import PyramidVisualization from "@/components/visualizations/PyramidVisualization";
 import ExecutionReadinessChecklist from "@/components/visualizations/ExecutionReadinessChecklist";
+import { AICoachSidebar } from "@/components/AICoachSidebar";
 import { StatementType, Horizon } from "@/types/pyramid";
 import { Save, Home, CheckCircle, FileDown, Eye, Trash2, Edit, Plus, BarChart3 } from "lucide-react";
 import { TIER1_TOOLTIPS, TIER2_TOOLTIPS, TIER3_TOOLTIPS, TIER4_TOOLTIPS, TIER5_TOOLTIPS, TIER6_TOOLTIPS, TIER7_TOOLTIPS, TIER8_TOOLTIPS, TIER9_TOOLTIPS } from "@/config/tooltips";
@@ -3197,6 +3198,9 @@ export default function BuilderPage() {
           </div>
         </div>
       )}
+
+      {/* AI Coach Sidebar */}
+      <AICoachSidebar />
     </div>
   );
 }
