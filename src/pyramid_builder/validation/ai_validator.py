@@ -155,7 +155,7 @@ Respond in JSON format:
 
         try:
             response = self.client.messages.create(
-                model="claude-3-5-sonnet-20241022",
+                model="claude-3-5-sonnet-20240620",
                 max_tokens=1024,
                 messages=[{"role": "user", "content": prompt}]
             )
@@ -179,10 +179,13 @@ Respond in JSON format:
                 )
 
         except Exception as e:
+            import traceback
+            print(f"AI Coherence Check Error: {str(e)}")
+            print(traceback.format_exc())
             result.add_issue(
                 ValidationLevel.INFO,
                 "AI: Strategic Coherence",
-                f"AI check skipped (API error: {str(e)[:50]})",
+                f"AI check skipped (API error: {str(e)[:100]})",
             )
 
     def _check_commitment_intent_alignment(self, result: ValidationResult):
@@ -230,7 +233,7 @@ Respond in JSON format:
 
             try:
                 response = self.client.messages.create(
-                    model="claude-3-5-sonnet-20241022",
+                    model="claude-3-5-sonnet-20240620",
                     max_tokens=512,
                     messages=[{"role": "user", "content": prompt}]
                 )
@@ -295,7 +298,7 @@ Respond in JSON format:
 
         try:
             response = self.client.messages.create(
-                model="claude-3-5-sonnet-20241022",
+                model="claude-3-5-sonnet-20240620",
                 max_tokens=512,
                 messages=[{"role": "user", "content": prompt}]
             )
@@ -361,7 +364,7 @@ Respond in JSON format:
 
         try:
             response = self.client.messages.create(
-                model="claude-3-5-sonnet-20241022",
+                model="claude-3-5-sonnet-20240620",
                 max_tokens=1024,
                 messages=[{"role": "user", "content": prompt}]
             )
@@ -457,7 +460,7 @@ Respond in JSON format:
 
         try:
             response = self.client.messages.create(
-                model="claude-3-5-sonnet-20241022",
+                model="claude-3-5-sonnet-20240620",
                 max_tokens=2048,
                 messages=[{"role": "user", "content": prompt}]
             )
