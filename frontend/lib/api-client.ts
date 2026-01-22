@@ -720,6 +720,26 @@ export interface ImportDocumentsResponse {
   error?: string;
 }
 
+export interface BatchImportResults {
+  success: boolean;
+  results: {
+    vision: any;
+    values: any[];
+    strategic_drivers: any[];
+    strategic_intents: any[];
+    iconic_commitments: any[];
+    errors: string[];
+  };
+  summary: {
+    vision_added: boolean;
+    values_added: number;
+    drivers_added: number;
+    intents_added: number;
+    commitments_added: number;
+    errors_count: number;
+  };
+}
+
 export const documentsApi = {
   async importDocuments(
     files: File[],
@@ -737,6 +757,19 @@ export const documentsApi = {
       headers: {
         "Content-Type": "multipart/form-data",
       },
+    });
+    return data;
+  },
+
+  async batchImportElements(
+    sessionId: string,
+    extractedElements: ExtractedElements,
+    createdBy?: string
+  ): Promise<BatchImportResults> {
+    const { data } = await api.post("/api/documents/batch-import", {
+      session_id: sessionId,
+      extracted_elements: extractedElements,
+      created_by: createdBy || "Document Import",
     });
     return data;
   },

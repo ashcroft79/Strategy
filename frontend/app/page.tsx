@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePyramidStore } from "@/lib/store";
-import { pyramidApi, exportsApi, type ExtractedElements } from "@/lib/api-client";
+import { pyramidApi, exportsApi, documentsApi, type ExtractedElements } from "@/lib/api-client";
 import { readFileAsText, downloadBlob } from "@/lib/utils";
 import { Upload, Plus, Sparkles, FileText } from "lucide-react";
 import { DocumentImportModal } from "@/components/DocumentImportModal";
@@ -105,11 +105,18 @@ export default function HomePage() {
         description: description || "Imported from documents",
       });
 
-      // TODO: Add extracted elements to pyramid
-      // This would require API endpoints to batch-add elements
-      // For now, we'll navigate to builder and user can manually review/add
+      // Batch import extracted elements into the pyramid
+      const importResults = await documentsApi.batchImportElements(
+        sessionId,
+        extractedElements,
+        createdBy || "Document Import"
+      );
 
-      setPyramid(pyramid);
+      // Refresh pyramid to get updated data with imported elements
+      const updatedPyramid = await pyramidApi.get(sessionId);
+      setPyramid(updatedPyramid);
+
+      // Navigate to builder
       router.push("/builder");
     } catch (err: any) {
       setError(err.response?.data?.detail || "Failed to import pyramid");

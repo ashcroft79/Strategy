@@ -20,7 +20,7 @@ import {
 interface DocumentImportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onImportComplete: (extractedElements: ExtractedElements) => void;
+  onImportComplete: (extractedElements: ExtractedElements) => Promise<void>;
   organizationName?: string;
 }
 
@@ -32,6 +32,7 @@ export function DocumentImportModal({
 }: DocumentImportModalProps) {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [importing, setImporting] = useState(false);
+  const [accepting, setAccepting] = useState(false);
   const [importResult, setImportResult] = useState<ImportDocumentsResponse | null>(null);
   const [dragActive, setDragActive] = useState(false);
 
@@ -98,10 +99,16 @@ export function DocumentImportModal({
     }
   };
 
-  const handleAcceptAndImport = () => {
+  const handleAcceptAndImport = async () => {
     if (importResult?.extracted_elements) {
-      onImportComplete(importResult.extracted_elements);
-      handleClose();
+      setAccepting(true);
+      try {
+        await onImportComplete(importResult.extracted_elements);
+        handleClose();
+      } catch (error) {
+        // Error will be handled by parent component
+        setAccepting(false);
+      }
     }
   };
 
@@ -379,10 +386,20 @@ export function DocumentImportModal({
                 {importResult.success && (
                   <button
                     onClick={handleAcceptAndImport}
-                    className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                    disabled={accepting}
+                    className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
                   >
-                    <CheckCircle2 className="w-4 h-4" />
-                    Accept & Import
+                    {accepting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Importing...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-4 h-4" />
+                        Accept & Import
+                      </>
+                    )}
                   </button>
                 )}
                 <button

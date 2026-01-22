@@ -5,6 +5,8 @@ from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 import os
 
+from .pyramids import active_pyramids
+
 # Try to import document processing modules
 try:
     from src.pyramid_builder.ai.document_parser import DocumentParser
@@ -12,6 +14,13 @@ try:
     DOCUMENT_PROCESSING_AVAILABLE = True
 except ImportError:
     DOCUMENT_PROCESSING_AVAILABLE = False
+
+# Import pyramid types for batch import
+try:
+    from src.pyramid_builder.models.pyramid import StatementType, Horizon
+    PYRAMID_TYPES_AVAILABLE = True
+except ImportError:
+    PYRAMID_TYPES_AVAILABLE = False
 
 router = APIRouter()
 
@@ -232,3 +241,183 @@ async def get_supported_formats():
         "max_pages_per_pdf": DocumentParser.MAX_PAGES if DOCUMENT_PROCESSING_AVAILABLE else 100,
         "max_slides_per_pptx": DocumentParser.MAX_PAGES if DOCUMENT_PROCESSING_AVAILABLE else 100,
     }
+
+
+# Request model for batch import
+class BatchImportRequest(BaseModel):
+    session_id: str
+    extracted_elements: Dict[str, Any]
+    created_by: Optional[str] = "Document Import"
+
+
+@router.post("/batch-import")
+async def batch_import_elements(request: BatchImportRequest):
+    """
+    Batch import extracted elements into an existing pyramid.
+
+    Takes the extracted elements from document import and adds them
+    to the pyramid in the specified session.
+    """
+    if not PYRAMID_TYPES_AVAILABLE:
+        raise HTTPException(
+            status_code=503,
+            detail="Pyramid types not available"
+        )
+
+    # Check if pyramid exists
+    if request.session_id not in active_pyramids:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Pyramid session {request.session_id} not found. Create a pyramid first."
+        )
+
+    manager = active_pyramids[request.session_id]
+    elements = request.extracted_elements
+    results = {
+        "vision": None,
+        "values": [],
+        "strategic_drivers": [],
+        "strategic_intents": [],
+        "iconic_commitments": [],
+        "errors": []
+    }
+
+    try:
+        # 1. Add Vision/Mission/Belief/Passion statement
+        if elements.get("vision") and elements["vision"].get("statement"):
+            try:
+                vision_data = elements["vision"]
+                statement_type_str = vision_data.get("statement_type", "VISION")
+
+                # Convert string to StatementType enum
+                statement_type = StatementType[statement_type_str.upper()]
+
+                statement = manager.add_vision_statement(
+                    statement_type=statement_type,
+                    statement=vision_data["statement"],
+                    created_by=request.created_by
+                )
+                results["vision"] = statement.model_dump(mode="json")
+            except Exception as e:
+                results["errors"].append(f"Vision import failed: {str(e)}")
+
+        # 2. Add Values
+        if elements.get("values"):
+            for value_data in elements["values"]:
+                try:
+                    value = manager.add_value(
+                        name=value_data.get("name", ""),
+                        description=value_data.get("description", ""),
+                        created_by=request.created_by
+                    )
+                    results["values"].append(value.model_dump(mode="json"))
+                except Exception as e:
+                    results["errors"].append(f"Value import failed ({value_data.get('name')}): {str(e)}")
+
+        # 3. Add Strategic Drivers
+        if elements.get("strategic_drivers"):
+            for driver_data in elements["strategic_drivers"]:
+                try:
+                    driver = manager.add_strategic_driver(
+                        name=driver_data.get("name", ""),
+                        description=driver_data.get("description", ""),
+                        rationale=driver_data.get("rationale", ""),
+                        created_by=request.created_by
+                    )
+                    results["strategic_drivers"].append(driver.model_dump(mode="json"))
+                except Exception as e:
+                    results["errors"].append(f"Driver import failed ({driver_data.get('name')}): {str(e)}")
+
+        # 4. Add Strategic Intents
+        # Note: Intents require a driver_id, so we'll link to the first driver if available
+        driver_ids = [d["id"] for d in results["strategic_drivers"]]
+
+        if elements.get("strategic_intents"):
+            for idx, intent_data in enumerate(elements["strategic_intents"]):
+                try:
+                    # Try to match linked_driver or use first driver
+                    linked_driver = intent_data.get("linked_driver", "")
+                    driver_id = None
+
+                    if linked_driver:
+                        # Try to find matching driver by name
+                        for driver in results["strategic_drivers"]:
+                            if linked_driver.lower() in driver["name"].lower():
+                                driver_id = driver["id"]
+                                break
+
+                    # If no match, distribute intents across drivers
+                    if not driver_id and driver_ids:
+                        driver_id = driver_ids[idx % len(driver_ids)]
+
+                    if driver_id:
+                        intent = manager.add_strategic_intent(
+                            driver_id=driver_id,
+                            name=intent_data.get("name", ""),
+                            description=intent_data.get("description", ""),
+                            created_by=request.created_by
+                        )
+                        results["strategic_intents"].append(intent.model_dump(mode="json"))
+                    else:
+                        results["errors"].append(f"Intent skipped ({intent_data.get('name')}): No driver available")
+                except Exception as e:
+                    results["errors"].append(f"Intent import failed ({intent_data.get('name')}): {str(e)}")
+
+        # 5. Add Iconic Commitments
+        if elements.get("iconic_commitments"):
+            for idx, commitment_data in enumerate(elements["iconic_commitments"]):
+                try:
+                    # Try to match linked_driver or use first driver
+                    linked_driver = commitment_data.get("linked_driver", "")
+                    driver_id = None
+
+                    if linked_driver:
+                        # Try to find matching driver by name
+                        for driver in results["strategic_drivers"]:
+                            if linked_driver.lower() in driver["name"].lower():
+                                driver_id = driver["id"]
+                                break
+
+                    # If no match, distribute commitments across drivers
+                    if not driver_id and driver_ids:
+                        driver_id = driver_ids[idx % len(driver_ids)]
+
+                    # Parse horizon
+                    horizon_str = commitment_data.get("horizon", "H1")
+                    try:
+                        horizon = Horizon[horizon_str.upper()]
+                    except (KeyError, AttributeError):
+                        horizon = Horizon.H1  # Default to H1
+
+                    if driver_id:
+                        commitment = manager.add_iconic_commitment(
+                            primary_driver_id=driver_id,
+                            name=commitment_data.get("name", ""),
+                            description=commitment_data.get("description", ""),
+                            horizon=horizon,
+                            created_by=request.created_by
+                        )
+                        results["iconic_commitments"].append(commitment.model_dump(mode="json"))
+                    else:
+                        results["errors"].append(f"Commitment skipped ({commitment_data.get('name')}): No driver available")
+                except Exception as e:
+                    results["errors"].append(f"Commitment import failed ({commitment_data.get('name')}): {str(e)}")
+
+        return {
+            "success": True,
+            "results": results,
+            "summary": {
+                "vision_added": bool(results["vision"]),
+                "values_added": len(results["values"]),
+                "drivers_added": len(results["strategic_drivers"]),
+                "intents_added": len(results["strategic_intents"]),
+                "commitments_added": len(results["iconic_commitments"]),
+                "errors_count": len(results["errors"])
+            }
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Batch import failed: {str(e)}"
+        )
