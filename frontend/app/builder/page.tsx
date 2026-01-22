@@ -26,6 +26,9 @@ import TierCard from "@/components/ui/TierCard";
 import PyramidVisualization from "@/components/visualizations/PyramidVisualization";
 import ExecutionReadinessChecklist from "@/components/visualizations/ExecutionReadinessChecklist";
 import { AICoachSidebar } from "@/components/AICoachSidebar";
+import { useAIFieldSuggestion } from "@/hooks/useAIFieldSuggestion";
+import { AIFieldSuggestion, AIFieldSuggestionIndicator } from "@/components/AIFieldSuggestion";
+import { AIDraftGenerator } from "@/components/AIDraftGenerator";
 import { StatementType, Horizon } from "@/types/pyramid";
 import { Save, Home, CheckCircle, FileDown, Eye, Trash2, Edit, Plus, BarChart3 } from "lucide-react";
 import { TIER1_TOOLTIPS, TIER2_TOOLTIPS, TIER3_TOOLTIPS, TIER4_TOOLTIPS, TIER5_TOOLTIPS, TIER6_TOOLTIPS, TIER7_TOOLTIPS, TIER8_TOOLTIPS, TIER9_TOOLTIPS } from "@/config/tooltips";
@@ -118,6 +121,50 @@ export default function BuilderPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editType, setEditType] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<any>({});
+
+  // AI field suggestions (only enabled when modal is open for add mode)
+  const driverNameSuggestion = useAIFieldSuggestion(driverName, {
+    sessionId,
+    tier: "strategic_driver",
+    fieldName: "name",
+    enabled: isModalOpen && modalMode === 'add' && modalItemType === 'driver',
+    minLength: 3,
+  });
+
+  const driverDescSuggestion = useAIFieldSuggestion(driverDescription, {
+    sessionId,
+    tier: "strategic_driver",
+    fieldName: "description",
+    enabled: isModalOpen && modalMode === 'add' && modalItemType === 'driver',
+    minLength: 10,
+    context: { name: driverName },
+  });
+
+  const intentSuggestion = useAIFieldSuggestion(intentStatement, {
+    sessionId,
+    tier: "strategic_intent",
+    fieldName: "statement",
+    enabled: isModalOpen && modalMode === 'add' && modalItemType === 'intent',
+    minLength: 10,
+    context: { driver_id: selectedDriver },
+  });
+
+  const commitmentNameSuggestion = useAIFieldSuggestion(commitmentName, {
+    sessionId,
+    tier: "iconic_commitment",
+    fieldName: "name",
+    enabled: isModalOpen && modalMode === 'add' && modalItemType === 'commitment',
+    minLength: 5,
+  });
+
+  const commitmentDescSuggestion = useAIFieldSuggestion(commitmentDescription, {
+    sessionId,
+    tier: "iconic_commitment",
+    fieldName: "description",
+    enabled: isModalOpen && modalMode === 'add' && modalItemType === 'commitment',
+    minLength: 15,
+    context: { name: commitmentName, primary_driver_id: selectedDriver },
+  });
 
   useEffect(() => {
     if (!pyramid) {
@@ -2594,36 +2641,104 @@ export default function BuilderPage() {
 
         {/* Driver Form */}
         {modalItemType === 'driver' && (
-          <form onSubmit={modalMode === 'add' ? handleAddDriver : (e) => { e.preventDefault(); handleSaveEdit('driver'); }} className="space-y-4">
-            <Input
-              label="Driver Name"
-              value={modalMode === 'edit' ? editFormData.name : driverName}
-              onChange={(e) => {
-                if (modalMode === 'edit') {
-                  setEditFormData({ ...editFormData, name: e.target.value });
-                } else {
-                  setDriverName(e.target.value);
-                }
-              }}
-              placeholder="e.g., Customer Excellence, Digital Innovation"
-              tooltipContent={TIER4_TOOLTIPS.DRIVER_NAME}
-              required
-            />
-            <Textarea
-              label="Description"
-              value={modalMode === 'edit' ? editFormData.description : driverDescription}
-              onChange={(e) => {
-                if (modalMode === 'edit') {
-                  setEditFormData({ ...editFormData, description: e.target.value });
-                } else {
-                  setDriverDescription(e.target.value);
-                }
-              }}
-              placeholder="What this driver means and why it matters..."
-              tooltipContent={TIER4_TOOLTIPS.DRIVER_DESCRIPTION}
-              rows={3}
-              required
-            />
+          <>
+            {/* Draft Generation Button - Only show in add mode */}
+            {modalMode === 'add' && (
+              <div className="mb-4 flex justify-end">
+                <AIDraftGenerator
+                  sessionId={sessionId}
+                  tier="strategic_driver"
+                  tierLabel="Strategic Driver"
+                  context={{
+                    vision: pyramid?.vision?.statements?.[0]?.statement || "",
+                    existing_drivers: pyramid?.strategic_drivers?.map(d => d.name) || [],
+                  }}
+                  onAccept={(draft) => {
+                    if (draft.name) setDriverName(draft.name);
+                    if (draft.description) setDriverDescription(draft.description);
+                  }}
+                  buttonSize="sm"
+                />
+              </div>
+            )}
+
+            <form onSubmit={modalMode === 'add' ? handleAddDriver : (e) => { e.preventDefault(); handleSaveEdit('driver'); }} className="space-y-4">
+              {/* Driver Name with AI */}
+              <div>
+                <div className="relative">
+                  <Input
+                    label="Driver Name"
+                    value={modalMode === 'edit' ? editFormData.name : driverName}
+                    onChange={(e) => {
+                      if (modalMode === 'edit') {
+                        setEditFormData({ ...editFormData, name: e.target.value });
+                      } else {
+                        setDriverName(e.target.value);
+                      }
+                    }}
+                    placeholder="e.g., Customer Excellence, Digital Innovation"
+                    tooltipContent={TIER4_TOOLTIPS.DRIVER_NAME}
+                    required
+                  />
+                  {modalMode === 'add' && (
+                    <AIFieldSuggestionIndicator
+                      isLoading={driverNameSuggestion.isLoading}
+                      hasSuggestion={driverNameSuggestion.hasSuggestion}
+                    />
+                  )}
+                </div>
+                {modalMode === 'add' && driverNameSuggestion.hasSuggestion && driverNameSuggestion.suggestion?.has_suggestion && (
+                  <AIFieldSuggestion
+                    severity={driverNameSuggestion.suggestion.severity || "info"}
+                    message={driverNameSuggestion.suggestion.message || ""}
+                    suggestion={driverNameSuggestion.suggestion.suggestion}
+                    examples={driverNameSuggestion.suggestion.examples}
+                    reasoning={driverNameSuggestion.suggestion.reasoning}
+                    onDismiss={driverNameSuggestion.dismissSuggestion}
+                    onApply={(text) => {
+                      setDriverName(text);
+                      driverNameSuggestion.dismissSuggestion();
+                    }}
+                  />
+                )}
+              </div>
+
+              {/* Driver Description with AI */}
+              <div>
+                <div className="relative">
+                  <Textarea
+                    label="Description"
+                    value={modalMode === 'edit' ? editFormData.description : driverDescription}
+                    onChange={(e) => {
+                      if (modalMode === 'edit') {
+                        setEditFormData({ ...editFormData, description: e.target.value });
+                      } else {
+                        setDriverDescription(e.target.value);
+                      }
+                    }}
+                    placeholder="What this driver means and why it matters..."
+                    tooltipContent={TIER4_TOOLTIPS.DRIVER_DESCRIPTION}
+                    rows={3}
+                    required
+                  />
+                  {modalMode === 'add' && (
+                    <AIFieldSuggestionIndicator
+                      isLoading={driverDescSuggestion.isLoading}
+                      hasSuggestion={driverDescSuggestion.hasSuggestion}
+                    />
+                  )}
+                </div>
+                {modalMode === 'add' && driverDescSuggestion.hasSuggestion && driverDescSuggestion.suggestion?.has_suggestion && (
+                  <AIFieldSuggestion
+                    severity={driverDescSuggestion.suggestion.severity || "info"}
+                    message={driverDescSuggestion.suggestion.message || ""}
+                    suggestion={driverDescSuggestion.suggestion.suggestion}
+                    examples={driverDescSuggestion.suggestion.examples}
+                    reasoning={driverDescSuggestion.suggestion.reasoning}
+                    onDismiss={driverDescSuggestion.dismissSuggestion}
+                  />
+                )}
+              </div>
             {modalMode === 'edit' && (
               <Textarea
                 label="Rationale (Optional)"
@@ -2634,70 +2749,121 @@ export default function BuilderPage() {
                 rows={2}
               />
             )}
-            <div className="flex gap-3 justify-end pt-4 border-t">
-              <Button type="button" variant="ghost" onClick={closeModal}>
-                Cancel
-              </Button>
-              <Button type="submit">
-                {modalMode === 'add' ? 'Add Driver' : 'Save Changes'}
-              </Button>
-            </div>
-          </form>
+              <div className="flex gap-3 justify-end pt-4 border-t">
+                <Button type="button" variant="ghost" onClick={closeModal}>
+                  Cancel
+                </Button>
+                <Button type="submit">
+                  {modalMode === 'add' ? 'Add Driver' : 'Save Changes'}
+                </Button>
+              </div>
+            </form>
+          </>
         )}
 
         {/* Intent Form */}
         {modalItemType === 'intent' && (
-          <form onSubmit={modalMode === 'add' ? handleAddIntent : (e) => { e.preventDefault(); handleSaveEdit('intent'); }} className="space-y-4">
-            <div>
-              <LabelWithTooltip
-                label="Strategic Driver"
-                tooltipContent={TIER5_TOOLTIPS.INTENT_DRIVER_LINK}
-                required={true}
-              />
-              <select
-                className="input"
-                value={modalMode === 'edit' ? editFormData.driver_id : selectedDriver}
-                onChange={(e) => {
-                  if (modalMode === 'edit') {
-                    setEditFormData({ ...editFormData, driver_id: e.target.value });
-                  } else {
-                    setSelectedDriver(e.target.value);
-                  }
-                }}
-                required
-              >
-                <option value="">Select a driver...</option>
-                {pyramid.strategic_drivers.map((driver) => (
-                  <option key={driver.id} value={driver.id}>
-                    {driver.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <Textarea
-              label="Intent Statement"
-              tooltipContent={TIER5_TOOLTIPS.INTENT_STATEMENT}
-              value={modalMode === 'edit' ? editFormData.statement : intentStatement}
-              onChange={(e) => {
-                if (modalMode === 'edit') {
-                  setEditFormData({ ...editFormData, statement: e.target.value });
-                } else {
-                  setIntentStatement(e.target.value);
-                }
-              }}
-              placeholder="What does success look like for this driver? Describe the aspirational future state..."
-              rows={4}
-              required
-            />
-            <div className="flex gap-3 justify-end pt-4 border-t">
-              <Button type="button" variant="ghost" onClick={closeModal}>
-                Cancel
-              </Button>
-              <Button type="submit">
-                {modalMode === 'add' ? 'Add Intent' : 'Save Changes'}
-              </Button>
-            </div>
-          </form>
+          <>
+            {/* Draft Generation Button - Only show in add mode */}
+            {modalMode === 'add' && selectedDriver && (
+              <div className="mb-4 flex justify-end">
+                <AIDraftGenerator
+                  sessionId={sessionId}
+                  tier="strategic_intent"
+                  tierLabel="Strategic Intent"
+                  context={{
+                    driver_id: selectedDriver,
+                    driver_name: pyramid?.strategic_drivers?.find(d => d.id === selectedDriver)?.name,
+                    vision: pyramid?.vision?.statements?.[0]?.statement || "",
+                  }}
+                  onAccept={(draft) => {
+                    if (draft.name || draft.statement) {
+                      setIntentStatement(draft.name || draft.statement || draft.description);
+                    }
+                  }}
+                  buttonSize="sm"
+                />
+              </div>
+            )}
+
+            <form onSubmit={modalMode === 'add' ? handleAddIntent : (e) => { e.preventDefault(); handleSaveEdit('intent'); }} className="space-y-4">
+              <div>
+                <LabelWithTooltip
+                  label="Strategic Driver"
+                  tooltipContent={TIER5_TOOLTIPS.INTENT_DRIVER_LINK}
+                  required={true}
+                />
+                <select
+                  className="input"
+                  value={modalMode === 'edit' ? editFormData.driver_id : selectedDriver}
+                  onChange={(e) => {
+                    if (modalMode === 'edit') {
+                      setEditFormData({ ...editFormData, driver_id: e.target.value });
+                    } else {
+                      setSelectedDriver(e.target.value);
+                    }
+                  }}
+                  required
+                >
+                  <option value="">Select a driver...</option>
+                  {pyramid.strategic_drivers.map((driver) => (
+                    <option key={driver.id} value={driver.id}>
+                      {driver.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Intent Statement with AI */}
+              <div>
+                <div className="relative">
+                  <Textarea
+                    label="Intent Statement"
+                    tooltipContent={TIER5_TOOLTIPS.INTENT_STATEMENT}
+                    value={modalMode === 'edit' ? editFormData.statement : intentStatement}
+                    onChange={(e) => {
+                      if (modalMode === 'edit') {
+                        setEditFormData({ ...editFormData, statement: e.target.value });
+                      } else {
+                        setIntentStatement(e.target.value);
+                      }
+                    }}
+                    placeholder="What does success look like for this driver? Describe the aspirational future state..."
+                    rows={4}
+                    required
+                  />
+                  {modalMode === 'add' && (
+                    <AIFieldSuggestionIndicator
+                      isLoading={intentSuggestion.isLoading}
+                      hasSuggestion={intentSuggestion.hasSuggestion}
+                    />
+                  )}
+                </div>
+                {modalMode === 'add' && intentSuggestion.hasSuggestion && intentSuggestion.suggestion?.has_suggestion && (
+                  <AIFieldSuggestion
+                    severity={intentSuggestion.suggestion.severity || "info"}
+                    message={intentSuggestion.suggestion.message || ""}
+                    suggestion={intentSuggestion.suggestion.suggestion}
+                    examples={intentSuggestion.suggestion.examples}
+                    reasoning={intentSuggestion.suggestion.reasoning}
+                    onDismiss={intentSuggestion.dismissSuggestion}
+                    onApply={(text) => {
+                      setIntentStatement(text);
+                      intentSuggestion.dismissSuggestion();
+                    }}
+                  />
+                )}
+              </div>
+              <div className="flex gap-3 justify-end pt-4 border-t">
+                <Button type="button" variant="ghost" onClick={closeModal}>
+                  Cancel
+                </Button>
+                <Button type="submit">
+                  {modalMode === 'add' ? 'Add Intent' : 'Save Changes'}
+                </Button>
+              </div>
+            </form>
+          </>
         )}
 
         {/* Enabler Form */}
@@ -2799,36 +2965,108 @@ export default function BuilderPage() {
 
         {/* Commitment Form */}
         {modalItemType === 'commitment' && (
-          <form onSubmit={modalMode === 'add' ? handleAddCommitment : (e) => { e.preventDefault(); handleSaveEdit('commitment'); }} className="space-y-4">
-            <Input
-              label="Commitment Name"
-              value={modalMode === 'edit' ? editFormData.name : commitmentName}
-              onChange={(e) => {
-                if (modalMode === 'edit') {
-                  setEditFormData({ ...editFormData, name: e.target.value });
-                } else {
-                  setCommitmentName(e.target.value);
-                }
-              }}
-              placeholder="e.g., Launch New Platform"
-              tooltipContent={TIER7_TOOLTIPS.COMMITMENT_NAME}
-              required
-            />
-            <Textarea
-              label="Description"
-              value={modalMode === 'edit' ? editFormData.description : commitmentDescription}
-              onChange={(e) => {
-                if (modalMode === 'edit') {
-                  setEditFormData({ ...editFormData, description: e.target.value });
-                } else {
-                  setCommitmentDescription(e.target.value);
-                }
-              }}
-              placeholder="What will be delivered..."
-              tooltipContent={TIER7_TOOLTIPS.COMMITMENT_DESCRIPTION}
-              rows={3}
-              required
-            />
+          <>
+            {/* Draft Generation Button - Only show in add mode */}
+            {modalMode === 'add' && selectedDriver && (
+              <div className="mb-4 flex justify-end">
+                <AIDraftGenerator
+                  sessionId={sessionId}
+                  tier="iconic_commitment"
+                  tierLabel="Iconic Commitment"
+                  context={{
+                    vision: pyramid?.vision?.statements?.[0]?.statement || "",
+                    drivers: pyramid?.strategic_drivers?.map(d => ({ id: d.id, name: d.name })) || [],
+                    intents: pyramid?.strategic_intents?.filter(i => i.driver_id === selectedDriver).map(i => ({ id: i.id, statement: i.statement })) || [],
+                    primary_driver_id: selectedDriver,
+                    primary_driver_name: pyramid?.strategic_drivers?.find(d => d.id === selectedDriver)?.name,
+                    horizon: commitmentHorizon,
+                  }}
+                  onAccept={(draft) => {
+                    if (draft.name) setCommitmentName(draft.name);
+                    if (draft.description) setCommitmentDescription(draft.description);
+                  }}
+                  buttonSize="sm"
+                />
+              </div>
+            )}
+
+            <form onSubmit={modalMode === 'add' ? handleAddCommitment : (e) => { e.preventDefault(); handleSaveEdit('commitment'); }} className="space-y-4">
+              {/* Commitment Name with AI */}
+              <div>
+                <div className="relative">
+                  <Input
+                    label="Commitment Name"
+                    value={modalMode === 'edit' ? editFormData.name : commitmentName}
+                    onChange={(e) => {
+                      if (modalMode === 'edit') {
+                        setEditFormData({ ...editFormData, name: e.target.value });
+                      } else {
+                        setCommitmentName(e.target.value);
+                      }
+                    }}
+                    placeholder="e.g., Launch New Platform"
+                    tooltipContent={TIER7_TOOLTIPS.COMMITMENT_NAME}
+                    required
+                  />
+                  {modalMode === 'add' && (
+                    <AIFieldSuggestionIndicator
+                      isLoading={commitmentNameSuggestion.isLoading}
+                      hasSuggestion={commitmentNameSuggestion.hasSuggestion}
+                    />
+                  )}
+                </div>
+                {modalMode === 'add' && commitmentNameSuggestion.hasSuggestion && commitmentNameSuggestion.suggestion?.has_suggestion && (
+                  <AIFieldSuggestion
+                    severity={commitmentNameSuggestion.suggestion.severity || "info"}
+                    message={commitmentNameSuggestion.suggestion.message || ""}
+                    suggestion={commitmentNameSuggestion.suggestion.suggestion}
+                    examples={commitmentNameSuggestion.suggestion.examples}
+                    reasoning={commitmentNameSuggestion.suggestion.reasoning}
+                    onDismiss={commitmentNameSuggestion.dismissSuggestion}
+                    onApply={(text) => {
+                      setCommitmentName(text);
+                      commitmentNameSuggestion.dismissSuggestion();
+                    }}
+                  />
+                )}
+              </div>
+
+              {/* Commitment Description with AI */}
+              <div>
+                <div className="relative">
+                  <Textarea
+                    label="Description"
+                    value={modalMode === 'edit' ? editFormData.description : commitmentDescription}
+                    onChange={(e) => {
+                      if (modalMode === 'edit') {
+                        setEditFormData({ ...editFormData, description: e.target.value });
+                      } else {
+                        setCommitmentDescription(e.target.value);
+                      }
+                    }}
+                    placeholder="What will be delivered..."
+                    tooltipContent={TIER7_TOOLTIPS.COMMITMENT_DESCRIPTION}
+                    rows={3}
+                    required
+                  />
+                  {modalMode === 'add' && (
+                    <AIFieldSuggestionIndicator
+                      isLoading={commitmentDescSuggestion.isLoading}
+                      hasSuggestion={commitmentDescSuggestion.hasSuggestion}
+                    />
+                  )}
+                </div>
+                {modalMode === 'add' && commitmentDescSuggestion.hasSuggestion && commitmentDescSuggestion.suggestion?.has_suggestion && (
+                  <AIFieldSuggestion
+                    severity={commitmentDescSuggestion.suggestion.severity || "info"}
+                    message={commitmentDescSuggestion.suggestion.message || ""}
+                    suggestion={commitmentDescSuggestion.suggestion.suggestion}
+                    examples={commitmentDescSuggestion.suggestion.examples}
+                    reasoning={commitmentDescSuggestion.suggestion.reasoning}
+                    onDismiss={commitmentDescSuggestion.dismissSuggestion}
+                  />
+                )}
+              </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <LabelWithTooltip
@@ -2957,15 +3195,16 @@ export default function BuilderPage() {
                 />
               </>
             )}
-            <div className="flex gap-3 justify-end pt-4 border-t">
-              <Button type="button" variant="ghost" onClick={closeModal}>
-                Cancel
-              </Button>
-              <Button type="submit">
-                {modalMode === 'add' ? 'Add Commitment' : 'Save Changes'}
-              </Button>
-            </div>
-          </form>
+              <div className="flex gap-3 justify-end pt-4 border-t">
+                <Button type="button" variant="ghost" onClick={closeModal}>
+                  Cancel
+                </Button>
+                <Button type="submit">
+                  {modalMode === 'add' ? 'Add Commitment' : 'Save Changes'}
+                </Button>
+              </div>
+            </form>
+          </>
         )}
 
         {/* Team Objective Form */}
