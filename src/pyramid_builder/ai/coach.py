@@ -103,12 +103,19 @@ class AICoach:
             context_str = f"\nContext: {json.dumps(context, indent=2)}"
 
         # Get tier-specific guidance (same as generation)
-        tier_guidance = self._get_tier_guidance(tier)
+        tier_guidance = self._get_tier_guidance(tier, context)
+
+        # For vision tier, determine the specific statement type
+        statement_type_str = ""
+        if tier == "vision" and context and "statement_type" in context:
+            statement_type = context["statement_type"].upper()
+            statement_type_str = f"\n**CRITICAL**: The user has selected '{statement_type}' as the statement type. You MUST evaluate this content as a {statement_type} statement, NOT as any other type. Do not suggest it should be more like a Vision, Mission, Belief, or Passion unless it fails to meet {statement_type} best practices."
 
         prompt = f"""You are a strategic planning coach. A user is building a strategic pyramid and typing in the {field_name} field for a {tier}.
 
 Current content: "{current_content}"
 {context_str}
+{statement_type_str}
 
 {self.tooltips_guidance}
 
@@ -126,10 +133,12 @@ Respond in JSON format:
   "has_suggestion": true/false,
   "severity": "error/warning/info",
   "message": "Brief issue description (1 sentence)",
-  "suggestion": "Specific improvement suggestion",
+  "suggestion": "A COMPLETE REWRITTEN VERSION of the text that addresses the issues (NOT analysis, but actual replacement text)",
   "examples": ["Example 1", "Example 2"],
   "reasoning": "Why this matters (reference tooltip if relevant)"
 }}
+
+**CRITICAL for 'suggestion' field**: Provide a complete rewritten version of the user's text that fixes the issues. This will be used to replace their text if they click "Apply". Do NOT provide analysis or explanation in this field - only the improved text itself.
 
 If content is good and follows best practices, set has_suggestion: false."""
 
@@ -179,7 +188,7 @@ If content is good and follows best practices, set has_suggestion: false."""
             if self.pyramid.strategic_drivers:
                 pyramid_context += f"Drivers: {', '.join([d.name for d in self.pyramid.strategic_drivers])}\n"
 
-        tier_guidance = self._get_tier_guidance(tier)
+        tier_guidance = self._get_tier_guidance(tier, context)
 
         # Extract user guidance if provided
         user_guidance = context.get("user_guidance", "")
@@ -192,6 +201,12 @@ The user specifically wants: "{user_guidance}"
 IMPORTANT: Focus your draft on this specific request while following best practices.
 """
 
+        # For vision tier, determine the specific statement type
+        statement_type_str = ""
+        if tier == "vision" and context and "statement_type" in context:
+            statement_type = context["statement_type"].upper()
+            statement_type_str = f"\n**CRITICAL**: The user has selected '{statement_type}' as the statement type. You MUST generate a {statement_type} statement following {statement_type} best practices, NOT any other type."
+
         prompt = f"""You are a strategic planning expert helping someone build a {tier}.
 
 Current Pyramid Context:
@@ -199,6 +214,7 @@ Current Pyramid Context:
 
 User Context:
 {json.dumps({k: v for k, v in context.items() if k != 'user_guidance'}, indent=2)}
+{statement_type_str}
 
 {user_guidance_section}
 
@@ -217,8 +233,9 @@ Generate a high-quality draft {tier} that:
 
 Respond in JSON format with the draft fields:
 {{
-  "name": "Name/title of the item",
-  "description": "Detailed description",
+  "name": "Name/title of the item (if applicable)",
+  "statement": "Full statement text (for vision/mission/belief/passion)",
+  "description": "Detailed description (if applicable)",
   "rationale": "Why this matters (if applicable)",
   "additional_fields": {{}}
 }}"""
@@ -373,8 +390,56 @@ Keep responses concise (2-3 sentences) unless user asks for detail."""
         except Exception as e:
             return f"Sorry, I encountered an error: {str(e)}"
 
-    def _get_tier_guidance(self, tier: str) -> str:
+    def _get_tier_guidance(self, tier: str, context: Optional[Dict[str, Any]] = None) -> str:
         """Get specific guidance for a tier type."""
+        # For vision tier, provide statement-type-specific guidance
+        if tier == "vision" and context and "statement_type" in context:
+            statement_type = context["statement_type"]
+            if statement_type == "VISION":
+                return """
+VISION Statement Best Practices:
+- Paints a picture of the future state (what success looks like)
+- Aspirational and inspirational
+- Timeless (not date-bound)
+- Outside-in perspective (what others will see/experience)
+- Memorable and concise
+- Avoids jargon and capability lists
+- Example: "A world where every child has access to quality education"
+                """
+            elif statement_type == "MISSION":
+                return """
+MISSION Statement Best Practices:
+- Describes what you DO and WHO you serve
+- Action-oriented (present tense)
+- Answers: What do we do? For whom? Why does it matter?
+- Specific and grounded in reality
+- Differentiates from competitors
+- Avoids vague language
+- Example: "We provide accessible healthcare to underserved communities through innovative technology"
+                """
+            elif statement_type == "BELIEF":
+                return """
+BELIEF Statement Best Practices:
+- Core conviction that drives your organization
+- States what you believe to be true
+- Timeless and unwavering
+- Typically starts with "We believe..."
+- Conviction-based, not aspirational
+- Avoids platitudes
+- Example: "We believe transparency builds trust faster than perfection"
+                """
+            elif statement_type == "PASSION":
+                return """
+PASSION Statement Best Practices:
+- Describes what energizes and motivates the organization
+- Emotional and authentic
+- Shows what you care deeply about
+- Typically starts with "We are passionate about..."
+- Reveals the "why" behind your work
+- Avoids corporate speak
+- Example: "We are passionate about empowering creators to build sustainable businesses"
+                """
+
         guidance = {
             "vision": """
 Vision/Mission/Belief/Passion Best Practices:
