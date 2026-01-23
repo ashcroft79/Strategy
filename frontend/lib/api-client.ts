@@ -829,3 +829,168 @@ export const documentsApi = {
     return data;
   },
 };
+
+// ============================================================================
+// CONTEXT LAYER (TIER 0)
+// ============================================================================
+
+import type {
+  SOCCItem,
+  SOCCAnalysis,
+  SOCCConnection,
+  OpportunityScore,
+  OpportunityScoringAnalysis,
+  SortedOpportunity,
+  StrategicTension,
+  TensionAnalysis,
+  CommonTension,
+  Stakeholder,
+  StakeholderAnalysis,
+  ContextSummary,
+  ContextExport,
+} from "./context-types";
+
+export const contextApi = {
+  // SOCC Analysis
+  async getSOCC(sessionId: string): Promise<SOCCAnalysis> {
+    const { data } = await api.get(`/api/context/${sessionId}/socc`);
+    return data;
+  },
+
+  async addSOCCItem(sessionId: string, item: Partial<SOCCItem>): Promise<SOCCItem> {
+    const { data } = await api.post(`/api/context/${sessionId}/socc/items`, item);
+    return data;
+  },
+
+  async updateSOCCItem(
+    sessionId: string,
+    itemId: string,
+    item: Partial<SOCCItem>
+  ): Promise<SOCCItem> {
+    const { data } = await api.put(`/api/context/${sessionId}/socc/items/${itemId}`, item);
+    return data;
+  },
+
+  async deleteSOCCItem(sessionId: string, itemId: string): Promise<void> {
+    await api.delete(`/api/context/${sessionId}/socc/items/${itemId}`);
+  },
+
+  async addSOCCConnection(
+    sessionId: string,
+    connection: Partial<SOCCConnection>
+  ): Promise<SOCCConnection> {
+    const { data } = await api.post(`/api/context/${sessionId}/socc/connections`, connection);
+    return data;
+  },
+
+  async deleteSOCCConnection(sessionId: string, connectionId: string): Promise<void> {
+    await api.delete(`/api/context/${sessionId}/socc/connections/${connectionId}`);
+  },
+
+  // Opportunity Scoring
+  async getOpportunityScores(sessionId: string): Promise<OpportunityScoringAnalysis> {
+    const { data } = await api.get(`/api/context/${sessionId}/opportunities/scores`);
+    return data;
+  },
+
+  async scoreOpportunity(
+    sessionId: string,
+    opportunityId: string,
+    score: Partial<OpportunityScore>
+  ): Promise<OpportunityScore> {
+    const { data } = await api.post(
+      `/api/context/${sessionId}/opportunities/${opportunityId}/score`,
+      score
+    );
+    return data;
+  },
+
+  async deleteOpportunityScore(sessionId: string, opportunityId: string): Promise<void> {
+    await api.delete(`/api/context/${sessionId}/opportunities/${opportunityId}/score`);
+  },
+
+  async getSortedOpportunities(sessionId: string): Promise<SortedOpportunity[]> {
+    const { data } = await api.get(`/api/context/${sessionId}/opportunities/sorted`);
+    return data;
+  },
+
+  // Strategic Tensions
+  async getTensions(sessionId: string): Promise<TensionAnalysis> {
+    const { data } = await api.get(`/api/context/${sessionId}/tensions`);
+    return data;
+  },
+
+  async getCommonTensions(): Promise<{ common_tensions: CommonTension[] }> {
+    const { data } = await api.get("/api/context/tensions/common");
+    return data;
+  },
+
+  async addTension(
+    sessionId: string,
+    tension: Partial<StrategicTension>
+  ): Promise<StrategicTension> {
+    const { data } = await api.post(`/api/context/${sessionId}/tensions`, tension);
+    return data;
+  },
+
+  async updateTension(
+    sessionId: string,
+    tensionId: string,
+    tension: Partial<StrategicTension>
+  ): Promise<StrategicTension> {
+    const { data } = await api.put(`/api/context/${sessionId}/tensions/${tensionId}`, tension);
+    return data;
+  },
+
+  async deleteTension(sessionId: string, tensionId: string): Promise<void> {
+    await api.delete(`/api/context/${sessionId}/tensions/${tensionId}`);
+  },
+
+  // Stakeholder Mapping
+  async getStakeholders(sessionId: string): Promise<StakeholderAnalysis> {
+    const { data } = await api.get(`/api/context/${sessionId}/stakeholders`);
+    return data;
+  },
+
+  async addStakeholder(
+    sessionId: string,
+    stakeholder: Partial<Stakeholder>
+  ): Promise<Stakeholder> {
+    const { data } = await api.post(`/api/context/${sessionId}/stakeholders`, stakeholder);
+    return data;
+  },
+
+  async updateStakeholder(
+    sessionId: string,
+    stakeholderId: string,
+    stakeholder: Partial<Stakeholder>
+  ): Promise<Stakeholder> {
+    const { data } = await api.put(
+      `/api/context/${sessionId}/stakeholders/${stakeholderId}`,
+      stakeholder
+    );
+    return data;
+  },
+
+  async deleteStakeholder(sessionId: string, stakeholderId: string): Promise<void> {
+    await api.delete(`/api/context/${sessionId}/stakeholders/${stakeholderId}`);
+  },
+
+  // Context Summary
+  async getContextSummary(sessionId: string): Promise<ContextSummary> {
+    const { data } = await api.get(`/api/context/${sessionId}/summary`);
+    return data;
+  },
+
+  async exportContext(sessionId: string): Promise<ContextExport> {
+    const { data } = await api.get(`/api/context/${sessionId}/export`);
+    return data;
+  },
+
+  async clearContext(sessionId: string): Promise<void> {
+    await api.delete(`/api/context/${sessionId}/clear`);
+  },
+};
+
+// Re-export context types for convenience
+export * from "./context-types";
