@@ -9,7 +9,7 @@ from pathlib import Path
 # Add parent directory to path so we can import pyramid_builder
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from api.routers import pyramids, validation, exports, visualizations, ai, documents
+from api.routers import pyramids, validation, exports, visualizations, ai, documents, context
 
 app = FastAPI(
     title="Strategic Pyramid Builder API",
@@ -33,6 +33,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(pyramids.router, prefix="/api/pyramids", tags=["pyramids"])
+app.include_router(context.router, prefix="/api/context", tags=["context"])
 app.include_router(validation.router, prefix="/api/validation", tags=["validation"])
 app.include_router(exports.router, prefix="/api/exports", tags=["exports"])
 app.include_router(visualizations.router, prefix="/api/visualizations", tags=["visualizations"])
