@@ -305,7 +305,7 @@ export default function HomePage() {
 
             {(!projectName || !organization) && (
               <p className="text-xs text-purple-200 text-center mt-2">
-                Fill in the form first →
+                ← Fill in the form first
               </p>
             )}
           </div>
