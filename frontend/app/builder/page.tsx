@@ -29,8 +29,9 @@ import { AICoachSidebar } from "@/components/AICoachSidebar";
 import { useAIFieldSuggestion } from "@/hooks/useAIFieldSuggestion";
 import { AIFieldSuggestion, AIFieldSuggestionIndicator } from "@/components/AIFieldSuggestion";
 import { AIDraftGenerator } from "@/components/AIDraftGenerator";
+import { SOCCCanvas } from "@/components/context/SOCCCanvas";
 import { StatementType, Horizon } from "@/types/pyramid";
-import { Save, Home, CheckCircle, FileDown, Eye, Trash2, Edit, Plus, BarChart3 } from "lucide-react";
+import { Save, Home, CheckCircle, FileDown, Eye, Trash2, Edit, Plus, BarChart3, Lightbulb } from "lucide-react";
 import { TIER1_TOOLTIPS, TIER2_TOOLTIPS, TIER3_TOOLTIPS, TIER4_TOOLTIPS, TIER5_TOOLTIPS, TIER6_TOOLTIPS, TIER7_TOOLTIPS, TIER8_TOOLTIPS, TIER9_TOOLTIPS } from "@/config/tooltips";
 
 // Component to handle edit query params
@@ -1047,6 +1048,32 @@ export default function BuilderPage() {
             {/* Unsaved Changes Indicator */}
             <UnsavedChangesIndicator variant="inline" />
 
+            {/* Context Section */}
+            <div>
+              <h2 className="text-lg font-bold text-gray-800 mb-2">Context Layer</h2>
+              <p className="text-xs text-gray-600 mb-3">Build your strategic foundation</p>
+              <button
+                onClick={() => setActiveTier('context')}
+                className={`w-full text-left px-4 py-3 rounded-lg border-2 transition-all ${
+                  activeTier === 'context'
+                    ? 'border-purple-500 bg-purple-50 shadow-md'
+                    : 'border-gray-200 hover:border-purple-300 hover:bg-purple-50'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg ${
+                    activeTier === 'context' ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-600'
+                  }`}>
+                    <Lightbulb className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-gray-900">SOCC Analysis</div>
+                    <div className="text-xs text-gray-600">Strengths, Opportunities, Considerations, Constraints</div>
+                  </div>
+                </div>
+              </button>
+            </div>
+
             {/* Pyramid Section */}
             <div>
               <h2 className="text-lg font-bold text-gray-800 mb-2">Strategic Pyramid</h2>
@@ -1075,9 +1102,29 @@ export default function BuilderPage() {
                   <div className="text-6xl mb-4">👈</div>
                   <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome to Your Strategic Pyramid</h2>
                   <p className="text-gray-600 max-w-md">
-                    Click any tier on the left to start building your strategy. Gray tiers are empty and waiting to be filled!
+                    Click any tier on the left to start building your strategy. Start with Context to build your foundation!
                   </p>
                 </div>
+              </div>
+            )}
+
+            {/* Context Layer - SOCC Analysis */}
+            {activeTier === "context" && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Context Layer</h1>
+                    <p className="text-gray-600">
+                      Build your strategic foundation before constructing the pyramid. Capture the context that will inform your strategy.
+                    </p>
+                  </div>
+                  <Button variant="ghost" onClick={() => setActiveTier(undefined)}>
+                    <Eye className="w-4 h-4 mr-2" />
+                    Back to Overview
+                  </Button>
+                </div>
+
+                <SOCCCanvas />
               </div>
             )}
 
