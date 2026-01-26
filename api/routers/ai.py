@@ -6,6 +6,7 @@ from typing import Dict, Any, Optional, List
 import os
 
 from .pyramids import active_pyramids
+from .context import context_storage
 
 # Try to import AI coach
 try:
@@ -72,8 +73,25 @@ async def suggest_field_improvement(request: SuggestFieldRequest):
     if request.session_id in active_pyramids:
         pyramid = active_pyramids[request.session_id].pyramid
 
+    # Get SOCC context (if exists)
+    context_data = None
+    if request.session_id in context_storage:
+        socc_analysis = context_storage[request.session_id]
+        if socc_analysis.items:
+            context_data = {
+                "socc_items": [
+                    {
+                        "quadrant": item.quadrant,
+                        "title": item.title,
+                        "description": item.description,
+                        "impact_level": item.impact_level
+                    }
+                    for item in socc_analysis.items
+                ],
+            }
+
     try:
-        coach = AICoach(pyramid=pyramid)
+        coach = AICoach(pyramid=pyramid, context=context_data)
         suggestion = coach.suggest_field_improvement(
             tier=request.tier,
             field_name=request.field_name,
@@ -94,7 +112,7 @@ async def generate_draft(request: GenerateDraftRequest):
     """
     Generate a draft for a tier item.
 
-    Takes pyramid context and generates high-quality draft content
+    Takes pyramid and context to generate high-quality draft content
     following best practices and thought leadership.
     """
     check_ai_available()
@@ -104,8 +122,25 @@ async def generate_draft(request: GenerateDraftRequest):
     if request.session_id in active_pyramids:
         pyramid = active_pyramids[request.session_id].pyramid
 
+    # Get SOCC context (if exists)
+    context_data = None
+    if request.session_id in context_storage:
+        socc_analysis = context_storage[request.session_id]
+        if socc_analysis.items:
+            context_data = {
+                "socc_items": [
+                    {
+                        "quadrant": item.quadrant,
+                        "title": item.title,
+                        "description": item.description,
+                        "impact_level": item.impact_level
+                    }
+                    for item in socc_analysis.items
+                ],
+            }
+
     try:
-        coach = AICoach(pyramid=pyramid)
+        coach = AICoach(pyramid=pyramid, context=context_data)
         draft = coach.generate_draft(
             tier=request.tier,
             context=request.context
@@ -146,7 +181,7 @@ async def chat_with_coach(request: ChatRequest):
     Chat with AI coach about strategy.
 
     Context-aware conversation with the AI coach.
-    Pyramid state is included for relevant advice.
+    Pyramid state and Context (SOCC) analysis are included for relevant advice.
     """
     check_ai_available()
 
@@ -155,8 +190,30 @@ async def chat_with_coach(request: ChatRequest):
     if request.session_id in active_pyramids:
         pyramid = active_pyramids[request.session_id].pyramid
 
+    # Get SOCC context (if exists)
+    context_data = None
+    if request.session_id in context_storage:
+        socc_analysis = context_storage[request.session_id]
+        # Build context summary for AI
+        if socc_analysis.items:
+            context_data = {
+                "socc_items": [
+                    {
+                        "quadrant": item.quadrant,
+                        "title": item.title,
+                        "description": item.description,
+                        "impact_level": item.impact_level
+                    }
+                    for item in socc_analysis.items
+                ],
+                "strengths_count": len([i for i in socc_analysis.items if i.quadrant == "strength"]),
+                "opportunities_count": len([i for i in socc_analysis.items if i.quadrant == "opportunity"]),
+                "considerations_count": len([i for i in socc_analysis.items if i.quadrant == "consideration"]),
+                "constraints_count": len([i for i in socc_analysis.items if i.quadrant == "constraint"])
+            }
+
     try:
-        coach = AICoach(pyramid=pyramid)
+        coach = AICoach(pyramid=pyramid, context=context_data)
         response = coach.chat(
             message=request.message,
             chat_history=request.chat_history

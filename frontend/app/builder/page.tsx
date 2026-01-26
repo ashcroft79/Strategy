@@ -30,6 +30,8 @@ import { useAIFieldSuggestion } from "@/hooks/useAIFieldSuggestion";
 import { AIFieldSuggestion, AIFieldSuggestionIndicator } from "@/components/AIFieldSuggestion";
 import { AIDraftGenerator } from "@/components/AIDraftGenerator";
 import { SOCCCanvas } from "@/components/context/SOCCCanvas";
+import { ContextOnboarding } from "@/components/context/ContextOnboarding";
+import { ContextSummary } from "@/components/context/ContextSummary";
 import { StatementType, Horizon } from "@/types/pyramid";
 import { Save, Home, CheckCircle, FileDown, Eye, Trash2, Edit, Plus, BarChart3, Lightbulb } from "lucide-react";
 import { TIER1_TOOLTIPS, TIER2_TOOLTIPS, TIER3_TOOLTIPS, TIER4_TOOLTIPS, TIER5_TOOLTIPS, TIER6_TOOLTIPS, TIER7_TOOLTIPS, TIER8_TOOLTIPS, TIER9_TOOLTIPS } from "@/config/tooltips";
@@ -122,6 +124,14 @@ export default function BuilderPage() {
   // AI feature toggle (default: off)
   const [aiEnabled, setAiEnabled] = useState(false);
 
+  // Context onboarding (stored in localStorage)
+  const [showContextOnboarding, setShowContextOnboarding] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('context_onboarding_dismissed') !== 'true';
+    }
+    return true;
+  });
+
   // Load AI preference from localStorage
   useEffect(() => {
     const savedAiPref = localStorage.getItem('ai-enabled');
@@ -135,6 +145,17 @@ export default function BuilderPage() {
     const newValue = !aiEnabled;
     setAiEnabled(newValue);
     localStorage.setItem('ai-enabled', newValue.toString());
+  };
+
+  // Context onboarding handlers
+  const handleDismissOnboarding = () => {
+    setShowContextOnboarding(false);
+    localStorage.setItem('context_onboarding_dismissed', 'true');
+  };
+
+  const handleStartContext = () => {
+    setActiveTier('context');
+    handleDismissOnboarding();
   };
 
   // Edit states
@@ -1095,15 +1116,29 @@ export default function BuilderPage() {
         <div className="flex-1 overflow-y-auto bg-gray-50">
           <div className="max-w-5xl mx-auto p-6">
 
-            {/* Welcome message when no tier selected */}
-            {!activeTier && (
+            {/* Context Onboarding - shows when no tier selected and not dismissed */}
+            {!activeTier && showContextOnboarding && (
+              <ContextOnboarding
+                onDismiss={handleDismissOnboarding}
+                onStartContext={handleStartContext}
+              />
+            )}
+
+            {/* Welcome message when no tier selected and onboarding dismissed */}
+            {!activeTier && !showContextOnboarding && (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
                   <div className="text-6xl mb-4">👈</div>
                   <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome to Your Strategic Pyramid</h2>
-                  <p className="text-gray-600 max-w-md">
+                  <p className="text-gray-600 max-w-md mb-4">
                     Click any tier on the left to start building your strategy. Start with Context to build your foundation!
                   </p>
+                  <button
+                    onClick={() => setShowContextOnboarding(true)}
+                    className="text-purple-600 hover:text-purple-700 text-sm font-medium underline"
+                  >
+                    Show Context guidance again
+                  </button>
                 </div>
               </div>
             )}
@@ -1127,6 +1162,9 @@ export default function BuilderPage() {
                 <SOCCCanvas />
               </div>
             )}
+
+            {/* Context Summary - shows when building pyramid tiers */}
+            {activeTier && activeTier !== "context" && <ContextSummary />}
 
             {/* Vision Content */}
             {activeTier === "vision" && (

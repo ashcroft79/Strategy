@@ -25,15 +25,17 @@ class AICoach:
     Provides real-time suggestions, draft generation, and contextual help.
     """
 
-    def __init__(self, pyramid: Optional[StrategyPyramid] = None, api_key: Optional[str] = None):
+    def __init__(self, pyramid: Optional[StrategyPyramid] = None, context: Optional[Dict[str, Any]] = None, api_key: Optional[str] = None):
         """
         Initialize AI coach.
 
         Args:
             pyramid: Optional current pyramid state (for context)
+            context: Optional SOCC context data (Tier 0)
             api_key: Anthropic API key (defaults to ANTHROPIC_API_KEY env var)
         """
         self.pyramid = pyramid
+        self.context = context
         self.api_key = api_key or os.getenv("ANTHROPIC_API_KEY")
 
         if not ANTHROPIC_AVAILABLE:
@@ -443,14 +445,74 @@ Suggest specific, measurable alternatives. Respond in JSON:
 
 IMPORTANT: This pyramid state is updated in real-time. If the user just added, edited, or removed elements, the counts and details above reflect those changes. Always refer to this fresh state, not previous mentions in our conversation."""
 
+        # Build Context (SOCC) summary
+        context_summary = ""
+        if self.context and self.context.get('socc_items'):
+            socc_items = self.context['socc_items']
+            strengths = [item for item in socc_items if item['quadrant'] == 'strength']
+            opportunities = [item for item in socc_items if item['quadrant'] == 'opportunity']
+            considerations = [item for item in socc_items if item['quadrant'] == 'consideration']
+            constraints = [item for item in socc_items if item['quadrant'] == 'constraint']
+
+            context_lines = [
+                "",
+                "## TIER 0: CONTEXT FOUNDATION (SOCC Analysis)",
+                f"Total Context Items: {len(socc_items)}",
+                ""
+            ]
+
+            if strengths:
+                context_lines.append(f"STRENGTHS ({len(strengths)}):")
+                for item in strengths[:5]:  # Top 5
+                    context_lines.append(f"  • {item['title']} ({item['impact_level']} impact)")
+                if len(strengths) > 5:
+                    context_lines.append(f"  ... and {len(strengths) - 5} more")
+                context_lines.append("")
+
+            if opportunities:
+                context_lines.append(f"OPPORTUNITIES ({len(opportunities)}):")
+                for item in opportunities[:5]:
+                    context_lines.append(f"  • {item['title']} ({item['impact_level']} impact)")
+                if len(opportunities) > 5:
+                    context_lines.append(f"  ... and {len(opportunities) - 5} more")
+                context_lines.append("")
+
+            if considerations:
+                context_lines.append(f"CONSIDERATIONS ({len(considerations)}):")
+                for item in considerations[:5]:
+                    context_lines.append(f"  • {item['title']} ({item['impact_level']} impact)")
+                if len(considerations) > 5:
+                    context_lines.append(f"  ... and {len(considerations) - 5} more")
+                context_lines.append("")
+
+            if constraints:
+                context_lines.append(f"CONSTRAINTS ({len(constraints)}):")
+                for item in constraints[:5]:
+                    context_lines.append(f"  • {item['title']} ({item['impact_level']} impact)")
+                if len(constraints) > 5:
+                    context_lines.append(f"  ... and {len(constraints) - 5} more")
+
+            context_lines.append("")
+            context_lines.append("IMPORTANT: This context should inform all strategic choices. Help users connect their pyramid elements (Vision, Drivers, Intents, Commitments) back to this foundation. Ask questions like: 'How does this leverage your strengths?' or 'Does this address the constraints you identified?'")
+
+            context_summary = "\n".join(context_lines)
+
         system_prompt = f"""You are a strategic planning coach helping someone build a strategic pyramid.
 
 {self.tooltips_guidance}
 
+{context_summary}
+
 {pyramid_context}
 
 Be conversational, encouraging, and specific. Reference best practices naturally without using reference codes.
-Keep responses concise (2-3 sentences) unless user asks for detail."""
+Keep responses concise (2-3 sentences) unless user asks for detail.
+
+IMPORTANT COACHING APPROACH:
+- When users are building their pyramid, help them connect their strategic choices back to their Context (SOCC) analysis
+- Ask clarifying questions like: "Does this leverage your strength in X?" or "How does this address the constraint around Y?"
+- Remind users that "strategy without context is hope, not strategy"
+- If they haven't completed Context yet, gently encourage them to start with Tier 0 (SOCC) before building the pyramid"""
 
         # Build message history
         messages = []
