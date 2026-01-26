@@ -22,13 +22,172 @@ This guide enables you to use any AI tool (ChatGPT, Claude, Gemini, etc.) to gen
 
 ### How It Works
 
+The strategic planning process follows three steps:
+
+**Step 1: Context & Discovery** - Capture your current reality using the SOCC framework (Strengths, Opportunities, Considerations, Constraints)
+
+**Step 2: Strategic Pyramid** - Build the 9-tier strategic pyramid from vision to individual objectives
+
+**Step 3: Visualization & Refinement** - Review, refine, and communicate your strategy using visual tools
+
+For each step:
 1. **Prepare**: Gather your organization's context and goals
 2. **Generate**: Use the prompt templates with your AI tool
 3. **Compile**: Combine responses into the JSON format
 4. **Import**: Load your JSON file into the application
 5. **Refine**: Edit and enhance using the visual interface
 
-## Strategic Pyramid Framework
+---
+
+## Step 1: Context & Discovery (Foundation)
+
+Before building your strategic pyramid, establish the foundation by capturing your current reality using the SOCC framework.
+
+**IMPORTANT**: "Strategy without context is hope, not strategy." Always complete Step 1 before moving to Step 2.
+
+### The SOCC Framework
+
+SOCC = Strengths, Opportunities, Considerations, Constraints
+
+#### Strengths (Internal Amplifiers)
+**What they are**: Internal capabilities, assets, or attributes that give you advantage
+
+**Questions to ask**:
+- What are we really good at?
+- What unique assets do we have?
+- What's working well that we should build on?
+- What do stakeholders value about us?
+
+**Examples**:
+- "Strong brand reputation in healthcare sector"
+- "Technical team with AI/ML expertise"
+- "Established distribution network in 30 countries"
+
+#### Opportunities (External Possibilities)
+**What they are**: External conditions, needs, or trends you could capitalize on
+
+**Questions to ask**:
+- What problems exist that we could solve?
+- What market needs are unmet?
+- What trends are moving in our favor?
+- Where is there white space to explore?
+
+**Examples**:
+- "Growing demand for remote work tools (40% CAGR)"
+- "Regulatory change opening new market segment"
+- "Technology advancement enabling new solutions"
+
+#### Considerations (External Turbulence)
+**What they are**: External threats, competitive pressures, or weakening positions
+
+**Questions to ask**:
+- What external forces work against us?
+- What competitive threats exist?
+- What are we becoming less good at?
+- Where are we losing ground?
+
+**Examples**:
+- "Competitor launched cheaper alternative"
+- "Customer retention declining from 85% to 78%"
+- "Economic downturn reducing customer budgets"
+
+#### Constraints (Internal Blockers)
+**What they are**: Internal limitations, blockers, or "yes, but..." factors
+
+**Questions to ask**:
+- What's stopping us from moving faster?
+- What resources are limited or missing?
+- What capabilities do we lack?
+- What organizational barriers exist?
+
+**Examples**:
+- "Technical debt slowing development by 30%"
+- "No budget for additional headcount"
+- "Legacy systems incompatible with modern tools"
+
+### Context AI Prompts
+
+Use these prompts with your AI tool to generate context systematically:
+
+**Prompt 1: SOCC Analysis**
+```
+I'm building a strategic context for [ORGANIZATION/PROJECT]. Help me create a SOCC analysis.
+
+Organization: [Your organization name]
+Industry: [Your industry]
+Current situation: [Brief description]
+
+Please help me identify:
+1. STRENGTHS: 5-7 internal capabilities or assets we have
+2. OPPORTUNITIES: 5-7 external market needs or trends we could capitalize on
+3. CONSIDERATIONS: 5-7 external threats or challenges we face
+4. CONSTRAINTS: 5-7 internal limitations or blockers we must navigate
+
+For each item, provide:
+- A concise title (5-10 words)
+- A brief description (1-2 sentences)
+- Impact level (high/medium/low)
+
+Format as a structured list for each quadrant.
+```
+
+**Prompt 2: Opportunity Scoring**
+```
+Based on the SOCC analysis, help me prioritize opportunities using this formula:
+Score = (Strength Match × 2) - Consideration Risk - Constraint Impact
+
+For each opportunity identified:
+1. Rate how well our strengths support it (1-5)
+2. Rate how much considerations threaten it (1-5)
+3. Rate how much constraints block it (1-5)
+4. Calculate the score
+
+Provide a prioritized list with rationale.
+```
+
+### Context JSON Schema
+
+The context data structure to include in your JSON:
+
+```json
+{
+  "context": {
+    "socc_analysis": {
+      "items": [
+        {
+          "id": "uuid-here",
+          "quadrant": "strength",
+          "title": "Strong technical team",
+          "description": "Team with deep AI/ML expertise and 10+ years experience",
+          "impact_level": "high",
+          "tags": ["people", "capability"],
+          "created_at": "2025-01-20T00:00:00Z",
+          "created_by": "AI Analysis"
+        }
+      ],
+      "connections": [],
+      "last_updated": "2025-01-20T00:00:00Z"
+    },
+    "opportunity_scores": {},
+    "strategic_tensions": [],
+    "stakeholders": []
+  }
+}
+```
+
+**Required fields for each SOCC item**:
+- `id`: UUID (generate using uuidgen or online tool)
+- `quadrant`: One of: "strength", "opportunity", "consideration", "constraint"
+- `title`: Concise title (5-10 words)
+- `description`: Brief description (optional, 1-2 sentences)
+- `impact_level`: One of: "high", "medium", "low"
+- `tags`: Array of strings (optional)
+- `created_at`: ISO 8601 timestamp
+- `created_by`: String (e.g., "AI Analysis")
+
+---
+
+## Step 2: Strategic Pyramid Framework
 
 The strategic pyramid consists of 9 interconnected tiers:
 

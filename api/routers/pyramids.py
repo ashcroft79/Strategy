@@ -15,12 +15,23 @@ from src.pyramid_builder.models.pyramid import (
     StatementType,
     Horizon,
 )
+from src.pyramid_builder.models.context import (
+    SOCCAnalysis,
+    SOCCItem,
+    SOCCConnection,
+    OpportunityScore,
+    StrategicTension,
+    Stakeholder
+)
 
 router = APIRouter()
 
 # In-memory storage for active pyramids (keyed by session ID)
 # In production, you might use Redis or a database
 active_pyramids: Dict[str, PyramidManager] = {}
+
+# Import context storage from context router
+from .context import context_storage
 
 
 class CreatePyramidRequest(BaseModel):
@@ -64,17 +75,58 @@ async def create_pyramid(request: CreatePyramidRequest):
 
 @router.post("/load")
 async def load_pyramid(request: LoadPyramidRequest):
-    """Load a pyramid from JSON data."""
+    """Load a pyramid from JSON data, including Context data (Step 1) if present."""
     try:
-        # Convert dict to StrategyPyramid
-        pyramid = StrategyPyramid.model_validate(request.pyramid_data)
+        pyramid_data = request.pyramid_data.copy()
+
+        # Extract Context data if present (backward compatible - won't fail if missing)
+        context_data = pyramid_data.pop("context", None)
+
+        # Convert dict to StrategyPyramid (Step 2)
+        pyramid = StrategyPyramid.model_validate(pyramid_data)
         manager = PyramidManager(pyramid=pyramid)
         active_pyramids[request.session_id] = manager
+
+        # Load Context data (Step 1) if it exists
+        if context_data:
+            try:
+                # Parse SOCC analysis
+                socc_data = context_data.get("socc_analysis", {})
+                if socc_data and socc_data.get("items"):
+                    items = [SOCCItem(**item) for item in socc_data["items"]]
+                    connections = [SOCCConnection(**conn) for conn in socc_data.get("connections", [])]
+
+                    socc_analysis = SOCCAnalysis(
+                        items=items,
+                        connections=connections
+                    )
+
+                    # Parse opportunity scores
+                    if "opportunity_scores" in context_data:
+                        for opp_id, score_data in context_data["opportunity_scores"].items():
+                            socc_analysis.opportunity_scores.append(OpportunityScore(**score_data))
+
+                    # Parse strategic tensions
+                    if "strategic_tensions" in context_data:
+                        for tension_data in context_data["strategic_tensions"]:
+                            socc_analysis.strategic_tensions.append(StrategicTension(**tension_data))
+
+                    # Parse stakeholders
+                    if "stakeholders" in context_data:
+                        for stakeholder_data in context_data["stakeholders"]:
+                            socc_analysis.stakeholders.append(Stakeholder(**stakeholder_data))
+
+                    # Store in context storage
+                    context_storage[request.session_id] = socc_analysis
+            except Exception as context_error:
+                # Log error but don't fail the pyramid load
+                print(f"Warning: Failed to load Context data: {str(context_error)}")
 
         return {
             "success": True,
             "pyramid": pyramid.model_dump(mode="json"),
             "session_id": request.session_id,
+            "context_loaded": context_data is not None
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid pyramid data: {str(e)}")

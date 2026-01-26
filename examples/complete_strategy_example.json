@@ -1,0 +1,303 @@
+{
+  "metadata": {
+    "project_name": "TechCo Digital Transformation",
+    "organization": "TechCo Solutions Inc",
+    "created_by": "Strategy Team",
+    "created_at": "2026-01-26",
+    "last_modified": "2026-01-26",
+    "version": "0.4.0",
+    "description": "Complete example with Context (Step 1) and Strategic Pyramid (Step 2)"
+  },
+  "context": {
+    "socc_analysis": {
+      "items": [
+        {
+          "id": "550e8400-e29b-41d4-a716-446655440001",
+          "quadrant": "strength",
+          "title": "Strong technical team with AI expertise",
+          "description": "15-person engineering team with deep ML/AI capabilities and 10+ years average experience",
+          "impact_level": "high",
+          "tags": ["people", "capability", "AI"],
+          "created_at": "2026-01-26T00:00:00Z",
+          "created_by": "Strategy Team"
+        },
+        {
+          "id": "550e8400-e29b-41d4-a716-446655440002",
+          "quadrant": "strength",
+          "title": "Established customer base in healthcare",
+          "description": "200+ hospital clients with 85% retention rate and strong brand recognition",
+          "impact_level": "high",
+          "tags": ["market", "customers"],
+          "created_at": "2026-01-26T00:00:00Z",
+          "created_by": "Strategy Team"
+        },
+        {
+          "id": "550e8400-e29b-41d4-a716-446655440003",
+          "quadrant": "strength",
+          "title": "Modern cloud infrastructure",
+          "description": "Scalable AWS architecture capable of handling 10x current load",
+          "impact_level": "medium",
+          "tags": ["technology", "infrastructure"],
+          "created_at": "2026-01-26T00:00:00Z",
+          "created_by": "Strategy Team"
+        },
+        {
+          "id": "550e8400-e29b-41d4-a716-446655440010",
+          "quadrant": "opportunity",
+          "title": "Growing demand for AI-powered healthcare tools",
+          "description": "Market expected to grow 40% CAGR through 2028, driven by regulatory support and clinical outcomes",
+          "impact_level": "high",
+          "tags": ["market", "growth", "AI"],
+          "created_at": "2026-01-26T00:00:00Z",
+          "created_by": "Strategy Team"
+        },
+        {
+          "id": "550e8400-e29b-41d4-a716-446655440011",
+          "quadrant": "opportunity",
+          "title": "Remote patient monitoring adoption accelerating",
+          "description": "Post-pandemic shift to virtual care creating 65% increase in RPM demand",
+          "impact_level": "high",
+          "tags": ["market", "remote"],
+          "created_at": "2026-01-26T00:00:00Z",
+          "created_by": "Strategy Team"
+        },
+        {
+          "id": "550e8400-e29b-41d4-a716-446655440012",
+          "quadrant": "opportunity",
+          "title": "Government funding for digital health initiatives",
+          "description": "$2B allocated for digital health adoption in underserved areas",
+          "impact_level": "medium",
+          "tags": ["funding", "government"],
+          "created_at": "2026-01-26T00:00:00Z",
+          "created_by": "Strategy Team"
+        },
+        {
+          "id": "550e8400-e29b-41d4-a716-446655440020",
+          "quadrant": "consideration",
+          "title": "New competitor with venture backing",
+          "description": "Well-funded startup launched similar platform with aggressive pricing (60% lower)",
+          "impact_level": "high",
+          "tags": ["competition", "pricing"],
+          "created_at": "2026-01-26T00:00:00Z",
+          "created_by": "Strategy Team"
+        },
+        {
+          "id": "550e8400-e29b-41d4-a716-446655440021",
+          "quadrant": "consideration",
+          "title": "Increasing data privacy regulations",
+          "description": "New healthcare data protection laws adding compliance complexity and costs",
+          "impact_level": "medium",
+          "tags": ["regulatory", "compliance"],
+          "created_at": "2026-01-26T00:00:00Z",
+          "created_by": "Strategy Team"
+        },
+        {
+          "id": "550e8400-e29b-41d4-a716-446655440022",
+          "quadrant": "consideration",
+          "title": "Economic downturn affecting healthcare budgets",
+          "description": "Hospital capital budgets down 15% YoY, delaying technology purchases",
+          "impact_level": "medium",
+          "tags": ["economy", "budget"],
+          "created_at": "2026-01-26T00:00:00Z",
+          "created_by": "Strategy Team"
+        },
+        {
+          "id": "550e8400-e29b-41d4-a716-446655440030",
+          "quadrant": "constraint",
+          "title": "Limited sales team capacity",
+          "description": "5-person sales team at capacity, unable to pursue new opportunities without expansion",
+          "impact_level": "high",
+          "tags": ["sales", "capacity"],
+          "created_at": "2026-01-26T00:00:00Z",
+          "created_by": "Strategy Team"
+        },
+        {
+          "id": "550e8400-e29b-41d4-a716-446655440031",
+          "quadrant": "constraint",
+          "title": "Technical debt in legacy modules",
+          "description": "Old codebase requiring 30% of development time for maintenance vs new features",
+          "impact_level": "high",
+          "tags": ["technology", "debt"],
+          "created_at": "2026-01-26T00:00:00Z",
+          "created_by": "Strategy Team"
+        },
+        {
+          "id": "550e8400-e29b-41d4-a716-446655440032",
+          "quadrant": "constraint",
+          "title": "No budget for major capital investment",
+          "description": "Bootstrapped company with limited runway, must maintain profitability",
+          "impact_level": "medium",
+          "tags": ["finance", "budget"],
+          "created_at": "2026-01-26T00:00:00Z",
+          "created_by": "Strategy Team"
+        }
+      ],
+      "connections": [],
+      "last_updated": "2026-01-26T00:00:00Z"
+    },
+    "opportunity_scores": {
+      "550e8400-e29b-41d4-a716-446655440010": {
+        "opportunity_item_id": "550e8400-e29b-41d4-a716-446655440010",
+        "strength_match": 5,
+        "consideration_risk": 3,
+        "constraint_impact": 2,
+        "calculated_score": 5,
+        "viability_level": "high",
+        "notes": "AI expertise aligns perfectly with market demand, but sales capacity is a limiting factor"
+      }
+    },
+    "strategic_tensions": [
+      {
+        "id": "tension-001",
+        "name": "Growth vs Profitability",
+        "description": "Balance aggressive market expansion with maintaining current profitability",
+        "pole_a": "Aggressive Growth",
+        "pole_b": "Conservative Profitability",
+        "current_position": 60,
+        "target_position": 55,
+        "rationale": "Need to invest slightly more in growth while maintaining profitability"
+      }
+    ],
+    "stakeholders": [
+      {
+        "id": "stakeholder-001",
+        "name": "Hospital CIOs",
+        "category": "customer",
+        "interest_level": "high",
+        "influence_level": "high",
+        "current_sentiment": "supportive",
+        "key_needs": ["ROI demonstration", "Ease of integration", "Staff training"],
+        "engagement_strategy": "Quarterly executive briefings and dedicated success managers"
+      }
+    ]
+  },
+  "vision": {
+    "id": "vision-uuid",
+    "created_at": "2026-01-26T00:00:00Z",
+    "updated_at": "2026-01-26T00:00:00Z",
+    "statements": [
+      {
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "created_at": "2026-01-26T00:00:00Z",
+        "updated_at": "2026-01-26T00:00:00Z",
+        "statement_type": "vision",
+        "statement": "A world where every patient receives personalized, AI-enhanced care regardless of location or resources",
+        "order": 1
+      },
+      {
+        "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+        "created_at": "2026-01-26T00:00:00Z",
+        "updated_at": "2026-01-26T00:00:00Z",
+        "statement_type": "mission",
+        "statement": "To democratize advanced healthcare technology by building AI tools that augment clinical decision-making for providers everywhere",
+        "order": 2
+      }
+    ]
+  },
+  "values": [
+    {
+      "id": "d4e5f6a7-b8c9-0123-def1-234567890123",
+      "created_at": "2026-01-26T00:00:00Z",
+      "updated_at": "2026-01-26T00:00:00Z",
+      "name": "Clinical Excellence",
+      "description": "We build tools that elevate clinical practice, never compromise patient safety, and earn the trust of healthcare professionals"
+    },
+    {
+      "id": "d4e5f6a7-b8c9-0123-def1-234567890124",
+      "created_at": "2026-01-26T00:00:00Z",
+      "updated_at": "2026-01-26T00:00:00Z",
+      "name": "Accessible Innovation",
+      "description": "Advanced technology should serve everyone, not just those with the biggest budgets"
+    }
+  ],
+  "behaviours": [
+    {
+      "id": "e5f6a7b8-c9d0-1234-e123-456789012345",
+      "created_at": "2026-01-26T00:00:00Z",
+      "updated_at": "2026-01-26T00:00:00Z",
+      "statement": "We validate every algorithm with real clinicians before deployment",
+      "value_ids": ["d4e5f6a7-b8c9-0123-def1-234567890123"]
+    },
+    {
+      "id": "e5f6a7b8-c9d0-1234-e123-456789012346",
+      "created_at": "2026-01-26T00:00:00Z",
+      "updated_at": "2026-01-26T00:00:00Z",
+      "statement": "We design for the rural clinic, not just the academic medical center",
+      "value_ids": ["d4e5f6a7-b8c9-0123-def1-234567890124"]
+    }
+  ],
+  "strategic_drivers": [
+    {
+      "id": "f6a7b8c9-d0e1-2345-f123-456789012345",
+      "created_at": "2026-01-26T00:00:00Z",
+      "updated_at": "2026-01-26T00:00:00Z",
+      "name": "AI Clinical Intelligence",
+      "description": "Build AI tools that augment clinical decision-making across care settings",
+      "rationale": "Leverages our AI expertise strength and addresses growing market demand opportunity"
+    },
+    {
+      "id": "f6a7b8c9-d0e1-2345-f123-456789012346",
+      "created_at": "2026-01-26T00:00:00Z",
+      "updated_at": "2026-01-26T00:00:00Z",
+      "name": "Market Expansion",
+      "description": "Grow our footprint in underserved healthcare markets",
+      "rationale": "Capitalizes on government funding opportunity while navigating sales capacity constraint"
+    }
+  ],
+  "strategic_intents": [
+    {
+      "id": "a7b8c9d0-e1f2-3456-1234-567890123456",
+      "created_at": "2026-01-26T00:00:00Z",
+      "updated_at": "2026-01-26T00:00:00Z",
+      "statement": "Clinicians rely on our AI insights as confidently as they trust their most experienced colleague",
+      "driver_id": "f6a7b8c9-d0e1-2345-f123-456789012345",
+      "is_stakeholder_voice": true,
+      "boldness_score": 8
+    }
+  ],
+  "enablers": [
+    {
+      "id": "b8c9d0e1-f2a3-4567-2345-678901234567",
+      "created_at": "2026-01-26T00:00:00Z",
+      "updated_at": "2026-01-26T00:00:00Z",
+      "name": "AI Model Validation Pipeline",
+      "description": "Automated testing framework that validates AI outputs against clinical gold standards",
+      "driver_ids": ["f6a7b8c9-d0e1-2345-f123-456789012345"],
+      "enabler_type": "Technology"
+    }
+  ],
+  "iconic_commitments": [
+    {
+      "id": "c9d0e1f2-a3b4-5678-3456-789012345678",
+      "created_at": "2026-01-26T00:00:00Z",
+      "updated_at": "2026-01-26T00:00:00Z",
+      "name": "Launch Diagnostic AI Assistant",
+      "description": "Deploy AI-powered diagnostic support tool validated across 10,000 cases",
+      "horizon": "H1",
+      "driver_id": "f6a7b8c9-d0e1-2345-f123-456789012345",
+      "is_strategic_bet": true
+    }
+  ],
+  "team_objectives": [
+    {
+      "id": "d0e1f2a3-b4c5-6789-4567-890123456789",
+      "created_at": "2026-01-26T00:00:00Z",
+      "updated_at": "2026-01-26T00:00:00Z",
+      "name": "Engineering: Complete AI validation framework",
+      "description": "Build and deploy automated testing pipeline for AI model validation",
+      "team_name": "Engineering",
+      "commitment_id": "c9d0e1f2-a3b4-5678-3456-789012345678"
+    }
+  ],
+  "individual_objectives": [
+    {
+      "id": "e1f2a3b4-c5d6-7890-5678-901234567890",
+      "created_at": "2026-01-26T00:00:00Z",
+      "updated_at": "2026-01-26T00:00:00Z",
+      "name": "Sarah Chen: Design validation test suite",
+      "description": "Create comprehensive test suite covering 50+ clinical scenarios",
+      "individual_name": "Sarah Chen - ML Engineer",
+      "team_objective_ids": ["d0e1f2a3-b4c5-6789-4567-890123456789"]
+    }
+  ]
+}

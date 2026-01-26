@@ -13,6 +13,8 @@ from src.pyramid_builder.exports.markdown_exporter import MarkdownExporter
 from src.pyramid_builder.exports.json_exporter import JSONExporter
 from src.pyramid_builder.exports.ai_guide_generator import AIGuideGenerator
 from .pyramids import active_pyramids
+from .context import context_storage
+import json
 
 router = APIRouter()
 
@@ -136,7 +138,7 @@ async def export_markdown(session_id: str, request: ExportRequest):
 
 @router.post("/{session_id}/json")
 async def export_json(session_id: str, request: ExportRequest):
-    """Export pyramid to JSON file."""
+    """Export pyramid to JSON file with Context data (Step 1 + Step 2)."""
     if session_id not in active_pyramids:
         raise HTTPException(status_code=404, detail="Pyramid not found")
 
@@ -145,12 +147,26 @@ async def export_json(session_id: str, request: ExportRequest):
         raise HTTPException(status_code=404, detail="No pyramid initialized")
 
     try:
-        exporter = JSONExporter(manager.pyramid)
+        # Export pyramid data (Step 2)
+        pyramid_dict = manager.pyramid.to_dict()
 
-        # Export to JSON string
-        json_content = exporter.to_json_string(
-            indent=2
-        )
+        # Add Context data (Step 1) if it exists
+        if session_id in context_storage:
+            context_analysis = context_storage[session_id]
+            pyramid_dict["context"] = {
+                "socc_analysis": {
+                    "items": [item.dict() for item in context_analysis.items],
+                    "connections": [conn.dict() for conn in context_analysis.connections],
+                    "last_updated": str(context_analysis.last_updated)
+                },
+                "opportunity_scores": {score.opportunity_item_id: score.dict()
+                                      for score in context_analysis.opportunity_scores},
+                "strategic_tensions": [tension.dict() for tension in context_analysis.strategic_tensions],
+                "stakeholders": [stakeholder.dict() for stakeholder in context_analysis.stakeholders]
+            }
+
+        # Convert to JSON string
+        json_content = json.dumps(pyramid_dict, indent=2, default=str, ensure_ascii=False)
 
         # Return JSON
         filename = f"{manager.pyramid.metadata.project_name}.json"
