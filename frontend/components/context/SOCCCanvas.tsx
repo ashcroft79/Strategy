@@ -1,47 +1,90 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { contextApi, type SOCCItem, type QuadrantType } from "@/lib/api-client";
 import { usePyramidStore } from "@/lib/store";
 import { QuadrantPanel } from "./QuadrantPanel";
 import { TrendingUp, Target, AlertTriangle, Lock } from "lucide-react";
 
 export function SOCCCanvas() {
-  const { sessionId } = usePyramidStore();
-  const queryClient = useQueryClient();
+  const { sessionId, setLoading, setError, showToast } = usePyramidStore();
+  const [analysis, setAnalysis] = useState<any>(null);
+  const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(true);
 
-  // Fetch SOCC analysis
-  const { data: analysis, isLoading } = useQuery({
-    queryKey: ["socc", sessionId],
-    queryFn: () => contextApi.getSOCC(sessionId),
-    enabled: !!sessionId,
-  });
+  // Load SOCC analysis
+  useEffect(() => {
+    if (!sessionId) return;
 
-  // Mutations
-  const addMutation = useMutation({
-    mutationFn: (item: Partial<SOCCItem>) => contextApi.addSOCCItem(sessionId, item),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["socc", sessionId] });
-    },
-  });
+    const loadAnalysis = async () => {
+      try {
+        setIsLoadingAnalysis(true);
+        const data = await contextApi.getSOCC(sessionId);
+        setAnalysis(data);
+      } catch (err: any) {
+        console.error("Failed to load SOCC analysis:", err);
+        setError(err.message || "Failed to load SOCC analysis");
+      } finally {
+        setIsLoadingAnalysis(false);
+      }
+    };
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, item }: { id: string; item: Partial<SOCCItem> }) =>
-      contextApi.updateSOCCItem(sessionId, id, item),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["socc", sessionId] });
-    },
-  });
+    loadAnalysis();
+  }, [sessionId, setError]);
 
-  const deleteMutation = useMutation({
-    mutationFn: (itemId: string) => contextApi.deleteSOCCItem(sessionId, itemId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["socc", sessionId] });
-    },
-  });
+  // Refresh analysis data
+  const refreshAnalysis = async () => {
+    if (!sessionId) return;
+    try {
+      const data = await contextApi.getSOCC(sessionId);
+      setAnalysis(data);
+    } catch (err: any) {
+      console.error("Failed to refresh SOCC analysis:", err);
+    }
+  };
 
-  if (isLoading) {
+  // Add item handler
+  const handleAddItem = async (item: Partial<SOCCItem>) => {
+    try {
+      setLoading(true);
+      await contextApi.addSOCCItem(sessionId, item);
+      await refreshAnalysis();
+      showToast("Item added successfully");
+    } catch (err: any) {
+      setError(err.response?.data?.detail || "Failed to add item");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update item handler
+  const handleUpdateItem = async (id: string, item: Partial<SOCCItem>) => {
+    try {
+      setLoading(true);
+      await contextApi.updateSOCCItem(sessionId, id, item);
+      await refreshAnalysis();
+      showToast("Item updated successfully");
+    } catch (err: any) {
+      setError(err.response?.data?.detail || "Failed to update item");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Delete item handler
+  const handleDeleteItem = async (id: string) => {
+    try {
+      setLoading(true);
+      await contextApi.deleteSOCCItem(sessionId, id);
+      await refreshAnalysis();
+      showToast("Item deleted successfully");
+    } catch (err: any) {
+      setError(err.response?.data?.detail || "Failed to delete item");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (isLoadingAnalysis) {
     return (
       <div className="flex items-center justify-center p-12">
         <div className="text-center">
@@ -53,9 +96,9 @@ export function SOCCCanvas() {
   }
 
   const getItemsByQuadrant = (quadrant: QuadrantType) =>
-    analysis?.items.filter((item) => item.quadrant === quadrant) || [];
+    analysis?.items?.filter((item: SOCCItem) => item.quadrant === quadrant) || [];
 
-  const totalItems = analysis?.items.length || 0;
+  const totalItems = analysis?.items?.length || 0;
 
   return (
     <div className="space-y-6">
@@ -80,9 +123,9 @@ export function SOCCCanvas() {
           icon={<TrendingUp className="w-5 h-5" />}
           color="green"
           items={getItemsByQuadrant("strength")}
-          onAddItem={(item) => addMutation.mutate({ ...item, quadrant: "strength" })}
-          onUpdateItem={(id, item) => updateMutation.mutate({ id, item })}
-          onDeleteItem={(id) => deleteMutation.mutate(id)}
+          onAddItem={(item) => handleAddItem({ ...item, quadrant: "strength" })}
+          onUpdateItem={handleUpdateItem}
+          onDeleteItem={handleDeleteItem}
         />
 
         <QuadrantPanel
@@ -93,9 +136,9 @@ export function SOCCCanvas() {
           icon={<Target className="w-5 h-5" />}
           color="blue"
           items={getItemsByQuadrant("opportunity")}
-          onAddItem={(item) => addMutation.mutate({ ...item, quadrant: "opportunity" })}
-          onUpdateItem={(id, item) => updateMutation.mutate({ id, item })}
-          onDeleteItem={(id) => deleteMutation.mutate(id)}
+          onAddItem={(item) => handleAddItem({ ...item, quadrant: "opportunity" })}
+          onUpdateItem={handleUpdateItem}
+          onDeleteItem={handleDeleteItem}
         />
 
         <QuadrantPanel
@@ -106,9 +149,9 @@ export function SOCCCanvas() {
           icon={<AlertTriangle className="w-5 h-5" />}
           color="orange"
           items={getItemsByQuadrant("consideration")}
-          onAddItem={(item) => addMutation.mutate({ ...item, quadrant: "consideration" })}
-          onUpdateItem={(id, item) => updateMutation.mutate({ id, item })}
-          onDeleteItem={(id) => deleteMutation.mutate(id)}
+          onAddItem={(item) => handleAddItem({ ...item, quadrant: "consideration" })}
+          onUpdateItem={handleUpdateItem}
+          onDeleteItem={handleDeleteItem}
         />
 
         <QuadrantPanel
@@ -119,9 +162,9 @@ export function SOCCCanvas() {
           icon={<Lock className="w-5 h-5" />}
           color="red"
           items={getItemsByQuadrant("constraint")}
-          onAddItem={(item) => addMutation.mutate({ ...item, quadrant: "constraint" })}
-          onUpdateItem={(id, item) => updateMutation.mutate({ id, item })}
-          onDeleteItem={(id) => deleteMutation.mutate(id)}
+          onAddItem={(item) => handleAddItem({ ...item, quadrant: "constraint" })}
+          onUpdateItem={handleUpdateItem}
+          onDeleteItem={handleDeleteItem}
         />
       </div>
 
