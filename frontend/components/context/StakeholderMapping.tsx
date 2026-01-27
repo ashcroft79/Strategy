@@ -169,17 +169,29 @@ export function StakeholderMapping() {
         </Button>
       </div>
 
-      {/* 2x2 Matrix */}
-      <div className="space-y-6">
-        {/* Y-axis label */}
-        <div className="flex items-center justify-between">
-          <div className="text-sm font-semibold text-gray-700 transform -rotate-90 origin-center -ml-6">
-            ← Influence →
+      {/* 2x2 Matrix with Axes */}
+      <div className="relative pl-12">
+        {/* Y-axis label (Influence - vertical) */}
+        <div className="absolute left-0 top-1/2 transform -translate-y-1/2">
+          <div className="flex flex-col items-center">
+            <div className="text-xs text-gray-500 mb-2">High</div>
+            <div className="text-sm font-bold text-gray-700 transform -rotate-90 whitespace-nowrap">
+              Influence
+            </div>
+            <div className="text-xs text-gray-500 mt-2">Low</div>
           </div>
-          <div className="flex-1" />
         </div>
 
-        <div className="grid grid-rows-2 gap-4 min-h-[600px]">
+        {/* Matrix Grid */}
+        <div className="space-y-2">
+          {/* X-axis label (Interest - horizontal, top) */}
+          <div className="flex justify-center items-center gap-2 mb-2">
+            <span className="text-xs text-gray-500">Low</span>
+            <span className="text-sm font-bold text-gray-700">Interest</span>
+            <span className="text-xs text-gray-500">High</span>
+          </div>
+
+          <div className="grid grid-rows-2 gap-4 min-h-[600px]">
           {/* Top Row: High Influence */}
           <div className="grid grid-cols-2 gap-4">
             {/* Keep Satisfied (Low Interest, High Influence) */}
@@ -298,9 +310,7 @@ export function StakeholderMapping() {
             </div>
           </div>
         </div>
-
-        {/* X-axis label */}
-        <div className="text-center text-sm font-semibold text-gray-700">← Interest →</div>
+      </div>
       </div>
 
       {/* Add Stakeholder Modal */}
