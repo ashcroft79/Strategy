@@ -5,7 +5,7 @@ import { commitmentsApi } from "@/lib/api-client";
 import { usePyramidStore } from "@/lib/store";
 import Modal from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
-import { Textarea } from "@/components/ui/Textarea";
+import { Textarea } from "@/components/ui/textarea";
 
 interface CommitmentTraceabilityFlowProps {
   pyramid: StrategyPyramid;

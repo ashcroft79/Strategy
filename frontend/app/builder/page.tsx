@@ -17,7 +17,7 @@ import {
 } from "@/lib/api-client";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Textarea } from "@/components/ui/Textarea";
+import { Textarea } from "@/components/ui/textarea";
 import { LabelWithTooltip } from "@/components/ui/Tooltip";
 import { UnsavedChangesIndicator } from "@/components/ui/UnsavedChangesIndicator";
 import Modal from "@/components/ui/Modal";
