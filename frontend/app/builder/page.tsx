@@ -32,6 +32,7 @@ import { AIDraftGenerator } from "@/components/AIDraftGenerator";
 import { SOCCCanvas } from "@/components/context/SOCCCanvas";
 import { ContextOnboarding } from "@/components/context/ContextOnboarding";
 import { ContextSummary } from "@/components/context/ContextSummary";
+import { ContextDashboard } from "@/components/context/ContextDashboard";
 import { OpportunityScoring } from "@/components/context/OpportunityScoring";
 import { StrategicTensions } from "@/components/context/StrategicTensions";
 import { StakeholderMapping } from "@/components/context/StakeholderMapping";
@@ -82,7 +83,7 @@ export default function BuilderPage() {
   const router = useRouter();
   const { sessionId, pyramid, setPyramid, setLoading, setError, showToast, isLoading, incrementUnsavedChanges } = usePyramidStore();
   const [activeTier, setActiveTier] = useState<string | undefined>(undefined);
-  const [activeContextTab, setActiveContextTab] = useState<'socc' | 'scoring' | 'tensions' | 'stakeholders'>('socc');
+  const [activeContextTab, setActiveContextTab] = useState<'dashboard' | 'socc' | 'scoring' | 'tensions' | 'stakeholders'>('dashboard');
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -1167,6 +1168,16 @@ export default function BuilderPage() {
                 <div className="border-b border-gray-200">
                   <nav className="-mb-px flex space-x-8">
                     <button
+                      onClick={() => setActiveContextTab('dashboard')}
+                      className={`${
+                        activeContextTab === 'dashboard'
+                          ? 'border-blue-500 text-blue-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                    >
+                      Dashboard
+                    </button>
+                    <button
                       onClick={() => setActiveContextTab('socc')}
                       className={`${
                         activeContextTab === 'socc'
@@ -1210,6 +1221,12 @@ export default function BuilderPage() {
                 </div>
 
                 {/* Tab Content */}
+                {activeContextTab === 'dashboard' && (
+                  <ContextDashboard
+                    onNavigateToTab={setActiveContextTab}
+                    onContinueToStrategy={() => setActiveTier('vision')}
+                  />
+                )}
                 {activeContextTab === 'socc' && <SOCCCanvas />}
                 {activeContextTab === 'scoring' && <OpportunityScoring />}
                 {activeContextTab === 'tensions' && <StrategicTensions />}
