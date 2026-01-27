@@ -17,10 +17,10 @@
   },
   "context": {
     "socc_analysis": {
-      "session_id": "example-saas-startup",
+      "session_id": "642537f0-1cb8-49e1-9e49-9d9c742478bf",
       "items": [
         {
-          "id": "str-001",
+          "id": "d202fe88-e9ad-46b2-b241-a65e09c8d970",
           "quadrant": "strength",
           "title": "Strong Product-Market Fit in Mid-Market",
           "description": "Our collaboration platform has 92% user satisfaction and 45% month-over-month growth in 50-250 employee companies",
@@ -30,7 +30,7 @@
           "created_by": "Product Team"
         },
         {
-          "id": "str-002",
+          "id": "103e2144-b172-411d-90ff-56d9ca56a69c",
           "quadrant": "strength",
           "title": "Exceptional Engineering Team",
           "description": "15 senior engineers with experience from Google, Microsoft, and Atlassian. Ship weekly releases with 99.9% uptime",
@@ -40,7 +40,7 @@
           "created_by": "CTO"
         },
         {
-          "id": "str-003",
+          "id": "9bfb956c-fcec-4187-b5c3-0cc94987c67c",
           "quadrant": "strength",
           "title": "Viral Product-Led Growth Model",
           "description": "Free tier drives 60% of new signups through user invites. Conversion to paid is 18% (industry avg 5%)",
@@ -50,7 +50,7 @@
           "created_by": "Growth Lead"
         },
         {
-          "id": "opp-001",
+          "id": "3ef397e3-e88a-4307-aae8-f05997975c0a",
           "quadrant": "opportunity",
           "title": "Enterprise Segment Expansion",
           "description": "Enterprise (1000+ employees) is 70% of total addressable market but only 5% of our revenue. High willingness to pay for security & compliance features",
@@ -60,7 +60,7 @@
           "created_by": "Sales VP"
         },
         {
-          "id": "opp-002",
+          "id": "4b30e2b2-b1c9-41ae-9e40-bf1dc32158a7",
           "quadrant": "opportunity",
           "title": "AI-Powered Workflow Automation",
           "description": "Customer interviews show 80% want AI to automate repetitive tasks. No competitor has launched compelling AI features yet",
@@ -70,7 +70,7 @@
           "created_by": "Product Team"
         },
         {
-          "id": "opp-003",
+          "id": "22cb63f3-d7d4-4a6a-94ab-12fbc9284b7a",
           "quadrant": "opportunity",
           "title": "Strategic Partnerships with Consulting Firms",
           "description": "Management consultancies (McKinsey, BCG, Deloitte) are looking for modern collaboration tools for client work. Could drive 500+ enterprise deals",
@@ -80,7 +80,7 @@
           "created_by": "BD Lead"
         },
         {
-          "id": "con-001",
+          "id": "89d599a7-5f14-41ed-b7ee-2ddc7a018bd7",
           "quadrant": "consideration",
           "title": "Increasing Competition from Microsoft & Slack",
           "description": "Microsoft Teams and Slack are aggressively adding similar features. They have 100x our budget and existing enterprise relationships",
@@ -90,7 +90,7 @@
           "created_by": "CEO"
         },
         {
-          "id": "con-002",
+          "id": "1efc2ba5-58d9-4438-9999-2a61d984b2c5",
           "quadrant": "consideration",
           "title": "Macro Economic Slowdown Reducing B2B Spend",
           "description": "Enterprise software budgets down 20% in Q4 2025. Longer sales cycles (6 months vs 3 months)",
@@ -100,7 +100,7 @@
           "created_by": "CFO"
         },
         {
-          "id": "con-003",
+          "id": "80898274-15d3-46c9-bec5-a3896e0fe65e",
           "quadrant": "consideration",
           "title": "Data Privacy Regulations (GDPR, CCPA)",
           "description": "Enterprise customers require SOC 2, ISO 27001, GDPR compliance. Regulations getting stricter in 2026",
@@ -110,7 +110,7 @@
           "created_by": "Legal"
         },
         {
-          "id": "cst-001",
+          "id": "3baf87c0-8de9-4890-b04a-e174cba35a3a",
           "quadrant": "constraint",
           "title": "Limited Enterprise Sales Capacity",
           "description": "Only 3 enterprise account executives. Takes 9-12 months to ramp new sales hires. Can't pursue all opportunities simultaneously",
@@ -120,7 +120,7 @@
           "created_by": "Sales VP"
         },
         {
-          "id": "cst-002",
+          "id": "67e8b9dc-bd7f-42ee-84c8-a83681a77e54",
           "quadrant": "constraint",
           "title": "Runway: 18 Months to Profitability or Next Funding",
           "description": "Current burn rate gives us 18 months runway. Need to show 3x ARR growth or reach profitability to raise Series B",
@@ -130,7 +130,7 @@
           "created_by": "CFO"
         },
         {
-          "id": "cst-003",
+          "id": "237ab412-98b5-483f-8231-339ca9086c89",
           "quadrant": "constraint",
           "title": "Technical Debt in Core Platform",
           "description": "Rapid growth created tech debt. Monolithic architecture limits scaling. Refactoring would take 6-9 months of engineering time",
@@ -142,17 +142,17 @@
       ],
       "connections": [
         {
-          "id": "conn-001",
-          "from_item_id": "str-002",
-          "to_item_id": "opp-002",
+          "id": "7073daf4-a842-4f49-8c2f-65add26f8462",
+          "from_item_id": "103e2144-b172-411d-90ff-56d9ca56a69c",
+          "to_item_id": "4b30e2b2-b1c9-41ae-9e40-bf1dc32158a7",
           "connection_type": "amplifies",
           "description": "Strong engineering team can build AI features faster than competitors",
           "created_at": "2026-01-27T00:00:00.000000"
         },
         {
-          "id": "conn-002",
-          "from_item_id": "cst-002",
-          "to_item_id": "opp-001",
+          "id": "168754dc-f69c-4d7c-8545-85822e757073",
+          "from_item_id": "67e8b9dc-bd7f-42ee-84c8-a83681a77e54",
+          "to_item_id": "3ef397e3-e88a-4307-aae8-f05997975c0a",
           "connection_type": "blocks",
           "description": "Limited runway forces focus - must choose highest-ROI opportunity",
           "created_at": "2026-01-27T00:00:00.000000"
@@ -162,46 +162,46 @@
       "version": 1
     },
     "opportunity_scoring": {
-      "session_id": "example-saas-startup",
+      "session_id": "642537f0-1cb8-49e1-9e49-9d9c742478bf",
       "scores": [
         {
-          "opportunity_item_id": "opp-001",
+          "opportunity_item_id": "3ef397e3-e88a-4307-aae8-f05997975c0a",
           "strength_match": 4,
           "consideration_risk": 3,
           "constraint_impact": 4,
           "rationale": "Enterprise expansion leverages our product strength but constrained by limited sales capacity. Competition risk is high.",
-          "related_strengths": ["str-001"],
-          "related_constraints": ["cst-001", "cst-002"],
+          "related_strengths": ["d202fe88-e9ad-46b2-b241-a65e09c8d970"],
+          "related_constraints": ["3baf87c0-8de9-4890-b04a-e174cba35a3a", "67e8b9dc-bd7f-42ee-84c8-a83681a77e54"],
           "created_at": "2026-01-27T00:00:00.000000"
         },
         {
-          "opportunity_item_id": "opp-002",
+          "opportunity_item_id": "4b30e2b2-b1c9-41ae-9e40-bf1dc32158a7",
           "strength_match": 5,
           "consideration_risk": 2,
           "constraint_impact": 2,
           "rationale": "AI automation plays to our engineering strength. Low competition risk (no one has shipped yet). Moderate technical debt constraint.",
-          "related_strengths": ["str-002", "str-003"],
-          "related_constraints": ["cst-003"],
+          "related_strengths": ["103e2144-b172-411d-90ff-56d9ca56a69c", "9bfb956c-fcec-4187-b5c3-0cc94987c67c"],
+          "related_constraints": ["237ab412-98b5-483f-8231-339ca9086c89"],
           "created_at": "2026-01-27T00:00:00.000000"
         },
         {
-          "opportunity_item_id": "opp-003",
+          "opportunity_item_id": "22cb63f3-d7d4-4a6a-94ab-12fbc9284b7a",
           "strength_match": 3,
           "consideration_risk": 2,
           "constraint_impact": 3,
           "rationale": "Partnerships could accelerate enterprise growth but requires sales capacity we don't have. Moderate fit with current strengths.",
-          "related_strengths": ["str-001"],
-          "related_constraints": ["cst-001"],
+          "related_strengths": ["d202fe88-e9ad-46b2-b241-a65e09c8d970"],
+          "related_constraints": ["3baf87c0-8de9-4890-b04a-e174cba35a3a"],
           "created_at": "2026-01-27T00:00:00.000000"
         }
       ],
       "last_updated": "2026-01-27T00:00:00.000000"
     },
     "strategic_tensions": {
-      "session_id": "example-saas-startup",
+      "session_id": "642537f0-1cb8-49e1-9e49-9d9c742478bf",
       "tensions": [
         {
-          "id": "tension-001",
+          "id": "d067f512-b1c4-41bc-9fa9-4d117fa76391",
           "name": "Growth vs. Profitability",
           "left_pole": "Aggressive Growth",
           "right_pole": "Path to Profitability",
@@ -212,7 +212,7 @@
           "last_updated": "2026-01-27T00:00:00.000000"
         },
         {
-          "id": "tension-002",
+          "id": "c95eacd7-8cd6-499f-bfb5-c8152f337f97",
           "name": "Product-Led vs. Sales-Led",
           "left_pole": "Product-Led Growth",
           "right_pole": "Sales-Led Growth",
@@ -223,7 +223,7 @@
           "last_updated": "2026-01-27T00:00:00.000000"
         },
         {
-          "id": "tension-003",
+          "id": "d288b2d2-c362-42ce-81fb-43852352b8c7",
           "name": "Feature Velocity vs. Technical Excellence",
           "left_pole": "Ship Features Fast",
           "right_pole": "Build it Right",
@@ -237,10 +237,10 @@
       "last_updated": "2026-01-27T00:00:00.000000"
     },
     "stakeholder_analysis": {
-      "session_id": "example-saas-startup",
+      "session_id": "642537f0-1cb8-49e1-9e49-9d9c742478bf",
       "stakeholders": [
         {
-          "id": "stakeholder-001",
+          "id": "20787f58-369c-48b2-a1a0-393f52b91c2d",
           "name": "Series A Investors (Sequoia, A16Z)",
           "role": "Board Members",
           "interest_level": "high",
@@ -253,7 +253,7 @@
           "last_updated": "2026-01-27T00:00:00.000000"
         },
         {
-          "id": "stakeholder-002",
+          "id": "fa7714d2-c5b1-499b-a41b-5b2f2e0c70b6",
           "name": "Engineering Team (15 engineers)",
           "role": "Product Builders",
           "interest_level": "high",
@@ -266,7 +266,7 @@
           "last_updated": "2026-01-27T00:00:00.000000"
         },
         {
-          "id": "stakeholder-003",
+          "id": "a732616e-1a93-4bf4-8189-57a810234ab3",
           "name": "Enterprise Customers (Fortune 500)",
           "role": "Target Segment",
           "interest_level": "high",
@@ -279,7 +279,7 @@
           "last_updated": "2026-01-27T00:00:00.000000"
         },
         {
-          "id": "stakeholder-004",
+          "id": "0a6dd299-da5a-4e19-8d75-96ca0c64c457",
           "name": "Existing SMB Customers",
           "role": "Core Revenue Base",
           "interest_level": "medium",
@@ -292,7 +292,7 @@
           "last_updated": "2026-01-27T00:00:00.000000"
         },
         {
-          "id": "stakeholder-005",
+          "id": "957e8726-929d-435b-8ccc-7e95de90da73",
           "name": "Potential Acquirers (Microsoft, Salesforce)",
           "role": "Strategic Option",
           "interest_level": "low",
@@ -309,14 +309,14 @@
     }
   },
   "vision": {
-    "id": "vision-001",
+    "id": "48b1ac79-8fe0-40eb-b922-615e10bde760",
     "created_at": "2026-01-27T00:00:00.000000",
     "updated_at": "2026-01-27T00:00:00.000000",
     "created_by": "Founding Team",
     "notes": "Vision informed by opportunity analysis showing AI automation as highest-scoring opportunity",
     "statements": [
       {
-        "id": "vision-statement-001",
+        "id": "316dc236-f607-4833-b268-ebae0250e4cc",
         "created_at": "2026-01-27T00:00:00.000000",
         "updated_at": "2026-01-27T00:00:00.000000",
         "created_by": "CEO",
@@ -326,7 +326,7 @@
         "order": 0
       },
       {
-        "id": "vision-statement-002",
+        "id": "0f038563-7361-4b32-af86-c57d2e000819",
         "created_at": "2026-01-27T00:00:00.000000",
         "updated_at": "2026-01-27T00:00:00.000000",
         "created_by": "CEO",
@@ -336,7 +336,7 @@
         "order": 1
       },
       {
-        "id": "vision-statement-003",
+        "id": "5fad54cc-2a51-406f-ad31-46b4cd0cc239",
         "created_at": "2026-01-27T00:00:00.000000",
         "updated_at": "2026-01-27T00:00:00.000000",
         "created_by": "CEO",
@@ -349,7 +349,7 @@
   },
   "values": [
     {
-      "id": "value-001",
+      "id": "b0999e0b-d1b0-4e87-8db9-ea5a369d55fa",
       "created_at": "2026-01-27T00:00:00.000000",
       "updated_at": "2026-01-27T00:00:00.000000",
       "created_by": "Leadership Team",
@@ -358,7 +358,7 @@
       "description": "We start with customer problems and work backwards. Every feature ships when customers love it, not when we think it's done"
     },
     {
-      "id": "value-002",
+      "id": "8e612a85-a928-4dab-9b52-301451cf360b",
       "created_at": "2026-01-27T00:00:00.000000",
       "updated_at": "2026-01-27T00:00:00.000000",
       "created_by": "Leadership Team",
@@ -367,7 +367,7 @@
       "description": "We move fast AND build it right. Weekly releases with 99.9% uptime. Quality is not negotiable"
     },
     {
-      "id": "value-003",
+      "id": "6361d7aa-9562-4888-8a38-463c0f53b1cd",
       "created_at": "2026-01-27T00:00:00.000000",
       "updated_at": "2026-01-27T00:00:00.000000",
       "created_by": "Leadership Team",
@@ -378,29 +378,29 @@
   ],
   "drivers": [
     {
-      "id": "driver-001",
+      "id": "2f29a186-73c0-4b6d-ad10-b98bc643eb33",
       "created_at": "2026-01-27T00:00:00.000000",
       "updated_at": "2026-01-27T00:00:00.000000",
       "created_by": "Product Team",
       "notes": "Directly addresses opportunity OPP-002 (AI automation) - our highest-scoring opportunity (score: +7)",
       "name": "AI-First Product Leadership",
       "description": "Become the first collaboration platform with truly intelligent automation that learns from how teams work and eliminates repetitive tasks",
-      "addresses_opportunities": ["opp-002"],
+      "addresses_opportunities": ["4b30e2b2-b1c9-41ae-9e40-bf1dc32158a7"],
       "order": 0
     },
     {
-      "id": "driver-002",
+      "id": "7befcb75-d67a-405c-a75c-60f66ff238c9",
       "created_at": "2026-01-27T00:00:00.000000",
       "updated_at": "2026-01-27T00:00:00.000000",
       "created_by": "Sales VP",
       "notes": "Addresses opportunity OPP-001 (Enterprise expansion) - second highest-scoring (score: +1)",
       "name": "Enterprise Market Expansion",
       "description": "Expand from mid-market strength into enterprise (1000+ employees) with enterprise-grade security, compliance, and support",
-      "addresses_opportunities": ["opp-001"],
+      "addresses_opportunities": ["3ef397e3-e88a-4307-aae8-f05997975c0a"],
       "order": 1
     },
     {
-      "id": "driver-003",
+      "id": "6da8211e-7f15-48e6-abb3-a4e6850b6265",
       "created_at": "2026-01-27T00:00:00.000000",
       "updated_at": "2026-01-27T00:00:00.000000",
       "created_by": "CTO",
@@ -413,12 +413,12 @@
   ],
   "intents": [
     {
-      "id": "intent-001",
+      "id": "a01a9a60-61ad-45f1-9f16-83687094dfb1",
       "created_at": "2026-01-27T00:00:00.000000",
       "updated_at": "2026-01-27T00:00:00.000000",
       "created_by": "Product Team",
       "notes": null,
-      "driver_id": "driver-001",
+      "driver_id": "2f29a186-73c0-4b6d-ad10-b98bc643eb33",
       "statement": "Ship AI workflow automation that reduces manual work by 40% for average user, validated through customer interviews showing 'significantly less repetitive work'",
       "aspirational_outcome": "Teams spend less time on routine tasks",
       "measurable_target": "40% reduction in manual tasks",
@@ -426,12 +426,12 @@
       "order": 0
     },
     {
-      "id": "intent-002",
+      "id": "495ea98e-5344-4a01-8dd5-a83530df936e",
       "created_at": "2026-01-27T00:00:00.000000",
       "updated_at": "2026-01-27T00:00:00.000000",
       "created_by": "Product Team",
       "notes": null,
-      "driver_id": "driver-001",
+      "driver_id": "2f29a186-73c0-4b6d-ad10-b98bc643eb33",
       "statement": "Achieve NPS >70 for AI features (vs current platform NPS of 62) demonstrating users truly value intelligent automation",
       "aspirational_outcome": "AI features users love",
       "measurable_target": "NPS >70",
@@ -439,12 +439,12 @@
       "order": 1
     },
     {
-      "id": "intent-003",
+      "id": "3d7fa434-33dd-4a23-b5c7-d59d49db1dcd",
       "created_at": "2026-01-27T00:00:00.000000",
       "updated_at": "2026-01-27T00:00:00.000000",
       "created_by": "Sales VP",
       "notes": null,
-      "driver_id": "driver-002",
+      "driver_id": "7befcb75-d67a-405c-a75c-60f66ff238c9",
       "statement": "Grow enterprise (1000+ employees) revenue from 5% to 35% of total ARR within 18 months through targeted enterprise features and sales motion",
       "aspirational_outcome": "Balanced revenue across segments",
       "measurable_target": "Enterprise = 35% of ARR",
@@ -452,12 +452,12 @@
       "order": 0
     },
     {
-      "id": "intent-004",
+      "id": "3a7ae1f6-a703-4f79-a1cf-409ce07d7f38",
       "created_at": "2026-01-27T00:00:00.000000",
       "updated_at": "2026-01-27T00:00:00.000000",
       "created_by": "Sales VP",
       "notes": null,
-      "driver_id": "driver-002",
+      "driver_id": "7befcb75-d67a-405c-a75c-60f66ff238c9",
       "statement": "Achieve SOC 2 Type II and ISO 27001 certifications enabling sales to Fortune 500 customers who require compliance",
       "aspirational_outcome": "Enterprise-ready platform",
       "measurable_target": "SOC 2 + ISO 27001 certified",
@@ -465,12 +465,12 @@
       "order": 1
     },
     {
-      "id": "intent-005",
+      "id": "e7fa7b5e-4c78-4b61-8bc7-3437eb975467",
       "created_at": "2026-01-27T00:00:00.000000",
       "updated_at": "2026-01-27T00:00:00.000000",
       "created_by": "CTO",
       "notes": null,
-      "driver_id": "driver-003",
+      "driver_id": "6da8211e-7f15-48e6-abb3-a4e6850b6265",
       "statement": "Migrate to microservices architecture supporting 10x current load with 99.99% uptime, enabling enterprise scale without performance degradation",
       "aspirational_outcome": "Infinitely scalable platform",
       "measurable_target": "10x capacity, 99.99% uptime",
@@ -480,7 +480,7 @@
   ],
   "iconic_commitments": [
     {
-      "id": "commitment-001",
+      "id": "ccfb5c3d-92b5-405a-a34f-eaaa7f8e2e99",
       "created_at": "2026-01-27T00:00:00.000000",
       "updated_at": "2026-01-27T00:00:00.000000",
       "created_by": "Product Team",
@@ -488,15 +488,15 @@
       "title": "Launch AI Meeting Assistant",
       "description": "Ship AI agent that joins meetings, takes notes, generates action items, and auto-creates tasks in CloudSync. MVP in Q1 2026",
       "horizon": "H1",
-      "primary_driver_id": "driver-001",
+      "primary_driver_id": "2f29a186-73c0-4b6d-ad10-b98bc643eb33",
       "supporting_driver_ids": [],
-      "primary_intent_id": "intent-001",
+      "primary_intent_id": "a01a9a60-61ad-45f1-9f16-83687094dfb1",
       "owner": "VP Product",
       "success_criteria": "5000+ teams using AI meeting assistant daily, 80% satisfaction rating",
       "order": 0
     },
     {
-      "id": "commitment-002",
+      "id": "6feb9740-6b40-48fa-b325-23937771d4dc",
       "created_at": "2026-01-27T00:00:00.000000",
       "updated_at": "2026-01-27T00:00:00.000000",
       "created_by": "Product Team",
@@ -504,15 +504,15 @@
       "title": "Build AI Workflow Automations Marketplace",
       "description": "Create marketplace where users can discover, customize, and deploy AI automations for common workflows (onboarding, project kickoff, reporting)",
       "horizon": "H2",
-      "primary_driver_id": "driver-001",
+      "primary_driver_id": "2f29a186-73c0-4b6d-ad10-b98bc643eb33",
       "supporting_driver_ids": [],
-      "primary_intent_id": "intent-001",
+      "primary_intent_id": "a01a9a60-61ad-45f1-9f16-83687094dfb1",
       "owner": "Head of AI",
       "success_criteria": "100+ automations in marketplace, 40% of teams using 3+ automations",
       "order": 1
     },
     {
-      "id": "commitment-003",
+      "id": "54f0ff93-7a14-482d-b24e-29d23b73e656",
       "created_at": "2026-01-27T00:00:00.000000",
       "updated_at": "2026-01-27T00:00:00.000000",
       "created_by": "Security Team",
@@ -520,15 +520,15 @@
       "title": "Achieve SOC 2 Type II Certification",
       "description": "Complete SOC 2 Type II audit with zero findings, enabling enterprise sales to regulated industries (healthcare, finance)",
       "horizon": "H2",
-      "primary_driver_id": "driver-002",
-      "supporting_driver_ids": ["driver-003"],
-      "primary_intent_id": "intent-004",
+      "primary_driver_id": "7befcb75-d67a-405c-a75c-60f66ff238c9",
+      "supporting_driver_ids": ["6da8211e-7f15-48e6-abb3-a4e6850b6265"],
+      "primary_intent_id": "3a7ae1f6-a703-4f79-a1cf-409ce07d7f38",
       "owner": "VP Engineering",
       "success_criteria": "SOC 2 Type II certified, security page on website, 20+ enterprise customers citing compliance as key purchase factor",
       "order": 2
     },
     {
-      "id": "commitment-004",
+      "id": "5e07e057-1f53-4caa-b257-df69cd7c5a28",
       "created_at": "2026-01-27T00:00:00.000000",
       "updated_at": "2026-01-27T00:00:00.000000",
       "created_by": "Sales Team",
@@ -536,15 +536,15 @@
       "title": "Build Enterprise Sales Motion",
       "description": "Hire 10 enterprise AEs, create enterprise sales playbook, establish partner channel with 3 major consulting firms",
       "horizon": "H2",
-      "primary_driver_id": "driver-002",
+      "primary_driver_id": "7befcb75-d67a-405c-a75c-60f66ff238c9",
       "supporting_driver_ids": [],
-      "primary_intent_id": "intent-003",
+      "primary_intent_id": "3d7fa434-33dd-4a23-b5c7-d59d49db1dcd",
       "owner": "VP Sales",
       "success_criteria": "$5M in enterprise ARR, 25 customers >1000 employees, average deal size >$100K",
       "order": 3
     },
     {
-      "id": "commitment-005",
+      "id": "b3d28f6b-e92a-4bc4-8044-3f782edddb64",
       "created_at": "2026-01-27T00:00:00.000000",
       "updated_at": "2026-01-27T00:00:00.000000",
       "created_by": "Engineering Team",
@@ -552,9 +552,9 @@
       "title": "Microservices Architecture Migration",
       "description": "Decompose monolith into 12 microservices (auth, collaboration, AI, storage, etc) with Kubernetes orchestration",
       "horizon": "H3",
-      "primary_driver_id": "driver-003",
-      "supporting_driver_ids": ["driver-001", "driver-002"],
-      "primary_intent_id": "intent-005",
+      "primary_driver_id": "6da8211e-7f15-48e6-abb3-a4e6850b6265",
+      "supporting_driver_ids": ["2f29a186-73c0-4b6d-ad10-b98bc643eb33", "7befcb75-d67a-405c-a75c-60f66ff238c9"],
+      "primary_intent_id": "e7fa7b5e-4c78-4b61-8bc7-3437eb975467",
       "owner": "CTO",
       "success_criteria": "All services migrated, <200ms p95 latency maintained, zero downtime migration, 10x load capacity demonstrated",
       "order": 4
