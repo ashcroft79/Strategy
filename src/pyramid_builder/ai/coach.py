@@ -25,15 +25,17 @@ class AICoach:
     Provides real-time suggestions, draft generation, and contextual help.
     """
 
-    def __init__(self, pyramid: Optional[StrategyPyramid] = None, api_key: Optional[str] = None):
+    def __init__(self, pyramid: Optional[StrategyPyramid] = None, context: Optional[Dict[str, Any]] = None, api_key: Optional[str] = None):
         """
         Initialize AI coach.
 
         Args:
             pyramid: Optional current pyramid state (for context)
+            context: Optional SOCC context data (Tier 0)
             api_key: Anthropic API key (defaults to ANTHROPIC_API_KEY env var)
         """
         self.pyramid = pyramid
+        self.context = context
         self.api_key = api_key or os.getenv("ANTHROPIC_API_KEY")
 
         if not ANTHROPIC_AVAILABLE:
@@ -443,14 +445,131 @@ Suggest specific, measurable alternatives. Respond in JSON:
 
 IMPORTANT: This pyramid state is updated in real-time. If the user just added, edited, or removed elements, the counts and details above reflect those changes. Always refer to this fresh state, not previous mentions in our conversation."""
 
+        # Build Context (SOCC) summary
+        context_summary = ""
+        if self.context:
+            context_lines = [
+                "",
+                "## TIER 0: CONTEXT FOUNDATION",
+                ""
+            ]
+
+            # SOCC Analysis
+            if self.context.get('socc_items'):
+                socc_items = self.context['socc_items']
+                strengths = [item for item in socc_items if item['quadrant'] == 'strength']
+                opportunities = [item for item in socc_items if item['quadrant'] == 'opportunity']
+                considerations = [item for item in socc_items if item['quadrant'] == 'consideration']
+                constraints = [item for item in socc_items if item['quadrant'] == 'constraint']
+
+                context_lines.append("### SOCC Analysis")
+                context_lines.append(f"Total Context Items: {len(socc_items)}")
+                context_lines.append("")
+
+                if strengths:
+                    context_lines.append(f"STRENGTHS ({len(strengths)}):")
+                    for item in strengths[:5]:  # Top 5
+                        context_lines.append(f"  • {item['title']} ({item['impact_level']} impact)")
+                    if len(strengths) > 5:
+                        context_lines.append(f"  ... and {len(strengths) - 5} more")
+                    context_lines.append("")
+
+                if opportunities:
+                    context_lines.append(f"OPPORTUNITIES ({len(opportunities)}):")
+                    for item in opportunities[:5]:
+                        context_lines.append(f"  • {item['title']} ({item['impact_level']} impact)")
+                    if len(opportunities) > 5:
+                        context_lines.append(f"  ... and {len(opportunities) - 5} more")
+                    context_lines.append("")
+
+                if considerations:
+                    context_lines.append(f"CONSIDERATIONS ({len(considerations)}):")
+                    for item in considerations[:5]:
+                        context_lines.append(f"  • {item['title']} ({item['impact_level']} impact)")
+                    if len(considerations) > 5:
+                        context_lines.append(f"  ... and {len(considerations) - 5} more")
+                    context_lines.append("")
+
+                if constraints:
+                    context_lines.append(f"CONSTRAINTS ({len(constraints)}):")
+                    for item in constraints[:5]:
+                        context_lines.append(f"  • {item['title']} ({item['impact_level']} impact)")
+                    if len(constraints) > 5:
+                        context_lines.append(f"  ... and {len(constraints) - 5} more")
+                    context_lines.append("")
+
+            # Opportunity Scoring
+            if self.context.get('opportunity_scores'):
+                opportunity_scores = self.context['opportunity_scores']
+                context_lines.append(f"### Opportunity Scoring ({len(opportunity_scores)} opportunities scored)")
+
+                # Sort by calculated score
+                sorted_opportunities = sorted(
+                    opportunity_scores.items(),
+                    key=lambda x: (x[1]['strength_match'] * 2) - x[1]['consideration_risk'] - x[1]['constraint_impact'],
+                    reverse=True
+                )
+
+                for opp_id, score in sorted_opportunities[:3]:  # Top 3
+                    calc_score = (score['strength_match'] * 2) - score['consideration_risk'] - score['constraint_impact']
+                    viability = "High" if calc_score >= 7 else "Moderate" if calc_score >= 4 else "Marginal" if calc_score >= 1 else "Low"
+                    context_lines.append(f"  • Score: {calc_score:+d} ({viability} viability)")
+
+                if len(sorted_opportunities) > 3:
+                    context_lines.append(f"  ... and {len(sorted_opportunities) - 3} more scored")
+                context_lines.append("")
+
+            # Strategic Tensions
+            if self.context.get('tensions'):
+                tensions = self.context['tensions']
+                context_lines.append(f"### Strategic Tensions ({len(tensions)} tensions identified)")
+
+                for tension in tensions[:3]:  # Top 3
+                    shift = abs(tension['target_position'] - tension['current_position'])
+                    direction = "right" if tension['target_position'] > tension['current_position'] else "left" if tension['target_position'] < tension['current_position'] else "none"
+                    context_lines.append(f"  • {tension['name']}: Current {tension['current_position']} → Target {tension['target_position']}")
+                    if shift > 10:
+                        context_lines.append(f"    (Requires {shift} point shift {direction})")
+
+                if len(tensions) > 3:
+                    context_lines.append(f"  ... and {len(tensions) - 3} more")
+                context_lines.append("")
+
+            # Stakeholder Mapping
+            if self.context.get('stakeholders'):
+                stakeholders = self.context['stakeholders']
+                key_players = [s for s in stakeholders if s['interest_level'] == 'high' and s['influence_level'] == 'high']
+                context_lines.append(f"### Stakeholder Mapping ({len(stakeholders)} stakeholders mapped)")
+                context_lines.append(f"  • Key Players (High Interest + High Influence): {len(key_players)}")
+
+                for stakeholder in key_players[:3]:
+                    alignment = stakeholder.get('alignment', 'neutral')
+                    context_lines.append(f"    - {stakeholder['name']} ({alignment})")
+
+                if len(key_players) > 3:
+                    context_lines.append(f"    ... and {len(key_players) - 3} more")
+                context_lines.append("")
+
+            context_lines.append("IMPORTANT: This context should inform all strategic choices. Help users connect their pyramid elements (Vision, Drivers, Intents, Commitments) back to this foundation. Ask questions like: 'How does this leverage your strengths?' or 'Does this address the constraints you identified?' or 'Does this opportunity score suggest prioritization?' or 'How does this navigate the tension between X and Y?'")
+
+            context_summary = "\n".join(context_lines)
+
         system_prompt = f"""You are a strategic planning coach helping someone build a strategic pyramid.
 
 {self.tooltips_guidance}
 
+{context_summary}
+
 {pyramid_context}
 
 Be conversational, encouraging, and specific. Reference best practices naturally without using reference codes.
-Keep responses concise (2-3 sentences) unless user asks for detail."""
+Keep responses concise (2-3 sentences) unless user asks for detail.
+
+IMPORTANT COACHING APPROACH:
+- When users are building their pyramid, help them connect their strategic choices back to their Context (SOCC) analysis
+- Ask clarifying questions like: "Does this leverage your strength in X?" or "How does this address the constraint around Y?"
+- Remind users that "strategy without context is hope, not strategy"
+- If they haven't completed Context yet, gently encourage them to start with Tier 0 (SOCC) before building the pyramid"""
 
         # Build message history
         messages = []

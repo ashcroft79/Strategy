@@ -67,6 +67,7 @@ export interface StrategicDriver extends BaseItem {
   name: string;
   description: string;
   rationale?: string;
+  addresses_opportunities?: string[];
 }
 
 export interface StrategicIntent extends BaseItem {

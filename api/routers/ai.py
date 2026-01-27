@@ -6,6 +6,7 @@ from typing import Dict, Any, Optional, List
 import os
 
 from .pyramids import active_pyramids
+from .context import context_storage, scoring_storage, tension_storage, stakeholder_storage
 
 # Try to import AI coach
 try:
@@ -15,6 +16,72 @@ except ImportError:
     AI_COACH_AVAILABLE = False
 
 router = APIRouter()
+
+
+def build_context_data(session_id: str) -> Optional[Dict[str, Any]]:
+    """Build complete context data for AI coach including all Step 1 artifacts."""
+    context_data = {}
+
+    # SOCC Analysis
+    if session_id in context_storage:
+        socc_analysis = context_storage[session_id]
+        if socc_analysis.items:
+            context_data["socc_items"] = [
+                {
+                    "quadrant": item.quadrant,
+                    "title": item.title,
+                    "description": item.description,
+                    "impact_level": item.impact_level
+                }
+                for item in socc_analysis.items
+            ]
+
+    # Opportunity Scoring
+    if session_id in scoring_storage:
+        scoring_analysis = scoring_storage[session_id]
+        if scoring_analysis.scores:
+            context_data["opportunity_scores"] = {
+                score.opportunity_item_id: {
+                    "strength_match": score.strength_match,
+                    "consideration_risk": score.consideration_risk,
+                    "constraint_impact": score.constraint_impact,
+                    "rationale": score.rationale
+                }
+                for score in scoring_analysis.scores
+            }
+
+    # Strategic Tensions
+    if session_id in tension_storage:
+        tension_analysis = tension_storage[session_id]
+        if tension_analysis.tensions:
+            context_data["tensions"] = [
+                {
+                    "name": tension.name,
+                    "left_pole": tension.left_pole,
+                    "right_pole": tension.right_pole,
+                    "current_position": tension.current_position,
+                    "target_position": tension.target_position,
+                    "rationale": tension.rationale
+                }
+                for tension in tension_analysis.tensions
+            ]
+
+    # Stakeholder Mapping
+    if session_id in stakeholder_storage:
+        stakeholder_analysis = stakeholder_storage[session_id]
+        if stakeholder_analysis.stakeholders:
+            context_data["stakeholders"] = [
+                {
+                    "name": stakeholder.name,
+                    "interest_level": stakeholder.interest_level,
+                    "influence_level": stakeholder.influence_level,
+                    "alignment": stakeholder.alignment,
+                    "key_needs": stakeholder.key_needs
+                }
+                for stakeholder in stakeholder_analysis.stakeholders
+            ]
+
+    return context_data if context_data else None
 
 
 # Request/Response models
@@ -72,8 +139,11 @@ async def suggest_field_improvement(request: SuggestFieldRequest):
     if request.session_id in active_pyramids:
         pyramid = active_pyramids[request.session_id].pyramid
 
+    # Get complete Step 1 context
+    context_data = build_context_data(request.session_id)
+
     try:
-        coach = AICoach(pyramid=pyramid)
+        coach = AICoach(pyramid=pyramid, context=context_data)
         suggestion = coach.suggest_field_improvement(
             tier=request.tier,
             field_name=request.field_name,
@@ -94,7 +164,7 @@ async def generate_draft(request: GenerateDraftRequest):
     """
     Generate a draft for a tier item.
 
-    Takes pyramid context and generates high-quality draft content
+    Takes pyramid and context to generate high-quality draft content
     following best practices and thought leadership.
     """
     check_ai_available()
@@ -104,8 +174,11 @@ async def generate_draft(request: GenerateDraftRequest):
     if request.session_id in active_pyramids:
         pyramid = active_pyramids[request.session_id].pyramid
 
+    # Get complete Step 1 context
+    context_data = build_context_data(request.session_id)
+
     try:
-        coach = AICoach(pyramid=pyramid)
+        coach = AICoach(pyramid=pyramid, context=context_data)
         draft = coach.generate_draft(
             tier=request.tier,
             context=request.context
@@ -146,7 +219,7 @@ async def chat_with_coach(request: ChatRequest):
     Chat with AI coach about strategy.
 
     Context-aware conversation with the AI coach.
-    Pyramid state is included for relevant advice.
+    Pyramid state and Context (SOCC) analysis are included for relevant advice.
     """
     check_ai_available()
 
@@ -155,8 +228,11 @@ async def chat_with_coach(request: ChatRequest):
     if request.session_id in active_pyramids:
         pyramid = active_pyramids[request.session_id].pyramid
 
+    # Get complete Step 1 context
+    context_data = build_context_data(request.session_id)
+
     try:
-        coach = AICoach(pyramid=pyramid)
+        coach = AICoach(pyramid=pyramid, context=context_data)
         response = coach.chat(
             message=request.message,
             chat_history=request.chat_history

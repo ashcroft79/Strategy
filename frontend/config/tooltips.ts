@@ -838,6 +838,174 @@ export const EXPORTS_TOOLTIPS = {
 };
 
 // ============================================================================
+// STEP 1: CONTEXT & DISCOVERY (TIER 0)
+// ============================================================================
+
+export const CONTEXT_TOOLTIPS = {
+  SOCC_FRAMEWORK: {
+    id: 'TT-CTX-001',
+    title: 'SOCC Analysis Framework',
+    content: 'SOCC (Strengths, Opportunities, Considerations, Constraints) is a 4-quadrant context analysis that grounds your strategy in reality. It replaces traditional SWOT with a more actionable framework.',
+    example: 'Think of SOCC as your strategic foundation:\n• Strengths = What you can leverage\n• Opportunities = What you can pursue\n• Considerations = What you must manage\n• Constraints = What limits your choices',
+    dos: [
+      'Aim for 12+ total items across all quadrants',
+      'Be specific and evidence-based',
+      'Update regularly as context changes',
+      'Link opportunities to strengths'
+    ],
+    donts: [
+      'Skip this step - strategy without context is just hope',
+      'Use vague or generic items',
+      'Ignore constraints or considerations'
+    ]
+  } as TooltipContent,
+
+  SOCC_STRENGTHS: {
+    id: 'TT-CTX-002',
+    title: 'Strengths (What You Can Leverage)',
+    content: 'Internal capabilities, assets, or advantages that differentiate you. These are resources you can leverage to pursue opportunities.',
+    example: '✅ Good: "Deep domain expertise in supply chain optimization with 15+ years track record"\n\n❌ Avoid: "Good team" or "Innovative culture"',
+    dos: [
+      'Be specific about what makes it a strength',
+      'Quantify where possible',
+      'Focus on unique or differentiating strengths',
+      'Consider: people, processes, technology, relationships'
+    ],
+    donts: [
+      'List generic strengths everyone claims',
+      'Confuse aspirations with actual strengths',
+      'Ignore impact level (high/medium/low)'
+    ]
+  } as TooltipContent,
+
+  SOCC_OPPORTUNITIES: {
+    id: 'TT-CTX-003',
+    title: 'Opportunities (What You Can Pursue)',
+    content: 'External market conditions, trends, or gaps that you could potentially capture. These are possibilities, not certainties.',
+    example: '✅ Good: "Growing demand for sustainable packaging in food industry (20% YoY growth)"\n\n❌ Avoid: "Expand internationally" (that\'s a strategic choice, not a context opportunity)',
+    dos: [
+      'Look for market trends, customer needs, competitor gaps',
+      'Quantify market size or growth where possible',
+      'Consider timing and urgency',
+      'Link to your strengths when scoring'
+    ],
+    donts: [
+      'Confuse opportunities with strategic choices',
+      'List aspirations instead of market conditions',
+      'Ignore whether you have strengths to pursue it'
+    ]
+  } as TooltipContent,
+
+  SOCC_CONSIDERATIONS: {
+    id: 'TT-CTX-004',
+    title: 'Considerations (What You Must Manage)',
+    content: 'External factors that could threaten your opportunities or require careful management. Unlike constraints, these can be mitigated with strategy.',
+    example: '✅ Good: "Increasing regulatory scrutiny on data privacy in EU markets"\n\n❌ Avoid: "Competition" (too vague - be specific about the competitive threat)',
+    dos: [
+      'Identify specific threats to opportunities',
+      'Assess likelihood and potential impact',
+      'Think about: competitors, regulations, market shifts, technology changes',
+      'Link to your opportunities when scoring'
+    ],
+    donts: [
+      'Use vague threats',
+      'Confuse considerations with constraints (constraints are fixed limits)',
+      'Ignore manageable risks'
+    ]
+  } as TooltipContent,
+
+  SOCC_CONSTRAINTS: {
+    id: 'TT-CTX-005',
+    title: 'Constraints (What Limits Your Choices)',
+    content: 'Hard limits or fixed conditions that restrict your strategic options. These are realities you must work within, not problems to solve.',
+    example: '✅ Good: "Budget frozen at $2M for next fiscal year" or "No available talent pool in current location"\n\n❌ Avoid: "Limited resources" (too vague - specify what\'s limited)',
+    dos: [
+      'Be specific about the limitation',
+      'Quantify the constraint',
+      'Distinguish between real constraints and just "hard problems"',
+      'Think about: budget, time, people, technology, regulations'
+    ],
+    donts: [
+      'List every challenge as a constraint',
+      'Use constraints as excuses',
+      'Forget that constraints force prioritization (which is good!)'
+    ]
+  } as TooltipContent,
+
+  OPPORTUNITY_SCORING: {
+    id: 'TT-CTX-006',
+    title: 'Opportunity Scoring',
+    content: 'Systematic prioritization of opportunities using a 3-factor formula: (Strength Match × 2) - Consideration Risk - Constraint Impact. Higher scores = higher strategic fit.',
+    example: 'Formula yields scores from -8 to +8:\n• 7-10: High viability (pursue now)\n• 4-6: Moderate (pursue with risk mitigation)\n• 1-3: Marginal (address constraints first)\n• ≤0: Low viability (defer or decline)',
+    dos: [
+      'Score all opportunities to force prioritization',
+      'Be honest about strength match',
+      'Consider both consideration risk AND constraint impact',
+      'Document rationale for each score'
+    ],
+    donts: [
+      'Score everything as high viability',
+      'Ignore considerations or constraints',
+      'Pursue low-scoring opportunities without addressing gaps'
+    ]
+  } as TooltipContent,
+
+  STRATEGIC_TENSIONS: {
+    id: 'TT-CTX-007',
+    title: 'Strategic Tensions',
+    content: 'Key trade-offs where you must consciously choose a position between two valid but opposing poles. Great strategy requires navigating these tensions, not avoiding them.',
+    example: 'Common tensions:\n• Growth vs. Profitability\n• Innovation vs. Execution\n• Speed vs. Quality\n• Breadth vs. Depth\n• Centralization vs. Autonomy',
+    dos: [
+      'Identify 2-4 key tensions that define your strategy',
+      'Map both current AND target positions',
+      'Document rationale for your positioning',
+      'Accept that you can\'t optimize for both poles simultaneously'
+    ],
+    donts: [
+      'Try to eliminate tensions or claim "we do both"',
+      'Ignore significant shifts (>10 points require major change)',
+      'Use vague pole names (be specific)'
+    ]
+  } as TooltipContent,
+
+  STAKEHOLDER_MAPPING: {
+    id: 'TT-CTX-008',
+    title: 'Stakeholder Mapping',
+    content: 'Map stakeholders by Interest (how much they care) and Influence (how much power they have) to determine appropriate engagement strategies.',
+    example: 'Four quadrants:\n• Key Players (High Interest + High Influence): Engage closely\n• Keep Satisfied (Low Interest + High Influence): Don\'t alienate\n• Keep Informed (High Interest + Low Influence): Communicate regularly\n• Monitor (Low Interest + Low Influence): Minimal effort',
+    dos: [
+      'Map 5-10 key stakeholders',
+      'Assess their current alignment (opposed/neutral/supportive)',
+      'Document their needs and concerns',
+      'Plan specific engagement actions'
+    ],
+    donts: [
+      'Treat all stakeholders the same',
+      'Ignore powerful but disinterested stakeholders',
+      'Forget to update as alignment changes'
+    ]
+  } as TooltipContent,
+
+  CONTEXT_TRACEABILITY: {
+    id: 'TT-CTX-009',
+    title: 'Context-to-Strategy Traceability',
+    content: 'Ensure your strategic drivers address opportunities from your context analysis. This "red thread" proves your strategy is grounded in reality.',
+    example: 'Good traceability:\n"Expand EV Charging Network" (Driver)\n↓ addresses ↓\n"Growing EV adoption creating 200% increase in charging demand" (Opportunity)',
+    dos: [
+      'Link each driver to at least one opportunity',
+      'Aim for 100% opportunity coverage',
+      'Use traceability to validate strategic choices',
+      'Update links as context or strategy changes'
+    ],
+    donts: [
+      'Create drivers that don\'t address any opportunities',
+      'Ignore unaddressed opportunities (they become strategic gaps)',
+      'Force artificial links just to check boxes'
+    ]
+  } as TooltipContent
+};
+
+// ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
 
@@ -846,6 +1014,7 @@ export const EXPORTS_TOOLTIPS = {
  */
 export function getTooltipById(id: string): TooltipContent | undefined {
   const allTooltips = [
+    ...Object.values(CONTEXT_TOOLTIPS),
     ...Object.values(TIER1_TOOLTIPS),
     ...Object.values(TIER2_TOOLTIPS),
     ...Object.values(TIER3_TOOLTIPS),
@@ -866,6 +1035,7 @@ export function getTooltipById(id: string): TooltipContent | undefined {
  */
 export function getAllTooltipIds(): string[] {
   const allTooltips = [
+    ...Object.values(CONTEXT_TOOLTIPS),
     ...Object.values(TIER1_TOOLTIPS),
     ...Object.values(TIER2_TOOLTIPS),
     ...Object.values(TIER3_TOOLTIPS),

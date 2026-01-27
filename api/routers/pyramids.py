@@ -15,12 +15,26 @@ from src.pyramid_builder.models.pyramid import (
     StatementType,
     Horizon,
 )
+from src.pyramid_builder.models.context import (
+    SOCCAnalysis,
+    SOCCItem,
+    SOCCConnection,
+    OpportunityScore,
+    OpportunityScoringAnalysis,
+    StrategicTension,
+    TensionAnalysis,
+    Stakeholder,
+    StakeholderAnalysis
+)
 
 router = APIRouter()
 
 # In-memory storage for active pyramids (keyed by session ID)
 # In production, you might use Redis or a database
 active_pyramids: Dict[str, PyramidManager] = {}
+
+# Import context storages from context router
+from .context import context_storage, scoring_storage, tension_storage, stakeholder_storage
 
 
 class CreatePyramidRequest(BaseModel):
@@ -64,17 +78,83 @@ async def create_pyramid(request: CreatePyramidRequest):
 
 @router.post("/load")
 async def load_pyramid(request: LoadPyramidRequest):
-    """Load a pyramid from JSON data."""
+    """Load a pyramid from JSON data, including Context data (Step 1) if present."""
     try:
-        # Convert dict to StrategyPyramid
-        pyramid = StrategyPyramid.model_validate(request.pyramid_data)
+        pyramid_data = request.pyramid_data.copy()
+
+        # Extract Context data if present (backward compatible - won't fail if missing)
+        context_data = pyramid_data.pop("context", None)
+
+        # Clear any existing context for this session before loading new data
+        if request.session_id in context_storage:
+            del context_storage[request.session_id]
+        if request.session_id in scoring_storage:
+            del scoring_storage[request.session_id]
+        if request.session_id in tension_storage:
+            del tension_storage[request.session_id]
+        if request.session_id in stakeholder_storage:
+            del stakeholder_storage[request.session_id]
+
+        # Convert dict to StrategyPyramid (Step 2)
+        pyramid = StrategyPyramid.model_validate(pyramid_data)
         manager = PyramidManager(pyramid=pyramid)
         active_pyramids[request.session_id] = manager
+
+        # Load Context data (Step 1) if it exists
+        if context_data:
+            try:
+                # Parse SOCC analysis
+                socc_data = context_data.get("socc_analysis", {})
+                if socc_data and socc_data.get("items"):
+                    items = [SOCCItem(**item) for item in socc_data["items"]]
+                    connections = [SOCCConnection(**conn) for conn in socc_data.get("connections", [])]
+
+                    socc_analysis = SOCCAnalysis(
+                        session_id=request.session_id,
+                        items=items,
+                        connections=connections
+                    )
+                    context_storage[request.session_id] = socc_analysis
+
+                # Parse opportunity scores
+                if "opportunity_scores" in context_data:
+                    scores = [OpportunityScore(**score_data)
+                             for score_data in context_data["opportunity_scores"].values()]
+                    scoring_analysis = OpportunityScoringAnalysis(
+                        session_id=request.session_id,
+                        scores=scores
+                    )
+                    scoring_storage[request.session_id] = scoring_analysis
+
+                # Parse strategic tensions
+                if "strategic_tensions" in context_data:
+                    tensions = [StrategicTension(**tension_data)
+                               for tension_data in context_data["strategic_tensions"]]
+                    tension_analysis = TensionAnalysis(
+                        session_id=request.session_id,
+                        tensions=tensions
+                    )
+                    tension_storage[request.session_id] = tension_analysis
+
+                # Parse stakeholders
+                if "stakeholders" in context_data:
+                    stakeholders = [Stakeholder(**stakeholder_data)
+                                   for stakeholder_data in context_data["stakeholders"]]
+                    stakeholder_analysis = StakeholderAnalysis(
+                        session_id=request.session_id,
+                        stakeholders=stakeholders
+                    )
+                    stakeholder_storage[request.session_id] = stakeholder_analysis
+
+            except Exception as context_error:
+                # Log error but don't fail the pyramid load
+                print(f"Warning: Failed to load Context data: {str(context_error)}")
 
         return {
             "success": True,
             "pyramid": pyramid.model_dump(mode="json"),
             "session_id": request.session_id,
+            "context_loaded": context_data is not None
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid pyramid data: {str(e)}")
@@ -337,6 +417,7 @@ class AddDriverRequest(BaseModel):
     name: str
     description: str
     rationale: Optional[str] = None
+    addresses_opportunities: Optional[List[str]] = None
     created_by: Optional[str] = None
 
 
@@ -345,6 +426,7 @@ class UpdateDriverRequest(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     rationale: Optional[str] = None
+    addresses_opportunities: Optional[List[str]] = None
 
 
 @router.post("/{session_id}/drivers")
@@ -359,6 +441,7 @@ async def add_strategic_driver(session_id: str, request: AddDriverRequest):
             name=request.name,
             description=request.description,
             rationale=request.rationale,
+            addresses_opportunities=request.addresses_opportunities,
             created_by=request.created_by,
         )
 
@@ -392,6 +475,7 @@ async def update_strategic_driver(session_id: str, request: UpdateDriverRequest)
         name=request.name,
         description=request.description,
         rationale=request.rationale,
+        addresses_opportunities=request.addresses_opportunities,
     )
 
     if not success:

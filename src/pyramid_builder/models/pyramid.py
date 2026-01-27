@@ -246,6 +246,10 @@ class StrategicDriver(BaseItem):
         default=None,
         description="Why this driver was chosen"
     )
+    addresses_opportunities: List[str] = Field(
+        default_factory=list,
+        description="IDs of opportunity items from SOCC that this driver addresses"
+    )
 
     @field_validator('name')
     @classmethod

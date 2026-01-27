@@ -17,7 +17,7 @@ import {
 } from "@/lib/api-client";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Textarea } from "@/components/ui/Textarea";
+import { Textarea } from "@/components/ui/textarea";
 import { LabelWithTooltip } from "@/components/ui/Tooltip";
 import { UnsavedChangesIndicator } from "@/components/ui/UnsavedChangesIndicator";
 import Modal from "@/components/ui/Modal";
@@ -29,8 +29,16 @@ import { AICoachSidebar } from "@/components/AICoachSidebar";
 import { useAIFieldSuggestion } from "@/hooks/useAIFieldSuggestion";
 import { AIFieldSuggestion, AIFieldSuggestionIndicator } from "@/components/AIFieldSuggestion";
 import { AIDraftGenerator } from "@/components/AIDraftGenerator";
+import { SOCCCanvas } from "@/components/context/SOCCCanvas";
+import { ContextOnboarding } from "@/components/context/ContextOnboarding";
+import { ContextSummary } from "@/components/context/ContextSummary";
+import { ContextDashboard } from "@/components/context/ContextDashboard";
+import { ContextTraceability } from "@/components/context/ContextTraceability";
+import { OpportunityScoring } from "@/components/context/OpportunityScoring";
+import { StrategicTensions } from "@/components/context/StrategicTensions";
+import { StakeholderMapping } from "@/components/context/StakeholderMapping";
 import { StatementType, Horizon } from "@/types/pyramid";
-import { Save, Home, CheckCircle, FileDown, Eye, Trash2, Edit, Plus, BarChart3 } from "lucide-react";
+import { Save, Home, CheckCircle, FileDown, Eye, Trash2, Edit, Plus, BarChart3, Lightbulb } from "lucide-react";
 import { TIER1_TOOLTIPS, TIER2_TOOLTIPS, TIER3_TOOLTIPS, TIER4_TOOLTIPS, TIER5_TOOLTIPS, TIER6_TOOLTIPS, TIER7_TOOLTIPS, TIER8_TOOLTIPS, TIER9_TOOLTIPS } from "@/config/tooltips";
 
 // Component to handle edit query params
@@ -76,6 +84,7 @@ export default function BuilderPage() {
   const router = useRouter();
   const { sessionId, pyramid, setPyramid, setLoading, setError, showToast, isLoading, incrementUnsavedChanges } = usePyramidStore();
   const [activeTier, setActiveTier] = useState<string | undefined>(undefined);
+  const [activeContextTab, setActiveContextTab] = useState<'dashboard' | 'socc' | 'scoring' | 'tensions' | 'stakeholders' | 'traceability'>('dashboard');
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -121,6 +130,14 @@ export default function BuilderPage() {
   // AI feature toggle (default: off)
   const [aiEnabled, setAiEnabled] = useState(false);
 
+  // Context onboarding (stored in localStorage)
+  const [showContextOnboarding, setShowContextOnboarding] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('context_onboarding_dismissed') !== 'true';
+    }
+    return true;
+  });
+
   // Load AI preference from localStorage
   useEffect(() => {
     const savedAiPref = localStorage.getItem('ai-enabled');
@@ -134,6 +151,17 @@ export default function BuilderPage() {
     const newValue = !aiEnabled;
     setAiEnabled(newValue);
     localStorage.setItem('ai-enabled', newValue.toString());
+  };
+
+  // Context onboarding handlers
+  const handleDismissOnboarding = () => {
+    setShowContextOnboarding(false);
+    localStorage.setItem('context_onboarding_dismissed', 'true');
+  };
+
+  const handleStartContext = () => {
+    setActiveTier('context');
+    handleDismissOnboarding();
   };
 
   // Edit states
@@ -1047,6 +1075,32 @@ export default function BuilderPage() {
             {/* Unsaved Changes Indicator */}
             <UnsavedChangesIndicator variant="inline" />
 
+            {/* Context Section */}
+            <div>
+              <h2 className="text-lg font-bold text-gray-800 mb-2">Context Layer</h2>
+              <p className="text-xs text-gray-600 mb-3">Build your strategic foundation</p>
+              <button
+                onClick={() => setActiveTier('context')}
+                className={`w-full text-left px-4 py-3 rounded-lg border-2 transition-all ${
+                  activeTier === 'context'
+                    ? 'border-purple-500 bg-purple-50 shadow-md'
+                    : 'border-gray-200 hover:border-purple-300 hover:bg-purple-50'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg ${
+                    activeTier === 'context' ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-600'
+                  }`}>
+                    <Lightbulb className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-gray-900">SOCC Analysis</div>
+                    <div className="text-xs text-gray-600">Strengths, Opportunities, Considerations, Constraints</div>
+                  </div>
+                </div>
+              </button>
+            </div>
+
             {/* Pyramid Section */}
             <div>
               <h2 className="text-lg font-bold text-gray-800 mb-2">Strategic Pyramid</h2>
@@ -1068,18 +1122,132 @@ export default function BuilderPage() {
         <div className="flex-1 overflow-y-auto bg-gray-50">
           <div className="max-w-5xl mx-auto p-6">
 
-            {/* Welcome message when no tier selected */}
-            {!activeTier && (
+            {/* Context Onboarding - shows when no tier selected and not dismissed */}
+            {!activeTier && showContextOnboarding && (
+              <ContextOnboarding
+                onDismiss={handleDismissOnboarding}
+                onStartContext={handleStartContext}
+              />
+            )}
+
+            {/* Welcome message when no tier selected and onboarding dismissed */}
+            {!activeTier && !showContextOnboarding && (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
                   <div className="text-6xl mb-4">👈</div>
                   <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome to Your Strategic Pyramid</h2>
-                  <p className="text-gray-600 max-w-md">
-                    Click any tier on the left to start building your strategy. Gray tiers are empty and waiting to be filled!
+                  <p className="text-gray-600 max-w-md mb-4">
+                    Click any tier on the left to start building your strategy. Start with Context to build your foundation!
                   </p>
+                  <button
+                    onClick={() => setShowContextOnboarding(true)}
+                    className="text-purple-600 hover:text-purple-700 text-sm font-medium underline"
+                  >
+                    Show Context guidance again
+                  </button>
                 </div>
               </div>
             )}
+
+            {/* Context Layer - SOCC Analysis */}
+            {activeTier === "context" && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Context Layer</h1>
+                    <p className="text-gray-600">
+                      Build your strategic foundation before constructing the pyramid. Capture the context that will inform your strategy.
+                    </p>
+                  </div>
+                  <Button variant="ghost" onClick={() => setActiveTier(undefined)}>
+                    <Eye className="w-4 h-4 mr-2" />
+                    Back to Overview
+                  </Button>
+                </div>
+
+                {/* Context Tabs */}
+                <div className="border-b border-gray-200">
+                  <nav className="-mb-px flex space-x-8">
+                    <button
+                      onClick={() => setActiveContextTab('dashboard')}
+                      className={`${
+                        activeContextTab === 'dashboard'
+                          ? 'border-blue-500 text-blue-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                    >
+                      Dashboard
+                    </button>
+                    <button
+                      onClick={() => setActiveContextTab('socc')}
+                      className={`${
+                        activeContextTab === 'socc'
+                          ? 'border-blue-500 text-blue-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                    >
+                      SOCC Canvas
+                    </button>
+                    <button
+                      onClick={() => setActiveContextTab('scoring')}
+                      className={`${
+                        activeContextTab === 'scoring'
+                          ? 'border-blue-500 text-blue-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                    >
+                      Opportunity Scoring
+                    </button>
+                    <button
+                      onClick={() => setActiveContextTab('tensions')}
+                      className={`${
+                        activeContextTab === 'tensions'
+                          ? 'border-blue-500 text-blue-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                    >
+                      Strategic Tensions
+                    </button>
+                    <button
+                      onClick={() => setActiveContextTab('stakeholders')}
+                      className={`${
+                        activeContextTab === 'stakeholders'
+                          ? 'border-blue-500 text-blue-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                    >
+                      Stakeholder Mapping
+                    </button>
+                    <button
+                      onClick={() => setActiveContextTab('traceability')}
+                      className={`${
+                        activeContextTab === 'traceability'
+                          ? 'border-blue-500 text-blue-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                    >
+                      Traceability
+                    </button>
+                  </nav>
+                </div>
+
+                {/* Tab Content */}
+                {activeContextTab === 'dashboard' && (
+                  <ContextDashboard
+                    onNavigateToTab={setActiveContextTab}
+                    onContinueToStrategy={() => setActiveTier('vision')}
+                  />
+                )}
+                {activeContextTab === 'socc' && <SOCCCanvas />}
+                {activeContextTab === 'scoring' && <OpportunityScoring />}
+                {activeContextTab === 'tensions' && <StrategicTensions />}
+                {activeContextTab === 'stakeholders' && <StakeholderMapping />}
+                {activeContextTab === 'traceability' && <ContextTraceability />}
+              </div>
+            )}
+
+            {/* Context Summary - shows when building pyramid tiers */}
+            {activeTier && activeTier !== "context" && <ContextSummary />}
 
             {/* Vision Content */}
             {activeTier === "vision" && (

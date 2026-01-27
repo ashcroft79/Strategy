@@ -9,7 +9,7 @@ from pathlib import Path
 # Add parent directory to path so we can import pyramid_builder
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from api.routers import pyramids, validation, exports, visualizations, ai, documents
+from api.routers import pyramids, validation, exports, visualizations, ai, documents, context
 
 app = FastAPI(
     title="Strategic Pyramid Builder API",
@@ -17,10 +17,10 @@ app = FastAPI(
     version="1.0.4",  # Fixed export parameter mismatches
 )
 
-# Configure CORS for Next.js development
+# Configure CORS for Next.js development and production
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"https://.*\.vercel\.app",  # All Vercel deployments
+    allow_origin_regex=r"^https://.*\.vercel\.app$",  # All Vercel deployments (explicit full match)
     allow_origins=[
         "http://localhost:3000",  # Next.js dev server
         "http://localhost:3001",
@@ -29,10 +29,12 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],  # Ensure all headers are exposed
 )
 
 # Include routers
 app.include_router(pyramids.router, prefix="/api/pyramids", tags=["pyramids"])
+app.include_router(context.router, prefix="/api/context", tags=["context"])
 app.include_router(validation.router, prefix="/api/validation", tags=["validation"])
 app.include_router(exports.router, prefix="/api/exports", tags=["exports"])
 app.include_router(visualizations.router, prefix="/api/visualizations", tags=["visualizations"])

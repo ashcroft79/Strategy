@@ -359,6 +359,7 @@ class PyramidManager:
         name: str,
         description: str,
         rationale: Optional[str] = None,
+        addresses_opportunities: Optional[List[str]] = None,
         created_by: Optional[str] = None,
     ) -> StrategicDriver:
         """
@@ -368,6 +369,7 @@ class PyramidManager:
             name: Driver name (1-3 words recommended)
             description: What this driver means
             rationale: Why this driver was chosen
+            addresses_opportunities: IDs of opportunity items from SOCC that this driver addresses
             created_by: Who created this
 
         Returns:
@@ -380,6 +382,7 @@ class PyramidManager:
             name=name,
             description=description,
             rationale=rationale,
+            addresses_opportunities=addresses_opportunities or [],
             created_by=created_by,
         )
         self.pyramid.strategic_drivers.append(driver)
@@ -391,6 +394,7 @@ class PyramidManager:
         name: Optional[str] = None,
         description: Optional[str] = None,
         rationale: Optional[str] = None,
+        addresses_opportunities: Optional[List[str]] = None,
     ) -> bool:
         """
         Update an existing strategic driver.
@@ -400,6 +404,7 @@ class PyramidManager:
             name: New name (if changing)
             description: New description (if changing)
             rationale: New rationale (if changing)
+            addresses_opportunities: IDs of opportunity items from SOCC (if changing)
 
         Returns:
             True if updated, False if not found
@@ -415,6 +420,8 @@ class PyramidManager:
                     driver.description = description
                 if rationale is not None:
                     driver.rationale = rationale
+                if addresses_opportunities is not None:
+                    driver.addresses_opportunities = addresses_opportunities
                 driver.update_timestamp()
                 return True
 

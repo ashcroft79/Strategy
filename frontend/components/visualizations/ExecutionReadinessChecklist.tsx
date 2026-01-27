@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { StrategyPyramid, Horizon } from "@/types/pyramid";
 import { CheckCircle2, Circle, AlertTriangle, XCircle, ChevronDown, ChevronRight, Target } from "lucide-react";
+import { contextApi } from "@/lib/api-client";
+import { usePyramidStore } from "@/lib/store";
 
 interface ExecutionReadinessChecklistProps {
   pyramid: StrategyPyramid;
@@ -18,10 +20,77 @@ interface ChecklistItem {
 }
 
 export default function ExecutionReadinessChecklist({ pyramid, className = "" }: ExecutionReadinessChecklistProps) {
+  const { sessionId } = usePyramidStore();
   const [isExpanded, setIsExpanded] = useState(true);
+  const [contextSummary, setContextSummary] = useState<any>(null);
+
+  // Fetch context summary
+  useEffect(() => {
+    const fetchContextSummary = async () => {
+      if (!sessionId) return;
+      try {
+        const summary = await contextApi.getContextSummary(sessionId);
+        setContextSummary(summary);
+      } catch (error) {
+        console.error("Failed to fetch context summary:", error);
+      }
+    };
+    fetchContextSummary();
+  }, [sessionId]);
 
   const generateChecklist = (): ChecklistItem[] => {
     const items: ChecklistItem[] = [];
+
+    // STEP 1: Context & Discovery Checks
+    if (contextSummary) {
+      // 0a. SOCC Analysis Check
+      const soccCount = contextSummary.socc_items_count || 0;
+      items.push({
+        id: "socc",
+        label: "SOCC Analysis (Context Foundation)",
+        status: soccCount >= 12 ? "complete" : soccCount >= 8 ? "partial" : soccCount > 0 ? "incomplete" : "critical",
+        count: soccCount,
+        target: 12,
+        details: soccCount >= 12 ? `${soccCount} context items (strong foundation)` : soccCount > 0 ? `Add ${12 - soccCount} more items for complete context` : "Capture Strengths, Opportunities, Considerations, Constraints"
+      });
+
+      // 0b. Opportunity Scoring Check
+      const scoredOpportunities = contextSummary.scored_opportunities_count || 0;
+      const totalOpportunities = contextSummary.total_opportunities || 0;
+      const opportunityStatus = totalOpportunities === 0 ? "incomplete" : scoredOpportunities >= 3 ? "complete" : scoredOpportunities > 0 ? "partial" : "incomplete";
+      items.push({
+        id: "opportunity-scoring",
+        label: "Opportunity Scoring",
+        status: opportunityStatus,
+        count: scoredOpportunities,
+        target: Math.max(3, totalOpportunities),
+        details: scoredOpportunities >= 3 ? `${scoredOpportunities} opportunities scored and prioritized` : scoredOpportunities > 0 ? `Score ${Math.max(3, totalOpportunities) - scoredOpportunities} more opportunities` : totalOpportunities > 0 ? "Score your opportunities to prioritize" : "Add opportunities to SOCC first"
+      });
+
+      // 0c. Strategic Tensions Check
+      const tensionsCount = contextSummary.tensions_count || 0;
+      items.push({
+        id: "tensions",
+        label: "Strategic Tensions (Trade-offs)",
+        status: tensionsCount >= 2 ? "complete" : tensionsCount > 0 ? "partial" : "incomplete",
+        count: tensionsCount,
+        target: 2,
+        details: tensionsCount >= 2 ? `${tensionsCount} tension${tensionsCount === 1 ? '' : 's'} mapped` : tensionsCount > 0 ? "Map 1 more key trade-off" : "Identify key strategic trade-offs"
+      });
+
+      // 0d. Stakeholder Mapping Check
+      const stakeholdersCount = contextSummary.stakeholders_count || 0;
+      items.push({
+        id: "stakeholders",
+        label: "Stakeholder Mapping",
+        status: stakeholdersCount >= 5 ? "complete" : stakeholdersCount >= 3 ? "partial" : stakeholdersCount > 0 ? "incomplete" : "incomplete",
+        count: stakeholdersCount,
+        target: 5,
+        details: stakeholdersCount >= 5 ? `${stakeholdersCount} stakeholder${stakeholdersCount === 1 ? '' : 's'} mapped` : stakeholdersCount > 0 ? `Add ${5 - stakeholdersCount} more stakeholders` : "Map key stakeholders by interest/influence"
+      });
+    }
+
+    // STEP 2: Strategy & Plan Checks
 
     // 1. Vision Check
     const visionCount = pyramid.vision ? pyramid.vision.statements.length : 0;
