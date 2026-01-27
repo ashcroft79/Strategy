@@ -185,12 +185,14 @@ export const driversApi = {
     name: string,
     description: string,
     rationale?: string,
+    addresses_opportunities?: string[],
     createdBy?: string
   ): Promise<StrategicDriver> {
     const { data } = await api.post(`/api/pyramids/${sessionId}/drivers`, {
       name,
       description,
       rationale,
+      addresses_opportunities: addresses_opportunities || [],
       created_by: createdBy,
     });
     return data;
@@ -201,13 +203,15 @@ export const driversApi = {
     driverId: string,
     name?: string,
     description?: string,
-    rationale?: string
+    rationale?: string,
+    addresses_opportunities?: string[]
   ): Promise<void> {
     await api.put(`/api/pyramids/${sessionId}/drivers`, {
       driver_id: driverId,
       name,
       description,
       rationale,
+      addresses_opportunities,
     });
   },
 

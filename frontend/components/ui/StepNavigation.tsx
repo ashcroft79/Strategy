@@ -7,14 +7,9 @@ import {
   Target,
   TrendingUp,
   Scale,
-  Users,
-  Eye,
-  Heart,
-  Zap,
-  Compass,
-  Flag,
-  User
+  Users
 } from "lucide-react";
+import PyramidVisualization from "@/components/visualizations/PyramidVisualization";
 
 interface NavigationItem {
   id: string;
@@ -36,13 +31,15 @@ interface StepNavigationProps {
   activeTier?: string;
   activeContextTab?: string;
   onNavigate: (tier: string, contextTab?: string) => void;
+  onTierClick?: (tier: string) => void;
 }
 
 export function StepNavigation({
   pyramid,
   activeTier,
   activeContextTab,
-  onNavigate
+  onNavigate,
+  onTierClick
 }: StepNavigationProps) {
   // Track which steps are expanded
   const [expandedSteps, setExpandedSteps] = useState<number[]>([1, 2, 3]);
@@ -85,21 +82,13 @@ export function StepNavigation({
 
   const calculateStep2Completion = () => {
     let completed = 0;
-    let total = 5;
+    let total = 7;
 
     if (pyramid.vision?.statements?.length > 0) completed++;
     if (pyramid.values?.length > 0) completed++;
     if (pyramid.drivers?.length > 0) completed++;
     if (pyramid.intents?.length > 0) completed++;
     if (pyramid.iconic_commitments?.length > 0) completed++;
-
-    return Math.round((completed / total) * 100);
-  };
-
-  const calculateStep3Completion = () => {
-    let completed = 0;
-    let total = 2;
-
     if (pyramid.team_objectives?.length > 0) completed++;
     if (pyramid.individual_objectives?.length > 0) completed++;
 
@@ -141,61 +130,10 @@ export function StepNavigation({
     },
     {
       number: 2,
-      name: "Strategy",
-      description: "Define your strategic direction",
+      name: "Strategic Pyramid",
+      description: "Build your strategy from vision to execution",
       completionPercentage: calculateStep2Completion(),
-      items: [
-        {
-          id: "vision",
-          label: "Vision & Purpose",
-          icon: Eye,
-          count: pyramid.vision?.statements?.length || 0
-        },
-        {
-          id: "values",
-          label: "Core Values",
-          icon: Heart,
-          count: pyramid.values?.length || 0
-        },
-        {
-          id: "drivers",
-          label: "Strategic Drivers",
-          icon: Zap,
-          count: pyramid.drivers?.length || 0
-        },
-        {
-          id: "intents",
-          label: "Strategic Intents",
-          icon: Compass,
-          count: pyramid.intents?.length || 0
-        },
-        {
-          id: "commitments",
-          label: "Iconic Commitments",
-          icon: Flag,
-          count: pyramid.iconic_commitments?.length || 0
-        },
-      ],
-    },
-    {
-      number: 3,
-      name: "Execution",
-      description: "Cascade strategy to teams and individuals",
-      completionPercentage: calculateStep3Completion(),
-      items: [
-        {
-          id: "team-objectives",
-          label: "Team Objectives",
-          icon: Users,
-          count: pyramid.team_objectives?.length || 0
-        },
-        {
-          id: "individual-objectives",
-          label: "Individual Objectives",
-          icon: User,
-          count: pyramid.individual_objectives?.length || 0
-        },
-      ],
+      items: [], // No items - will show pyramid visualization instead
     },
   ];
 
@@ -316,43 +254,56 @@ export function StepNavigation({
               </div>
             </button>
 
-            {/* Step Items */}
+            {/* Step Content */}
             {isExpanded && (
               <div className="border-t border-gray-200 bg-gray-50">
-                {step.items.map((item) => {
-                  const Icon = item.icon;
-                  const active = isItemActive(item, step);
+                {step.number === 2 ? (
+                  /* Step 2: Show Pyramid Visualization */
+                  <div className="p-4">
+                    <PyramidVisualization
+                      pyramid={pyramid}
+                      onTierClick={onTierClick || (() => {})}
+                      activeTier={activeTier}
+                      compact={true}
+                    />
+                  </div>
+                ) : (
+                  /* Other Steps: Show Items List */
+                  step.items.map((item) => {
+                    const Icon = item.icon;
+                    const active = isItemActive(item, step);
 
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => handleItemClick(item, step)}
-                      className={`w-full px-4 py-2.5 flex items-center justify-between text-left transition-colors ${
-                        active
-                          ? `${colors.activeBg} border-l-4 ${colors.activeBorder}`
-                          : 'hover:bg-white border-l-4 border-transparent'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Icon className={`w-4 h-4 ${
-                          active ? colors.icon : 'text-gray-400'
-                        }`} />
-                        <span className={`text-sm ${
-                          active ? `font-medium ${colors.activeText}` : 'text-gray-700'
-                        }`}>
-                          {item.label}
-                        </span>
-                      </div>
-                      {item.count !== undefined && item.count > 0 && (
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${
-                          active ? colors.badge : colors.badgeInactive
-                        }`}>
-                          {item.count}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => handleItemClick(item, step)}
+                        className={`w-full px-4 py-2.5 flex items-center justify-between text-left transition-colors ${
+                          active
+                            ? `${colors.activeBg} border-l-4 ${colors.activeBorder}`
+                            : 'hover:bg-white border-l-4 border-transparent'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon className={`w-4 h-4 ${
+                            active ? colors.icon : 'text-gray-400'
+                          }`} />
+                          <span className={`text-sm ${
+                            active ? `font-medium ${colors.activeText}` : 'text-gray-700'
+                          }`}>
+                            {item.label}
+                          </span>
+                        </div>
+                        {item.count !== undefined && item.count > 0 && (
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${
+                            active ? colors.badge : colors.badgeInactive
+                          }`}>
+                            {item.count}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })
+                )}
               </div>
             )}
           </div>

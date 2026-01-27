@@ -104,6 +104,7 @@ export default function BuilderPage() {
   const [driverName, setDriverName] = useState("");
   const [driverDescription, setDriverDescription] = useState("");
   const [driverRationale, setDriverRationale] = useState("");
+  const [driverOpportunities, setDriverOpportunities] = useState<string[]>([]);
   const [intentStatement, setIntentStatement] = useState("");
   const [selectedDriver, setSelectedDriver] = useState("");
   const [enablerName, setEnablerName] = useState("");
@@ -696,7 +697,8 @@ export default function BuilderPage() {
             itemId,
             editFormData.name,
             editFormData.description,
-            editFormData.rationale
+            editFormData.rationale,
+            editFormData.addresses_opportunities
           );
           break;
         case "intent":
@@ -845,10 +847,11 @@ export default function BuilderPage() {
 
     try {
       setLoading(true);
-      await driversApi.add(sessionId, driverName, driverDescription, driverRationale || undefined);
+      await driversApi.add(sessionId, driverName, driverDescription, driverRationale || undefined, driverOpportunities);
       setDriverName("");
       setDriverDescription("");
       setDriverRationale("");
+      setDriverOpportunities([]);
       await refreshPyramid();
       showToast("Strategic driver added successfully", "success");
       incrementUnsavedChanges();
@@ -1090,6 +1093,7 @@ export default function BuilderPage() {
                     setActiveContextTab(contextTab as any);
                   }
                 }}
+                onTierClick={handleTierClick}
               />
             </div>
 
@@ -3484,6 +3488,69 @@ export default function BuilderPage() {
                   />
                 )}
               </div>
+
+              {/* Opportunity Selection */}
+              {pyramid?.context?.socc_analysis?.items && (
+                <div>
+                  <label className="text-sm font-semibold text-gray-900 mb-2 block">
+                    Addresses Opportunities (Optional)
+                  </label>
+                  <p className="text-xs text-gray-600 mb-3">
+                    Select which opportunities from your SOCC analysis this driver addresses
+                  </p>
+                  {(() => {
+                    const opportunities = pyramid.context.socc_analysis.items.filter((item: any) => item.quadrant === 'opportunity');
+                    if (opportunities.length === 0) {
+                      return (
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-600">
+                          No opportunities found in SOCC analysis. Add opportunities to link them to this driver.
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="space-y-2 max-h-40 overflow-y-auto bg-gray-50 rounded-lg p-3 border border-gray-200">
+                        {opportunities.map((opportunity: any) => {
+                          const isSelected = modalMode === 'edit'
+                            ? (editFormData.addresses_opportunities || []).includes(opportunity.id)
+                            : driverOpportunities.includes(opportunity.id);
+
+                          return (
+                            <label key={opportunity.id} className="flex items-start gap-2 cursor-pointer hover:bg-white p-2 rounded">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={(e) => {
+                                  if (modalMode === 'edit') {
+                                    const current = editFormData.addresses_opportunities || [];
+                                    const updated = e.target.checked
+                                      ? [...current, opportunity.id]
+                                      : current.filter((id: string) => id !== opportunity.id);
+                                    setEditFormData({ ...editFormData, addresses_opportunities: updated });
+                                  } else {
+                                    if (e.target.checked) {
+                                      setDriverOpportunities([...driverOpportunities, opportunity.id]);
+                                    } else {
+                                      setDriverOpportunities(driverOpportunities.filter(id => id !== opportunity.id));
+                                    }
+                                  }
+                                }}
+                                className="mt-0.5 flex-shrink-0"
+                              />
+                              <div className="flex-1">
+                                <span className="text-sm font-medium text-gray-900">{opportunity.title}</span>
+                                {opportunity.description && (
+                                  <p className="text-xs text-gray-600 mt-0.5">{opportunity.description}</p>
+                                )}
+                              </div>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
               <div className="flex gap-3 justify-end pt-4 border-t">
                 <Button type="button" variant="ghost" onClick={closeModal}>
                   Cancel
