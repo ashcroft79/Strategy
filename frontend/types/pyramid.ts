@@ -3,6 +3,13 @@
  * for Strategic Pyramid Builder
  */
 
+import type {
+  SOCCAnalysis,
+  OpportunityScoringAnalysis,
+  TensionAnalysis,
+  StakeholderAnalysis,
+} from "@/lib/context-types";
+
 // Enums
 export enum StatementType {
   VISION = "vision",
@@ -128,6 +135,12 @@ export interface ProjectMetadata {
 // Main Pyramid
 export interface StrategyPyramid {
   metadata: ProjectMetadata;
+  context?: {
+    socc_analysis?: SOCCAnalysis;
+    opportunity_scoring?: OpportunityScoringAnalysis;
+    strategic_tensions?: TensionAnalysis;
+    stakeholder_analysis?: StakeholderAnalysis;
+  };
   vision?: Vision;
   values: Value[];
   behaviours: Behaviour[];
