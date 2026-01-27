@@ -67,6 +67,9 @@ export function TensionCard({ tension, onUpdate, onDelete }: TensionCardProps) {
   const shift = Math.abs(targetPosition - currentPosition);
   const shiftDirection = targetPosition > currentPosition ? "right" : targetPosition < currentPosition ? "left" : "none";
 
+  // Check if positions are close together to adjust label positioning
+  const positionsOverlap = Math.abs(currentPosition - targetPosition) < 15;
+
   return (
     <Card className="border-2 border-gray-200">
       <CardHeader>
@@ -88,7 +91,7 @@ export function TensionCard({ tension, onUpdate, onDelete }: TensionCardProps) {
                     className="absolute top-0 bottom-0 w-1 bg-blue-600 shadow-lg"
                     style={{ left: `${currentPosition}%`, transform: "translateX(-50%)" }}
                   >
-                    <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs font-semibold text-blue-600 whitespace-nowrap">
+                    <div className={`absolute left-1/2 transform -translate-x-1/2 text-xs font-semibold text-blue-600 whitespace-nowrap ${positionsOverlap ? '-top-8' : '-top-6'}`}>
                       {currentPosition}
                     </div>
                   </div>
@@ -107,7 +110,7 @@ export function TensionCard({ tension, onUpdate, onDelete }: TensionCardProps) {
                     className="absolute top-0 bottom-0 w-1 bg-purple-600 shadow-lg"
                     style={{ left: `${targetPosition}%`, transform: "translateX(-50%)" }}
                   >
-                    <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs font-semibold text-purple-600 whitespace-nowrap">
+                    <div className={`absolute left-1/2 transform -translate-x-1/2 text-xs font-semibold text-purple-600 whitespace-nowrap ${positionsOverlap ? '-bottom-8' : '-top-6'}`}>
                       {targetPosition}
                     </div>
                   </div>
@@ -129,7 +132,10 @@ export function TensionCard({ tension, onUpdate, onDelete }: TensionCardProps) {
           {/* Expand/Collapse Button */}
           <div className="flex items-center gap-2">
             {!isEditing && (
-              <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
+              <Button variant="ghost" size="sm" onClick={() => {
+                setIsEditing(true);
+                setIsExpanded(true);
+              }}>
                 <Edit className="w-4 h-4" />
               </Button>
             )}

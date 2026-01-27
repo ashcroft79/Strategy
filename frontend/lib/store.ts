@@ -5,6 +5,7 @@
 import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
 import type { StrategyPyramid, PyramidSummary } from "@/types/pyramid";
+import { contextApi } from "./api-client";
 
 interface Toast {
   id: string;
@@ -92,6 +93,16 @@ export const usePyramidStore = create<PyramidStore>((set) => ({
   },
 
   reset: () => {
+    // Clear context data for old session (fire and forget)
+    const oldSessionId = typeof window !== "undefined"
+      ? (sessionStorage.getItem("pyramid_session_id") || "")
+      : "";
+    if (oldSessionId) {
+      contextApi.clearContext(oldSessionId).catch(err =>
+        console.error("Failed to clear context:", err)
+      );
+    }
+
     const newSessionId = uuidv4();
     if (typeof window !== "undefined") {
       sessionStorage.setItem("pyramid_session_id", newSessionId);
