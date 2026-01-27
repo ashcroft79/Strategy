@@ -6,6 +6,7 @@ import os
 
 from src.pyramid_builder.validation.validator import PyramidValidator
 from .pyramids import active_pyramids
+from .context import socc_storage, scoring_storage, tension_storage, stakeholder_storage
 
 # Try to import AI validator
 try:
@@ -15,6 +16,80 @@ except ImportError:
     AI_VALIDATOR_AVAILABLE = False
 
 router = APIRouter()
+
+
+def validate_context(session_id: str, result):
+    """Add context validation checks to the validation result."""
+    # Check SOCC Analysis
+    socc_count = 0
+    if session_id in socc_storage:
+        socc_count = len(socc_storage[session_id].items)
+
+    if socc_count == 0:
+        result.add_issue(
+            level="warning",
+            category="Context Foundation",
+            message="No SOCC analysis items. Add Strengths, Opportunities, Considerations, and Constraints to ground your strategy in context."
+        )
+    elif socc_count < 8:
+        result.add_issue(
+            level="info",
+            category="Context Foundation",
+            message=f"SOCC analysis is light ({socc_count} items). Consider adding more context items for a stronger foundation (target: 12+)."
+        )
+
+    # Check Opportunity Scoring
+    scored_opportunities = 0
+    total_opportunities = 0
+    if session_id in socc_storage:
+        total_opportunities = len([item for item in socc_storage[session_id].items if item.quadrant == "opportunity"])
+    if session_id in scoring_storage:
+        scored_opportunities = len(scoring_storage[session_id].scores)
+
+    if total_opportunities > 0 and scored_opportunities == 0:
+        result.add_issue(
+            level="warning",
+            category="Context Foundation",
+            message=f"No opportunities scored. Score your {total_opportunities} opportunities to prioritize strategic focus."
+        )
+    elif total_opportunities > 0 and scored_opportunities < total_opportunities:
+        result.add_issue(
+            level="info",
+            category="Context Foundation",
+            message=f"Only {scored_opportunities}/{total_opportunities} opportunities scored. Score remaining opportunities for complete prioritization."
+        )
+
+    # Check Strategic Tensions
+    tension_count = 0
+    if session_id in tension_storage:
+        tension_count = len(tension_storage[session_id].tensions)
+
+    if tension_count == 0:
+        result.add_issue(
+            level="info",
+            category="Context Foundation",
+            message="No strategic tensions identified. Map key trade-offs to clarify strategic choices (e.g., Growth vs. Profitability)."
+        )
+
+    # Check Stakeholder Mapping
+    stakeholder_count = 0
+    if session_id in stakeholder_storage:
+        stakeholder_count = len(stakeholder_storage[session_id].stakeholders)
+
+    if stakeholder_count == 0:
+        result.add_issue(
+            level="info",
+            category="Context Foundation",
+            message="No stakeholders mapped. Identify key stakeholders by interest and influence to plan engagement."
+        )
+    elif stakeholder_count < 5:
+        result.add_issue(
+            level="info",
+            category="Context Foundation",
+            message=f"Limited stakeholder mapping ({stakeholder_count} stakeholders). Consider mapping more stakeholders (target: 5+)."
+        )
+
+    return result
 
 
 @router.get("/{session_id}")
@@ -29,6 +104,9 @@ async def validate_pyramid(session_id: str):
 
     validator = PyramidValidator(manager.pyramid)
     result = validator.validate_all()
+
+    # Add context validation
+    result = validate_context(session_id, result)
 
     return result.to_dict()
 
@@ -91,6 +169,9 @@ async def ai_validate_pyramid(session_id: str):
     # Run standard validation first
     validator = PyramidValidator(manager.pyramid)
     result = validator.validate_all()
+
+    # Add context validation
+    result = validate_context(session_id, result)
 
     # Enhance with AI validation
     try:
