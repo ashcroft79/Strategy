@@ -32,6 +32,7 @@ import { AIDraftGenerator } from "@/components/AIDraftGenerator";
 import { SOCCCanvas } from "@/components/context/SOCCCanvas";
 import { ContextOnboarding } from "@/components/context/ContextOnboarding";
 import { ContextSummary } from "@/components/context/ContextSummary";
+import { OpportunityScoring } from "@/components/context/OpportunityScoring";
 import { StatementType, Horizon } from "@/types/pyramid";
 import { Save, Home, CheckCircle, FileDown, Eye, Trash2, Edit, Plus, BarChart3, Lightbulb } from "lucide-react";
 import { TIER1_TOOLTIPS, TIER2_TOOLTIPS, TIER3_TOOLTIPS, TIER4_TOOLTIPS, TIER5_TOOLTIPS, TIER6_TOOLTIPS, TIER7_TOOLTIPS, TIER8_TOOLTIPS, TIER9_TOOLTIPS } from "@/config/tooltips";
@@ -79,6 +80,7 @@ export default function BuilderPage() {
   const router = useRouter();
   const { sessionId, pyramid, setPyramid, setLoading, setError, showToast, isLoading, incrementUnsavedChanges } = usePyramidStore();
   const [activeTier, setActiveTier] = useState<string | undefined>(undefined);
+  const [activeContextTab, setActiveContextTab] = useState<'socc' | 'scoring' | 'tensions' | 'stakeholders'>('socc');
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -1159,7 +1161,59 @@ export default function BuilderPage() {
                   </Button>
                 </div>
 
-                <SOCCCanvas />
+                {/* Context Tabs */}
+                <div className="border-b border-gray-200">
+                  <nav className="-mb-px flex space-x-8">
+                    <button
+                      onClick={() => setActiveContextTab('socc')}
+                      className={`${
+                        activeContextTab === 'socc'
+                          ? 'border-blue-500 text-blue-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                    >
+                      SOCC Canvas
+                    </button>
+                    <button
+                      onClick={() => setActiveContextTab('scoring')}
+                      className={`${
+                        activeContextTab === 'scoring'
+                          ? 'border-blue-500 text-blue-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                    >
+                      Opportunity Scoring
+                    </button>
+                    <button
+                      onClick={() => setActiveContextTab('tensions')}
+                      className={`${
+                        activeContextTab === 'tensions'
+                          ? 'border-blue-500 text-blue-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm opacity-50 cursor-not-allowed`}
+                      disabled
+                    >
+                      Strategic Tensions
+                      <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">Coming Soon</span>
+                    </button>
+                    <button
+                      onClick={() => setActiveContextTab('stakeholders')}
+                      className={`${
+                        activeContextTab === 'stakeholders'
+                          ? 'border-blue-500 text-blue-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm opacity-50 cursor-not-allowed`}
+                      disabled
+                    >
+                      Stakeholder Mapping
+                      <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">Coming Soon</span>
+                    </button>
+                  </nav>
+                </div>
+
+                {/* Tab Content */}
+                {activeContextTab === 'socc' && <SOCCCanvas />}
+                {activeContextTab === 'scoring' && <OpportunityScoring />}
               </div>
             )}
 
