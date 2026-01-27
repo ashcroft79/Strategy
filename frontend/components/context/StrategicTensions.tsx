@@ -5,11 +5,12 @@ import { contextApi, type StrategicTension, type CommonTension } from "@/lib/api
 import { usePyramidStore } from "@/lib/store";
 import { TensionCard } from "./TensionCard";
 import { Button } from "@/components/ui/Button";
+import { Slider } from "@/components/ui/slider";
 import { AlertCircle, Plus, Lightbulb, Scale } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 
 export function StrategicTensions() {
-  const { sessionId } = usePyramidStore();
+  const { sessionId, incrementUnsavedChanges } = usePyramidStore();
   const [tensions, setTensions] = useState<StrategicTension[]>([]);
   const [commonTensions, setCommonTensions] = useState<CommonTension[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -19,6 +20,8 @@ export function StrategicTensions() {
   // Form state
   const [leftPole, setLeftPole] = useState("");
   const [rightPole, setRightPole] = useState("");
+  const [currentPosition, setCurrentPosition] = useState(50);
+  const [targetPosition, setTargetPosition] = useState(50);
 
   const loadTensions = async () => {
     if (!sessionId) return;
@@ -50,6 +53,8 @@ export function StrategicTensions() {
   const resetForm = () => {
     setLeftPole("");
     setRightPole("");
+    setCurrentPosition(50);
+    setTargetPosition(50);
   };
 
   const handleAddTension = async () => {
@@ -60,14 +65,15 @@ export function StrategicTensions() {
         name: `${leftPole} vs. ${rightPole}`,
         left_pole: leftPole,
         right_pole: rightPole,
-        current_position: 50,
-        target_position: 50,
+        current_position: currentPosition,
+        target_position: targetPosition,
         rationale: "",
         created_by: "user",
       });
       await loadTensions();
       setShowAddModal(false);
       resetForm();
+      incrementUnsavedChanges();
     } catch (error) {
       console.error("Failed to add tension:", error);
     }
@@ -77,6 +83,7 @@ export function StrategicTensions() {
     try {
       await contextApi.updateTension(sessionId, id, updated);
       await loadTensions();
+      incrementUnsavedChanges();
     } catch (error) {
       console.error("Failed to update tension:", error);
     }
@@ -86,6 +93,7 @@ export function StrategicTensions() {
     try {
       await contextApi.deleteTension(sessionId, tensionId);
       await loadTensions();
+      incrementUnsavedChanges();
     } catch (error) {
       console.error("Failed to delete tension:", error);
     }
@@ -95,6 +103,7 @@ export function StrategicTensions() {
     setLeftPole(template.left_pole);
     setRightPole(template.right_pole);
     setShowTemplates(false);
+    setShowAddModal(true);
   };
 
   if (isLoading) {
@@ -249,6 +258,50 @@ export function StrategicTensions() {
 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
             Preview: <span className="font-semibold">{leftPole || "..."} vs. {rightPole || "..."}</span>
+          </div>
+
+          {/* Current Position Slider */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-sm font-semibold text-gray-900">Current Position</label>
+              <div className="text-lg font-bold text-blue-600">{currentPosition}</div>
+            </div>
+            <Slider
+              value={[currentPosition]}
+              onValueChange={([value]) => setCurrentPosition(value)}
+              min={0}
+              max={100}
+              step={5}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>{leftPole || "Left"}</span>
+              <span>Balanced</span>
+              <span>{rightPole || "Right"}</span>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">Where are you currently positioned?</p>
+          </div>
+
+          {/* Target Position Slider */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-sm font-semibold text-gray-900">Target Position</label>
+              <div className="text-lg font-bold text-purple-600">{targetPosition}</div>
+            </div>
+            <Slider
+              value={[targetPosition]}
+              onValueChange={([value]) => setTargetPosition(value)}
+              min={0}
+              max={100}
+              step={5}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>{leftPole || "Left"}</span>
+              <span>Balanced</span>
+              <span>{rightPole || "Right"}</span>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">Where do you want to be?</p>
           </div>
 
           <div className="flex gap-2">

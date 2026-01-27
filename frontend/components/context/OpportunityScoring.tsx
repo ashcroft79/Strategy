@@ -7,7 +7,7 @@ import { OpportunityScoringCard } from "./OpportunityScoringCard";
 import { AlertCircle, TrendingUp, Info } from "lucide-react";
 
 export function OpportunityScoring() {
-  const { sessionId } = usePyramidStore();
+  const { sessionId, incrementUnsavedChanges } = usePyramidStore();
   const [opportunities, setOpportunities] = useState<SortedOpportunity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -36,6 +36,7 @@ export function OpportunityScoring() {
         created_by: "user",
       });
       await loadOpportunities();
+      incrementUnsavedChanges();
     } catch (error) {
       console.error("Failed to score opportunity:", error);
     }
@@ -45,6 +46,7 @@ export function OpportunityScoring() {
     try {
       await contextApi.deleteOpportunityScore(sessionId, opportunityId);
       await loadOpportunities();
+      incrementUnsavedChanges();
     } catch (error) {
       console.error("Failed to delete score:", error);
     }

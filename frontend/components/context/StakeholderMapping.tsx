@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Users, Plus, Lightbulb } from "lucide-react";
 
 export function StakeholderMapping() {
-  const { sessionId } = usePyramidStore();
+  const { sessionId, incrementUnsavedChanges } = usePyramidStore();
   const [stakeholders, setStakeholders] = useState<Stakeholder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -36,6 +36,7 @@ export function StakeholderMapping() {
       await contextApi.addStakeholder(sessionId, { ...stakeholder, created_by: "user" });
       await loadStakeholders();
       setShowAddModal(false);
+      incrementUnsavedChanges();
     } catch (error) {
       console.error("Failed to add stakeholder:", error);
     }
@@ -45,6 +46,7 @@ export function StakeholderMapping() {
     try {
       await contextApi.updateStakeholder(sessionId, id, stakeholder);
       await loadStakeholders();
+      incrementUnsavedChanges();
     } catch (error) {
       console.error("Failed to update stakeholder:", error);
     }
@@ -54,6 +56,7 @@ export function StakeholderMapping() {
     try {
       await contextApi.deleteStakeholder(sessionId, stakeholderId);
       await loadStakeholders();
+      incrementUnsavedChanges();
     } catch (error) {
       console.error("Failed to delete stakeholder:", error);
     }
@@ -66,6 +69,7 @@ export function StakeholderMapping() {
         influence_level: newInfluence,
       });
       await loadStakeholders();
+      incrementUnsavedChanges();
     } catch (error) {
       console.error("Failed to move stakeholder:", error);
     }

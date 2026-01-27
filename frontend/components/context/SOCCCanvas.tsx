@@ -7,7 +7,7 @@ import { QuadrantPanel } from "./QuadrantPanel";
 import { TrendingUp, Target, AlertTriangle, Lock } from "lucide-react";
 
 export function SOCCCanvas() {
-  const { sessionId, setLoading, setError, showToast } = usePyramidStore();
+  const { sessionId, setLoading, setError, showToast, incrementUnsavedChanges } = usePyramidStore();
   const [analysis, setAnalysis] = useState<any>(null);
   const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(true);
 
@@ -49,6 +49,7 @@ export function SOCCCanvas() {
       await contextApi.addSOCCItem(sessionId, item);
       await refreshAnalysis();
       showToast("Item added successfully");
+      incrementUnsavedChanges();
     } catch (err: any) {
       setError(err.response?.data?.detail || "Failed to add item");
     } finally {
@@ -63,6 +64,7 @@ export function SOCCCanvas() {
       await contextApi.updateSOCCItem(sessionId, id, item);
       await refreshAnalysis();
       showToast("Item updated successfully");
+      incrementUnsavedChanges();
     } catch (err: any) {
       setError(err.response?.data?.detail || "Failed to update item");
     } finally {
@@ -77,6 +79,7 @@ export function SOCCCanvas() {
       await contextApi.deleteSOCCItem(sessionId, id);
       await refreshAnalysis();
       showToast("Item deleted successfully");
+      incrementUnsavedChanges();
     } catch (err: any) {
       setError(err.response?.data?.detail || "Failed to delete item");
     } finally {

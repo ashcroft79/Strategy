@@ -9,7 +9,7 @@ Endpoints for:
 """
 
 from fastapi import APIRouter, HTTPException, status
-from typing import Dict
+from typing import Dict, Any
 from datetime import datetime
 
 from src.pyramid_builder.models.context import (
@@ -359,17 +359,25 @@ async def add_stakeholder(session_id: str, stakeholder: Stakeholder):
 
 
 @router.put("/{session_id}/stakeholders/{stakeholder_id}")
-async def update_stakeholder(session_id: str, stakeholder_id: str, stakeholder: Stakeholder):
-    """Update an existing stakeholder."""
+async def update_stakeholder(session_id: str, stakeholder_id: str, stakeholder_update: Dict[str, Any]):
+    """Update an existing stakeholder with partial data."""
     analysis = get_or_create_stakeholders(session_id)
 
     for i, existing_stakeholder in enumerate(analysis.stakeholders):
         if existing_stakeholder.id == stakeholder_id:
-            stakeholder.id = stakeholder_id
-            stakeholder.created_at = existing_stakeholder.created_at
-            analysis.stakeholders[i] = stakeholder
+            # Merge partial update with existing data
+            existing_dict = existing_stakeholder.model_dump()
+            existing_dict.update(stakeholder_update)
+
+            # Preserve immutable fields
+            existing_dict['id'] = stakeholder_id
+            existing_dict['created_at'] = existing_stakeholder.created_at
+
+            # Create updated stakeholder
+            updated_stakeholder = Stakeholder(**existing_dict)
+            analysis.stakeholders[i] = updated_stakeholder
             analysis.last_updated = datetime.now()
-            return stakeholder
+            return updated_stakeholder
 
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
