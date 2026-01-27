@@ -1,7 +1,7 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { contextApi, pyramidApi } from "@/lib/api-client";
+import { useState, useEffect } from "react";
+import { contextApi, type SOCCAnalysis } from "@/lib/api-client";
 import { usePyramidStore } from "@/lib/store";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -16,15 +16,27 @@ import {
 
 export function ContextTraceability() {
   const { sessionId, pyramid } = usePyramidStore();
+  const [soccData, setSoccData] = useState<SOCCAnalysis | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch SOCC analysis to get opportunities
-  const { data: soccData, isLoading: isLoadingSOCC } = useQuery({
-    queryKey: ["socc", sessionId],
-    queryFn: () => contextApi.getSOCC(sessionId),
-    enabled: !!sessionId,
-  });
+  const loadSOCC = async () => {
+    if (!sessionId) return;
+    try {
+      setIsLoading(true);
+      const data = await contextApi.getSOCC(sessionId);
+      setSoccData(data);
+    } catch (error) {
+      console.error("Failed to load SOCC data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  if (isLoadingSOCC) {
+  useEffect(() => {
+    loadSOCC();
+  }, [sessionId]);
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="text-gray-500">Loading traceability...</div>

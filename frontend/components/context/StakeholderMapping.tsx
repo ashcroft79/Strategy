@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { contextApi, type Stakeholder } from "@/lib/api-client";
 import { usePyramidStore } from "@/lib/store";
 import { StakeholderCard } from "./StakeholderCard";
@@ -11,41 +10,66 @@ import { Users, Plus, Lightbulb } from "lucide-react";
 
 export function StakeholderMapping() {
   const { sessionId } = usePyramidStore();
-  const queryClient = useQueryClient();
+  const [stakeholders, setStakeholders] = useState<Stakeholder[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
 
-  // Fetch stakeholders
-  const { data: stakeholderData, isLoading } = useQuery({
-    queryKey: ["stakeholders", sessionId],
-    queryFn: () => contextApi.getStakeholders(sessionId),
-    enabled: !!sessionId,
-  });
+  const loadStakeholders = async () => {
+    if (!sessionId) return;
+    try {
+      setIsLoading(true);
+      const data = await contextApi.getStakeholders(sessionId);
+      setStakeholders(data.stakeholders);
+    } catch (error) {
+      console.error("Failed to load stakeholders:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  // Add stakeholder mutation
-  const addMutation = useMutation({
-    mutationFn: (stakeholder: Partial<Stakeholder>) => contextApi.addStakeholder(sessionId, stakeholder),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["stakeholders", sessionId] });
+  useEffect(() => {
+    loadStakeholders();
+  }, [sessionId]);
+
+  const handleAdd = async (stakeholder: Partial<Stakeholder>) => {
+    try {
+      await contextApi.addStakeholder(sessionId, { ...stakeholder, created_by: "user" });
+      await loadStakeholders();
       setShowAddModal(false);
-    },
-  });
+    } catch (error) {
+      console.error("Failed to add stakeholder:", error);
+    }
+  };
 
-  // Update stakeholder mutation
-  const updateMutation = useMutation({
-    mutationFn: ({ id, stakeholder }: { id: string; stakeholder: Partial<Stakeholder> }) =>
-      contextApi.updateStakeholder(sessionId, id, stakeholder),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["stakeholders", sessionId] });
-    },
-  });
+  const handleUpdate = async (id: string, stakeholder: Partial<Stakeholder>) => {
+    try {
+      await contextApi.updateStakeholder(sessionId, id, stakeholder);
+      await loadStakeholders();
+    } catch (error) {
+      console.error("Failed to update stakeholder:", error);
+    }
+  };
 
-  // Delete stakeholder mutation
-  const deleteMutation = useMutation({
-    mutationFn: (stakeholderId: string) => contextApi.deleteStakeholder(sessionId, stakeholderId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["stakeholders", sessionId] });
-    },
-  });
+  const handleDelete = async (stakeholderId: string) => {
+    try {
+      await contextApi.deleteStakeholder(sessionId, stakeholderId);
+      await loadStakeholders();
+    } catch (error) {
+      console.error("Failed to delete stakeholder:", error);
+    }
+  };
+
+  const handleMoveStakeholder = async (stakeholderId: string, newInterest: "high" | "low", newInfluence: "high" | "low") => {
+    try {
+      await contextApi.updateStakeholder(sessionId, stakeholderId, {
+        interest_level: newInterest,
+        influence_level: newInfluence,
+      });
+      await loadStakeholders();
+    } catch (error) {
+      console.error("Failed to move stakeholder:", error);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -54,8 +78,6 @@ export function StakeholderMapping() {
       </div>
     );
   }
-
-  const stakeholders = stakeholderData?.stakeholders || [];
 
   // Group stakeholders by quadrant
   const getQuadrant = (stakeholder: Stakeholder): string => {
@@ -74,16 +96,6 @@ export function StakeholderMapping() {
   const keepSatisfied = stakeholders.filter((s) => getQuadrant(s) === "keep_satisfied");
   const keepInformed = stakeholders.filter((s) => getQuadrant(s) === "keep_informed");
   const monitor = stakeholders.filter((s) => getQuadrant(s) === "monitor");
-
-  const handleMoveStakeholder = (stakeholderId: string, newInterest: "high" | "low", newInfluence: "high" | "low") => {
-    updateMutation.mutate({
-      id: stakeholderId,
-      stakeholder: {
-        interest_level: newInterest,
-        influence_level: newInfluence,
-      },
-    });
-  };
 
   return (
     <div className="space-y-6">
@@ -185,8 +197,8 @@ export function StakeholderMapping() {
                     <StakeholderCard
                       key={stakeholder.id}
                       stakeholder={stakeholder}
-                      onUpdate={(updated) => updateMutation.mutate({ id: stakeholder.id, stakeholder: updated })}
-                      onDelete={() => deleteMutation.mutate(stakeholder.id)}
+                      onUpdate={(updated) => handleUpdate(stakeholder.id, updated)}
+                      onDelete={() => handleDelete(stakeholder.id)}
                       onMove={handleMoveStakeholder}
                     />
                   ))
@@ -213,8 +225,8 @@ export function StakeholderMapping() {
                     <StakeholderCard
                       key={stakeholder.id}
                       stakeholder={stakeholder}
-                      onUpdate={(updated) => updateMutation.mutate({ id: stakeholder.id, stakeholder: updated })}
-                      onDelete={() => deleteMutation.mutate(stakeholder.id)}
+                      onUpdate={(updated) => handleUpdate(stakeholder.id, updated)}
+                      onDelete={() => handleDelete(stakeholder.id)}
                       onMove={handleMoveStakeholder}
                     />
                   ))
@@ -244,8 +256,8 @@ export function StakeholderMapping() {
                     <StakeholderCard
                       key={stakeholder.id}
                       stakeholder={stakeholder}
-                      onUpdate={(updated) => updateMutation.mutate({ id: stakeholder.id, stakeholder: updated })}
-                      onDelete={() => deleteMutation.mutate(stakeholder.id)}
+                      onUpdate={(updated) => handleUpdate(stakeholder.id, updated)}
+                      onDelete={() => handleDelete(stakeholder.id)}
                       onMove={handleMoveStakeholder}
                     />
                   ))
@@ -272,8 +284,8 @@ export function StakeholderMapping() {
                     <StakeholderCard
                       key={stakeholder.id}
                       stakeholder={stakeholder}
-                      onUpdate={(updated) => updateMutation.mutate({ id: stakeholder.id, stakeholder: updated })}
-                      onDelete={() => deleteMutation.mutate(stakeholder.id)}
+                      onUpdate={(updated) => handleUpdate(stakeholder.id, updated)}
+                      onDelete={() => handleDelete(stakeholder.id)}
                       onMove={handleMoveStakeholder}
                     />
                   ))
@@ -291,7 +303,7 @@ export function StakeholderMapping() {
       <AddStakeholderModal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
-        onAdd={(stakeholder) => addMutation.mutate({ ...stakeholder, created_by: "user" })}
+        onAdd={handleAdd}
       />
     </div>
   );

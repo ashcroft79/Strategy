@@ -1,7 +1,7 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { contextApi } from "@/lib/api-client";
+import { useState, useEffect } from "react";
+import { contextApi, type ContextSummary } from "@/lib/api-client";
 import { usePyramidStore } from "@/lib/store";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
@@ -25,13 +25,25 @@ interface ContextDashboardProps {
 
 export function ContextDashboard({ onNavigateToTab, onContinueToStrategy }: ContextDashboardProps) {
   const { sessionId } = usePyramidStore();
+  const [summary, setSummary] = useState<ContextSummary | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch context summary
-  const { data: summary, isLoading } = useQuery({
-    queryKey: ["context-summary", sessionId],
-    queryFn: () => contextApi.getContextSummary(sessionId),
-    enabled: !!sessionId,
-  });
+  const loadSummary = async () => {
+    if (!sessionId) return;
+    try {
+      setIsLoading(true);
+      const data = await contextApi.getContextSummary(sessionId);
+      setSummary(data);
+    } catch (error) {
+      console.error("Failed to load context summary:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadSummary();
+  }, [sessionId]);
 
   const handleExport = async () => {
     try {
