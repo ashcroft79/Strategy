@@ -417,6 +417,7 @@ class AddDriverRequest(BaseModel):
     name: str
     description: str
     rationale: Optional[str] = None
+    addresses_opportunities: Optional[List[str]] = None
     created_by: Optional[str] = None
 
 
@@ -425,6 +426,7 @@ class UpdateDriverRequest(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     rationale: Optional[str] = None
+    addresses_opportunities: Optional[List[str]] = None
 
 
 @router.post("/{session_id}/drivers")
@@ -439,6 +441,7 @@ async def add_strategic_driver(session_id: str, request: AddDriverRequest):
             name=request.name,
             description=request.description,
             rationale=request.rationale,
+            addresses_opportunities=request.addresses_opportunities,
             created_by=request.created_by,
         )
 
@@ -472,6 +475,7 @@ async def update_strategic_driver(session_id: str, request: UpdateDriverRequest)
         name=request.name,
         description=request.description,
         rationale=request.rationale,
+        addresses_opportunities=request.addresses_opportunities,
     )
 
     if not success:

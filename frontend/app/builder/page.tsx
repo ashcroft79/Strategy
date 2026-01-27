@@ -33,6 +33,7 @@ import { SOCCCanvas } from "@/components/context/SOCCCanvas";
 import { ContextOnboarding } from "@/components/context/ContextOnboarding";
 import { ContextSummary } from "@/components/context/ContextSummary";
 import { ContextDashboard } from "@/components/context/ContextDashboard";
+import { ContextTraceability } from "@/components/context/ContextTraceability";
 import { OpportunityScoring } from "@/components/context/OpportunityScoring";
 import { StrategicTensions } from "@/components/context/StrategicTensions";
 import { StakeholderMapping } from "@/components/context/StakeholderMapping";
@@ -83,7 +84,7 @@ export default function BuilderPage() {
   const router = useRouter();
   const { sessionId, pyramid, setPyramid, setLoading, setError, showToast, isLoading, incrementUnsavedChanges } = usePyramidStore();
   const [activeTier, setActiveTier] = useState<string | undefined>(undefined);
-  const [activeContextTab, setActiveContextTab] = useState<'dashboard' | 'socc' | 'scoring' | 'tensions' | 'stakeholders'>('dashboard');
+  const [activeContextTab, setActiveContextTab] = useState<'dashboard' | 'socc' | 'scoring' | 'tensions' | 'stakeholders' | 'traceability'>('dashboard');
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -1217,6 +1218,16 @@ export default function BuilderPage() {
                     >
                       Stakeholder Mapping
                     </button>
+                    <button
+                      onClick={() => setActiveContextTab('traceability')}
+                      className={`${
+                        activeContextTab === 'traceability'
+                          ? 'border-blue-500 text-blue-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                    >
+                      Traceability
+                    </button>
                   </nav>
                 </div>
 
@@ -1231,6 +1242,7 @@ export default function BuilderPage() {
                 {activeContextTab === 'scoring' && <OpportunityScoring />}
                 {activeContextTab === 'tensions' && <StrategicTensions />}
                 {activeContextTab === 'stakeholders' && <StakeholderMapping />}
+                {activeContextTab === 'traceability' && <ContextTraceability />}
               </div>
             )}
 
