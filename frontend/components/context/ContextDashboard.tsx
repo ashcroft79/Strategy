@@ -193,7 +193,7 @@ export function ContextDashboard({ onNavigateToTab, onContinueToStrategy }: Cont
                 <div className="font-semibold">Context Foundation Complete!</div>
                 <div className="text-sm">You're ready to move to Step 2: Strategy</div>
               </div>
-              <Button onClick={onContinueToStrategy} variant="default">
+              <Button onClick={onContinueToStrategy} variant="primary">
                 Continue to Strategy
                 <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
@@ -263,7 +263,7 @@ export function ContextDashboard({ onNavigateToTab, onContinueToStrategy }: Cont
 
                   {/* Action Button */}
                   <Button
-                    variant={section.complete ? "outline" : "default"}
+                    variant={section.complete ? "secondary" : "primary"}
                     size="sm"
                     onClick={() => onNavigateToTab(section.id)}
                     className="w-full"

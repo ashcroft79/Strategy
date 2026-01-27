@@ -60,7 +60,7 @@ export function ContextTraceability() {
 
   drivers.forEach((driver) => {
     const oppIds = driver.addresses_opportunities || [];
-    oppIds.forEach((id) => addressedOpportunityIds.add(id));
+    oppIds.forEach((id: string) => addressedOpportunityIds.add(id));
     driverToOpportunities.set(driver.id, oppIds);
   });
 
