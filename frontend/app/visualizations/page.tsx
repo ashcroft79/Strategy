@@ -36,11 +36,11 @@ export default function VisualizationsPage() {
 
       try {
         // Fetch SOCC analysis
-        const socc = await contextApi.getSOCCAnalysis(sessionId);
+        const socc = await contextApi.getSOCC(sessionId);
         setSoccItems(socc.items || []);
 
         // Fetch opportunity scoring
-        const scoring = await contextApi.getOpportunityScoring(sessionId);
+        const scoring = await contextApi.getOpportunityScores(sessionId);
         const scoresMap: Record<string, OpportunityScore> = {};
         (scoring.scores || []).forEach((score: OpportunityScore) => {
           scoresMap[score.opportunity_item_id] = score;
@@ -48,7 +48,7 @@ export default function VisualizationsPage() {
         setOpportunityScores(scoresMap);
 
         // Fetch strategic tensions
-        const tensionsData = await contextApi.getStrategicTensions(sessionId);
+        const tensionsData = await contextApi.getTensions(sessionId);
         setTensions(tensionsData.tensions || []);
 
         // Fetch stakeholders
