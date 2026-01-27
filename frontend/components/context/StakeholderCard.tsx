@@ -196,7 +196,7 @@ export function StakeholderCard({ stakeholder, onUpdate, onDelete, onMove }: Sta
               <Check className="w-4 h-4 mr-1" />
               Save Changes
             </Button>
-            <Button variant="outline" onClick={() => setShowEditModal(false)}>
+            <Button variant="secondary" onClick={() => setShowEditModal(false)}>
               Cancel
             </Button>
             <Button variant="ghost" onClick={onDelete} className="ml-auto text-red-600 hover:text-red-700">

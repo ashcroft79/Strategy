@@ -163,7 +163,7 @@ export function StrategicTensions() {
             <Plus className="w-4 h-4 mr-1" />
             Add Tension
           </Button>
-          <Button variant="outline" onClick={() => setShowTemplates(!showTemplates)}>
+          <Button variant="secondary" onClick={() => setShowTemplates(!showTemplates)}>
             <Scale className="w-4 h-4 mr-1" />
             Use Template
           </Button>
@@ -255,7 +255,7 @@ export function StrategicTensions() {
             <Button onClick={handleAddTension} disabled={!leftPole.trim() || !rightPole.trim()}>
               Add Tension
             </Button>
-            <Button variant="outline" onClick={() => setShowAddModal(false)}>
+            <Button variant="secondary" onClick={() => setShowAddModal(false)}>
               Cancel
             </Button>
           </div>

@@ -173,7 +173,7 @@ export function OpportunityScoringCard({ opportunity, rank, onScore, onDeleteSco
               )}
 
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                <Button variant="secondary" size="sm" onClick={() => setIsEditing(true)}>
                   Edit Score
                 </Button>
                 <Button variant="ghost" size="sm" onClick={onDeleteScore}>
@@ -296,7 +296,7 @@ export function OpportunityScoringCard({ opportunity, rank, onScore, onDeleteSco
                   <Save className="w-4 h-4 mr-1" />
                   Save Score
                 </Button>
-                <Button variant="outline" onClick={handleCancel} size="sm">
+                <Button variant="secondary" onClick={handleCancel} size="sm">
                   Cancel
                 </Button>
               </div>

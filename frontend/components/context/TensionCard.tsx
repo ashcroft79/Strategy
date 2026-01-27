@@ -219,7 +219,7 @@ export function TensionCard({ tension, onUpdate, onDelete }: TensionCardProps) {
                   <Save className="w-4 h-4 mr-1" />
                   Save Changes
                 </Button>
-                <Button variant="outline" onClick={handleCancel} size="sm">
+                <Button variant="secondary" onClick={handleCancel} size="sm">
                   Cancel
                 </Button>
                 <Button variant="ghost" onClick={onDelete} size="sm" className="ml-auto text-red-600 hover:text-red-700">
@@ -246,7 +246,7 @@ export function TensionCard({ tension, onUpdate, onDelete }: TensionCardProps) {
               )}
 
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                <Button variant="secondary" size="sm" onClick={() => setIsEditing(true)}>
                   Edit Tension
                 </Button>
                 <Button variant="ghost" size="sm" onClick={onDelete} className="text-red-600 hover:text-red-700">

@@ -318,7 +318,7 @@ export function ContextDashboard({ onNavigateToTab, onContinueToStrategy }: Cont
 
       {/* Actions */}
       <div className="flex gap-3">
-        <Button onClick={handleExport} variant="outline">
+        <Button onClick={handleExport} variant="secondary">
           <FileDown className="w-4 h-4 mr-2" />
           Export Context Report
         </Button>

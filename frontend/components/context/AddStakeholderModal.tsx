@@ -195,7 +195,7 @@ export function AddStakeholderModal({ isOpen, onClose, onAdd }: AddStakeholderMo
             <Check className="w-4 h-4 mr-1" />
             Add Stakeholder
           </Button>
-          <Button variant="outline" onClick={handleClose}>
+          <Button variant="secondary" onClick={handleClose}>
             Cancel
           </Button>
         </div>
