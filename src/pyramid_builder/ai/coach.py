@@ -447,53 +447,110 @@ IMPORTANT: This pyramid state is updated in real-time. If the user just added, e
 
         # Build Context (SOCC) summary
         context_summary = ""
-        if self.context and self.context.get('socc_items'):
-            socc_items = self.context['socc_items']
-            strengths = [item for item in socc_items if item['quadrant'] == 'strength']
-            opportunities = [item for item in socc_items if item['quadrant'] == 'opportunity']
-            considerations = [item for item in socc_items if item['quadrant'] == 'consideration']
-            constraints = [item for item in socc_items if item['quadrant'] == 'constraint']
-
+        if self.context:
             context_lines = [
                 "",
-                "## TIER 0: CONTEXT FOUNDATION (SOCC Analysis)",
-                f"Total Context Items: {len(socc_items)}",
+                "## TIER 0: CONTEXT FOUNDATION",
                 ""
             ]
 
-            if strengths:
-                context_lines.append(f"STRENGTHS ({len(strengths)}):")
-                for item in strengths[:5]:  # Top 5
-                    context_lines.append(f"  • {item['title']} ({item['impact_level']} impact)")
-                if len(strengths) > 5:
-                    context_lines.append(f"  ... and {len(strengths) - 5} more")
+            # SOCC Analysis
+            if self.context.get('socc_items'):
+                socc_items = self.context['socc_items']
+                strengths = [item for item in socc_items if item['quadrant'] == 'strength']
+                opportunities = [item for item in socc_items if item['quadrant'] == 'opportunity']
+                considerations = [item for item in socc_items if item['quadrant'] == 'consideration']
+                constraints = [item for item in socc_items if item['quadrant'] == 'constraint']
+
+                context_lines.append("### SOCC Analysis")
+                context_lines.append(f"Total Context Items: {len(socc_items)}")
                 context_lines.append("")
 
-            if opportunities:
-                context_lines.append(f"OPPORTUNITIES ({len(opportunities)}):")
-                for item in opportunities[:5]:
-                    context_lines.append(f"  • {item['title']} ({item['impact_level']} impact)")
-                if len(opportunities) > 5:
-                    context_lines.append(f"  ... and {len(opportunities) - 5} more")
+                if strengths:
+                    context_lines.append(f"STRENGTHS ({len(strengths)}):")
+                    for item in strengths[:5]:  # Top 5
+                        context_lines.append(f"  • {item['title']} ({item['impact_level']} impact)")
+                    if len(strengths) > 5:
+                        context_lines.append(f"  ... and {len(strengths) - 5} more")
+                    context_lines.append("")
+
+                if opportunities:
+                    context_lines.append(f"OPPORTUNITIES ({len(opportunities)}):")
+                    for item in opportunities[:5]:
+                        context_lines.append(f"  • {item['title']} ({item['impact_level']} impact)")
+                    if len(opportunities) > 5:
+                        context_lines.append(f"  ... and {len(opportunities) - 5} more")
+                    context_lines.append("")
+
+                if considerations:
+                    context_lines.append(f"CONSIDERATIONS ({len(considerations)}):")
+                    for item in considerations[:5]:
+                        context_lines.append(f"  • {item['title']} ({item['impact_level']} impact)")
+                    if len(considerations) > 5:
+                        context_lines.append(f"  ... and {len(considerations) - 5} more")
+                    context_lines.append("")
+
+                if constraints:
+                    context_lines.append(f"CONSTRAINTS ({len(constraints)}):")
+                    for item in constraints[:5]:
+                        context_lines.append(f"  • {item['title']} ({item['impact_level']} impact)")
+                    if len(constraints) > 5:
+                        context_lines.append(f"  ... and {len(constraints) - 5} more")
+                    context_lines.append("")
+
+            # Opportunity Scoring
+            if self.context.get('opportunity_scores'):
+                opportunity_scores = self.context['opportunity_scores']
+                context_lines.append(f"### Opportunity Scoring ({len(opportunity_scores)} opportunities scored)")
+
+                # Sort by calculated score
+                sorted_opportunities = sorted(
+                    opportunity_scores.items(),
+                    key=lambda x: (x[1]['strength_match'] * 2) - x[1]['consideration_risk'] - x[1]['constraint_impact'],
+                    reverse=True
+                )
+
+                for opp_id, score in sorted_opportunities[:3]:  # Top 3
+                    calc_score = (score['strength_match'] * 2) - score['consideration_risk'] - score['constraint_impact']
+                    viability = "High" if calc_score >= 7 else "Moderate" if calc_score >= 4 else "Marginal" if calc_score >= 1 else "Low"
+                    context_lines.append(f"  • Score: {calc_score:+d} ({viability} viability)")
+
+                if len(sorted_opportunities) > 3:
+                    context_lines.append(f"  ... and {len(sorted_opportunities) - 3} more scored")
                 context_lines.append("")
 
-            if considerations:
-                context_lines.append(f"CONSIDERATIONS ({len(considerations)}):")
-                for item in considerations[:5]:
-                    context_lines.append(f"  • {item['title']} ({item['impact_level']} impact)")
-                if len(considerations) > 5:
-                    context_lines.append(f"  ... and {len(considerations) - 5} more")
+            # Strategic Tensions
+            if self.context.get('tensions'):
+                tensions = self.context['tensions']
+                context_lines.append(f"### Strategic Tensions ({len(tensions)} tensions identified)")
+
+                for tension in tensions[:3]:  # Top 3
+                    shift = abs(tension['target_position'] - tension['current_position'])
+                    direction = "right" if tension['target_position'] > tension['current_position'] else "left" if tension['target_position'] < tension['current_position'] else "none"
+                    context_lines.append(f"  • {tension['name']}: Current {tension['current_position']} → Target {tension['target_position']}")
+                    if shift > 10:
+                        context_lines.append(f"    (Requires {shift} point shift {direction})")
+
+                if len(tensions) > 3:
+                    context_lines.append(f"  ... and {len(tensions) - 3} more")
                 context_lines.append("")
 
-            if constraints:
-                context_lines.append(f"CONSTRAINTS ({len(constraints)}):")
-                for item in constraints[:5]:
-                    context_lines.append(f"  • {item['title']} ({item['impact_level']} impact)")
-                if len(constraints) > 5:
-                    context_lines.append(f"  ... and {len(constraints) - 5} more")
+            # Stakeholder Mapping
+            if self.context.get('stakeholders'):
+                stakeholders = self.context['stakeholders']
+                key_players = [s for s in stakeholders if s['interest_level'] == 'high' and s['influence_level'] == 'high']
+                context_lines.append(f"### Stakeholder Mapping ({len(stakeholders)} stakeholders mapped)")
+                context_lines.append(f"  • Key Players (High Interest + High Influence): {len(key_players)}")
 
-            context_lines.append("")
-            context_lines.append("IMPORTANT: This context should inform all strategic choices. Help users connect their pyramid elements (Vision, Drivers, Intents, Commitments) back to this foundation. Ask questions like: 'How does this leverage your strengths?' or 'Does this address the constraints you identified?'")
+                for stakeholder in key_players[:3]:
+                    alignment = stakeholder.get('alignment', 'neutral')
+                    context_lines.append(f"    - {stakeholder['name']} ({alignment})")
+
+                if len(key_players) > 3:
+                    context_lines.append(f"    ... and {len(key_players) - 3} more")
+                context_lines.append("")
+
+            context_lines.append("IMPORTANT: This context should inform all strategic choices. Help users connect their pyramid elements (Vision, Drivers, Intents, Commitments) back to this foundation. Ask questions like: 'How does this leverage your strengths?' or 'Does this address the constraints you identified?' or 'Does this opportunity score suggest prioritization?' or 'How does this navigate the tension between X and Y?'")
 
             context_summary = "\n".join(context_lines)
 
