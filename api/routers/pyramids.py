@@ -85,6 +85,16 @@ async def load_pyramid(request: LoadPyramidRequest):
         # Extract Context data if present (backward compatible - won't fail if missing)
         context_data = pyramid_data.pop("context", None)
 
+        # Clear any existing context for this session before loading new data
+        if request.session_id in context_storage:
+            del context_storage[request.session_id]
+        if request.session_id in scoring_storage:
+            del scoring_storage[request.session_id]
+        if request.session_id in tension_storage:
+            del tension_storage[request.session_id]
+        if request.session_id in stakeholder_storage:
+            del stakeholder_storage[request.session_id]
+
         # Convert dict to StrategyPyramid (Step 2)
         pyramid = StrategyPyramid.model_validate(pyramid_data)
         manager = PyramidManager(pyramid=pyramid)

@@ -172,7 +172,7 @@
     ]
   },
   "vision": {
-    "id": "vision-uuid",
+    "id": "550e8400-e29b-41d4-a716-446655440100",
     "created_at": "2026-01-26T00:00:00Z",
     "updated_at": "2026-01-26T00:00:00Z",
     "statements": [
@@ -274,7 +274,7 @@
       "name": "Launch Diagnostic AI Assistant",
       "description": "Deploy AI-powered diagnostic support tool validated across 10,000 cases",
       "horizon": "H1",
-      "driver_id": "f6a7b8c9-d0e1-2345-f123-456789012345",
+      "primary_driver_id": "f6a7b8c9-d0e1-2345-f123-456789012345",
       "is_strategic_bet": true
     }
   ],
@@ -286,7 +286,7 @@
       "name": "Engineering: Complete AI validation framework",
       "description": "Build and deploy automated testing pipeline for AI model validation",
       "team_name": "Engineering",
-      "commitment_id": "c9d0e1f2-a3b4-5678-3456-789012345678"
+      "primary_commitment_id": "c9d0e1f2-a3b4-5678-3456-789012345678"
     }
   ],
   "individual_objectives": [
