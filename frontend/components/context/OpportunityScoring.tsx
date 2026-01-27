@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { contextApi, type SortedOpportunity, type OpportunityScore } from "@/lib/api-client";
 import { usePyramidStore } from "@/lib/store";
 import { OpportunityScoringCard } from "./OpportunityScoringCard";
@@ -9,32 +8,47 @@ import { AlertCircle, TrendingUp, Info } from "lucide-react";
 
 export function OpportunityScoring() {
   const { sessionId } = usePyramidStore();
-  const queryClient = useQueryClient();
+  const [opportunities, setOpportunities] = useState<SortedOpportunity[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch sorted opportunities
-  const { data: opportunities, isLoading } = useQuery({
-    queryKey: ["sorted-opportunities", sessionId],
-    queryFn: () => contextApi.getSortedOpportunities(sessionId),
-    enabled: !!sessionId,
-  });
+  const loadOpportunities = async () => {
+    if (!sessionId) return;
+    try {
+      setIsLoading(true);
+      const data = await contextApi.getSortedOpportunities(sessionId);
+      setOpportunities(data);
+    } catch (error) {
+      console.error("Failed to load opportunities:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  // Score opportunity mutation
-  const scoreMutation = useMutation({
-    mutationFn: ({ opportunityId, score }: { opportunityId: string; score: Partial<OpportunityScore> }) =>
-      contextApi.scoreOpportunity(sessionId, opportunityId, score),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sorted-opportunities", sessionId] });
-      queryClient.invalidateQueries({ queryKey: ["socc", sessionId] });
-    },
-  });
+  useEffect(() => {
+    loadOpportunities();
+  }, [sessionId]);
 
-  // Delete score mutation
-  const deleteScoreMutation = useMutation({
-    mutationFn: (opportunityId: string) => contextApi.deleteOpportunityScore(sessionId, opportunityId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sorted-opportunities", sessionId] });
-    },
-  });
+  const handleScore = async (opportunityId: string, score: Partial<OpportunityScore>) => {
+    try {
+      await contextApi.scoreOpportunity(sessionId, opportunityId, {
+        ...score,
+        opportunity_item_id: opportunityId,
+        created_by: "user",
+      });
+      await loadOpportunities();
+    } catch (error) {
+      console.error("Failed to score opportunity:", error);
+    }
+  };
+
+  const handleDeleteScore = async (opportunityId: string) => {
+    try {
+      await contextApi.deleteOpportunityScore(sessionId, opportunityId);
+      await loadOpportunities();
+    } catch (error) {
+      console.error("Failed to delete score:", error);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -125,17 +139,8 @@ export function OpportunityScoring() {
             key={opportunity.opportunity.id}
             opportunity={opportunity}
             rank={index + 1}
-            onScore={(score) =>
-              scoreMutation.mutate({
-                opportunityId: opportunity.opportunity.id,
-                score: {
-                  ...score,
-                  opportunity_item_id: opportunity.opportunity.id,
-                  created_by: "user", // TODO: Get from auth context
-                },
-              })
-            }
-            onDeleteScore={() => deleteScoreMutation.mutate(opportunity.opportunity.id)}
+            onScore={(score) => handleScore(opportunity.opportunity.id, score)}
+            onDeleteScore={() => handleDeleteScore(opportunity.opportunity.id)}
           />
         ))}
       </div>

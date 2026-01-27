@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { contextApi, type StrategicTension, type CommonTension } from "@/lib/api-client";
 import { usePyramidStore } from "@/lib/store";
 import { TensionCard } from "./TensionCard";
@@ -11,7 +10,9 @@ import Modal from "@/components/ui/Modal";
 
 export function StrategicTensions() {
   const { sessionId } = usePyramidStore();
-  const queryClient = useQueryClient();
+  const [tensions, setTensions] = useState<StrategicTension[]>([]);
+  const [commonTensions, setCommonTensions] = useState<CommonTension[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
 
@@ -19,63 +20,75 @@ export function StrategicTensions() {
   const [leftPole, setLeftPole] = useState("");
   const [rightPole, setRightPole] = useState("");
 
-  // Fetch tensions
-  const { data: tensionData, isLoading } = useQuery({
-    queryKey: ["tensions", sessionId],
-    queryFn: () => contextApi.getTensions(sessionId),
-    enabled: !!sessionId,
-  });
+  const loadTensions = async () => {
+    if (!sessionId) return;
+    try {
+      setIsLoading(true);
+      const data = await contextApi.getTensions(sessionId);
+      setTensions(data.tensions);
+    } catch (error) {
+      console.error("Failed to load tensions:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  // Fetch common tension templates
-  const { data: templatesData } = useQuery({
-    queryKey: ["common-tensions"],
-    queryFn: () => contextApi.getCommonTensions(),
-  });
+  const loadCommonTensions = async () => {
+    try {
+      const data = await contextApi.getCommonTensions();
+      setCommonTensions(data.common_tensions);
+    } catch (error) {
+      console.error("Failed to load common tensions:", error);
+    }
+  };
 
-  // Add tension mutation
-  const addMutation = useMutation({
-    mutationFn: (tension: Partial<StrategicTension>) => contextApi.addTension(sessionId, tension),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tensions", sessionId] });
-      setShowAddModal(false);
-      resetForm();
-    },
-  });
-
-  // Update tension mutation
-  const updateMutation = useMutation({
-    mutationFn: ({ id, tension }: { id: string; tension: Partial<StrategicTension> }) =>
-      contextApi.updateTension(sessionId, id, tension),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tensions", sessionId] });
-    },
-  });
-
-  // Delete tension mutation
-  const deleteMutation = useMutation({
-    mutationFn: (tensionId: string) => contextApi.deleteTension(sessionId, tensionId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tensions", sessionId] });
-    },
-  });
+  useEffect(() => {
+    loadTensions();
+    loadCommonTensions();
+  }, [sessionId]);
 
   const resetForm = () => {
     setLeftPole("");
     setRightPole("");
   };
 
-  const handleAddTension = () => {
+  const handleAddTension = async () => {
     if (!leftPole.trim() || !rightPole.trim()) return;
 
-    addMutation.mutate({
-      name: `${leftPole} vs. ${rightPole}`,
-      left_pole: leftPole,
-      right_pole: rightPole,
-      current_position: 50,
-      target_position: 50,
-      rationale: "",
-      created_by: "user", // TODO: Get from auth
-    });
+    try {
+      await contextApi.addTension(sessionId, {
+        name: `${leftPole} vs. ${rightPole}`,
+        left_pole: leftPole,
+        right_pole: rightPole,
+        current_position: 50,
+        target_position: 50,
+        rationale: "",
+        created_by: "user",
+      });
+      await loadTensions();
+      setShowAddModal(false);
+      resetForm();
+    } catch (error) {
+      console.error("Failed to add tension:", error);
+    }
+  };
+
+  const handleUpdate = async (id: string, updated: Partial<StrategicTension>) => {
+    try {
+      await contextApi.updateTension(sessionId, id, updated);
+      await loadTensions();
+    } catch (error) {
+      console.error("Failed to update tension:", error);
+    }
+  };
+
+  const handleDelete = async (tensionId: string) => {
+    try {
+      await contextApi.deleteTension(sessionId, tensionId);
+      await loadTensions();
+    } catch (error) {
+      console.error("Failed to delete tension:", error);
+    }
   };
 
   const handleUseTemplate = (template: CommonTension) => {
@@ -91,8 +104,6 @@ export function StrategicTensions() {
       </div>
     );
   }
-
-  const tensions = tensionData?.tensions || [];
 
   return (
     <div className="space-y-6">
@@ -159,11 +170,11 @@ export function StrategicTensions() {
         </div>
 
         {/* Template Selector */}
-        {showTemplates && templatesData?.common_tensions && (
+        {showTemplates && commonTensions.length > 0 && (
           <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
             <h4 className="font-semibold text-gray-900 mb-3">Common Tension Templates</h4>
             <div className="grid grid-cols-2 gap-2">
-              {templatesData.common_tensions.map((template, idx) => (
+              {commonTensions.map((template, idx) => (
                 <button
                   key={idx}
                   onClick={() => handleUseTemplate(template)}
@@ -202,8 +213,8 @@ export function StrategicTensions() {
             <TensionCard
               key={tension.id}
               tension={tension}
-              onUpdate={(updated) => updateMutation.mutate({ id: tension.id, tension: updated })}
-              onDelete={() => deleteMutation.mutate(tension.id)}
+              onUpdate={(updated) => handleUpdate(tension.id, updated)}
+              onDelete={() => handleDelete(tension.id)}
             />
           ))}
         </div>
