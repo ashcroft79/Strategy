@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { contextApi, type SortedOpportunity, type OpportunityScore } from "@/lib/api-client";
+import { contextApi, type SortedOpportunity, type OpportunityScore, type SOCCItem } from "@/lib/api-client";
 import { usePyramidStore } from "@/lib/store";
 import { OpportunityScoringCard } from "./OpportunityScoringCard";
 import { AlertCircle, TrendingUp, Info } from "lucide-react";
@@ -9,6 +9,7 @@ import { AlertCircle, TrendingUp, Info } from "lucide-react";
 export function OpportunityScoring() {
   const { sessionId, incrementUnsavedChanges } = usePyramidStore();
   const [opportunities, setOpportunities] = useState<SortedOpportunity[]>([]);
+  const [soccItems, setSoccItems] = useState<SOCCItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadOpportunities = async () => {
@@ -24,8 +25,19 @@ export function OpportunityScoring() {
     }
   };
 
+  const loadSOCCItems = async () => {
+    if (!sessionId) return;
+    try {
+      const data = await contextApi.getSOCC(sessionId);
+      setSoccItems(data.items);
+    } catch (error) {
+      console.error("Failed to load SOCC items:", error);
+    }
+  };
+
   useEffect(() => {
     loadOpportunities();
+    loadSOCCItems();
   }, [sessionId]);
 
   const handleScore = async (opportunityId: string, score: Partial<OpportunityScore>) => {
@@ -141,6 +153,7 @@ export function OpportunityScoring() {
             key={opportunity.opportunity.id}
             opportunity={opportunity}
             rank={index + 1}
+            soccItems={soccItems}
             onScore={(score) => handleScore(opportunity.opportunity.id, score)}
             onDeleteScore={() => handleDeleteScore(opportunity.opportunity.id)}
           />
