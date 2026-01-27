@@ -35,6 +35,10 @@ scoring_storage: Dict[str, OpportunityScoringAnalysis] = {}
 tension_storage: Dict[str, TensionAnalysis] = {}
 stakeholder_storage: Dict[str, StakeholderAnalysis] = {}
 
+# Export socc_storage as context_storage for use by other routers
+# SOCCAnalysis contains all context data (items, scores, tensions, stakeholders)
+context_storage = socc_storage
+
 
 # ============================================================================
 # Helper Functions

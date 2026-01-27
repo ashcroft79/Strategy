@@ -13,7 +13,7 @@ from src.pyramid_builder.exports.markdown_exporter import MarkdownExporter
 from src.pyramid_builder.exports.json_exporter import JSONExporter
 from src.pyramid_builder.exports.ai_guide_generator import AIGuideGenerator
 from .pyramids import active_pyramids
-from .context import context_storage
+from .context import context_storage, scoring_storage, tension_storage, stakeholder_storage
 import json
 
 router = APIRouter()
@@ -151,19 +151,42 @@ async def export_json(session_id: str, request: ExportRequest):
         pyramid_dict = manager.pyramid.to_dict()
 
         # Add Context data (Step 1) if it exists
+        context_dict = {}
+
+        # Add SOCC analysis if exists
         if session_id in context_storage:
-            context_analysis = context_storage[session_id]
-            pyramid_dict["context"] = {
-                "socc_analysis": {
-                    "items": [item.dict() for item in context_analysis.items],
-                    "connections": [conn.dict() for conn in context_analysis.connections],
-                    "last_updated": str(context_analysis.last_updated)
-                },
-                "opportunity_scores": {score.opportunity_item_id: score.dict()
-                                      for score in context_analysis.opportunity_scores},
-                "strategic_tensions": [tension.dict() for tension in context_analysis.strategic_tensions],
-                "stakeholders": [stakeholder.dict() for stakeholder in context_analysis.stakeholders]
+            socc_analysis = context_storage[session_id]
+            context_dict["socc_analysis"] = {
+                "items": [item.dict() for item in socc_analysis.items],
+                "connections": [conn.dict() for conn in socc_analysis.connections],
+                "last_updated": str(socc_analysis.last_updated)
             }
+
+        # Add opportunity scores if exist
+        if session_id in scoring_storage:
+            scoring_analysis = scoring_storage[session_id]
+            context_dict["opportunity_scores"] = {
+                score.opportunity_item_id: score.dict()
+                for score in scoring_analysis.scores
+            }
+
+        # Add strategic tensions if exist
+        if session_id in tension_storage:
+            tension_analysis = tension_storage[session_id]
+            context_dict["strategic_tensions"] = [
+                tension.dict() for tension in tension_analysis.tensions
+            ]
+
+        # Add stakeholders if exist
+        if session_id in stakeholder_storage:
+            stakeholder_analysis = stakeholder_storage[session_id]
+            context_dict["stakeholders"] = [
+                stakeholder.dict() for stakeholder in stakeholder_analysis.stakeholders
+            ]
+
+        # Only add context key if we have any context data
+        if context_dict:
+            pyramid_dict["context"] = context_dict
 
         # Convert to JSON string
         json_content = json.dumps(pyramid_dict, indent=2, default=str, ensure_ascii=False)

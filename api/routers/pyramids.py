@@ -20,8 +20,11 @@ from src.pyramid_builder.models.context import (
     SOCCItem,
     SOCCConnection,
     OpportunityScore,
+    OpportunityScoringAnalysis,
     StrategicTension,
-    Stakeholder
+    TensionAnalysis,
+    Stakeholder,
+    StakeholderAnalysis
 )
 
 router = APIRouter()
@@ -30,8 +33,8 @@ router = APIRouter()
 # In production, you might use Redis or a database
 active_pyramids: Dict[str, PyramidManager] = {}
 
-# Import context storage from context router
-from .context import context_storage
+# Import context storages from context router
+from .context import context_storage, scoring_storage, tension_storage, stakeholder_storage
 
 
 class CreatePyramidRequest(BaseModel):
@@ -97,27 +100,42 @@ async def load_pyramid(request: LoadPyramidRequest):
                     connections = [SOCCConnection(**conn) for conn in socc_data.get("connections", [])]
 
                     socc_analysis = SOCCAnalysis(
+                        session_id=request.session_id,
                         items=items,
                         connections=connections
                     )
-
-                    # Parse opportunity scores
-                    if "opportunity_scores" in context_data:
-                        for opp_id, score_data in context_data["opportunity_scores"].items():
-                            socc_analysis.opportunity_scores.append(OpportunityScore(**score_data))
-
-                    # Parse strategic tensions
-                    if "strategic_tensions" in context_data:
-                        for tension_data in context_data["strategic_tensions"]:
-                            socc_analysis.strategic_tensions.append(StrategicTension(**tension_data))
-
-                    # Parse stakeholders
-                    if "stakeholders" in context_data:
-                        for stakeholder_data in context_data["stakeholders"]:
-                            socc_analysis.stakeholders.append(Stakeholder(**stakeholder_data))
-
-                    # Store in context storage
                     context_storage[request.session_id] = socc_analysis
+
+                # Parse opportunity scores
+                if "opportunity_scores" in context_data:
+                    scores = [OpportunityScore(**score_data)
+                             for score_data in context_data["opportunity_scores"].values()]
+                    scoring_analysis = OpportunityScoringAnalysis(
+                        session_id=request.session_id,
+                        scores=scores
+                    )
+                    scoring_storage[request.session_id] = scoring_analysis
+
+                # Parse strategic tensions
+                if "strategic_tensions" in context_data:
+                    tensions = [StrategicTension(**tension_data)
+                               for tension_data in context_data["strategic_tensions"]]
+                    tension_analysis = TensionAnalysis(
+                        session_id=request.session_id,
+                        tensions=tensions
+                    )
+                    tension_storage[request.session_id] = tension_analysis
+
+                # Parse stakeholders
+                if "stakeholders" in context_data:
+                    stakeholders = [Stakeholder(**stakeholder_data)
+                                   for stakeholder_data in context_data["stakeholders"]]
+                    stakeholder_analysis = StakeholderAnalysis(
+                        session_id=request.session_id,
+                        stakeholders=stakeholders
+                    )
+                    stakeholder_storage[request.session_id] = stakeholder_analysis
+
             except Exception as context_error:
                 # Log error but don't fail the pyramid load
                 print(f"Warning: Failed to load Context data: {str(context_error)}")
