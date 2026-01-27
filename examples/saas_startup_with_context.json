@@ -25,7 +25,11 @@
           "title": "Strong Product-Market Fit in Mid-Market",
           "description": "Our collaboration platform has 92% user satisfaction and 45% month-over-month growth in 50-250 employee companies",
           "impact_level": "high",
-          "tags": ["product", "market-fit", "growth"],
+          "tags": [
+            "product",
+            "market-fit",
+            "growth"
+          ],
           "created_at": "2026-01-27T00:00:00.000000",
           "created_by": "Product Team"
         },
@@ -35,7 +39,11 @@
           "title": "Exceptional Engineering Team",
           "description": "15 senior engineers with experience from Google, Microsoft, and Atlassian. Ship weekly releases with 99.9% uptime",
           "impact_level": "high",
-          "tags": ["team", "engineering", "talent"],
+          "tags": [
+            "team",
+            "engineering",
+            "talent"
+          ],
           "created_at": "2026-01-27T00:00:00.000000",
           "created_by": "CTO"
         },
@@ -45,7 +53,11 @@
           "title": "Viral Product-Led Growth Model",
           "description": "Free tier drives 60% of new signups through user invites. Conversion to paid is 18% (industry avg 5%)",
           "impact_level": "high",
-          "tags": ["growth", "plg", "conversion"],
+          "tags": [
+            "growth",
+            "plg",
+            "conversion"
+          ],
           "created_at": "2026-01-27T00:00:00.000000",
           "created_by": "Growth Lead"
         },
@@ -55,7 +67,11 @@
           "title": "Enterprise Segment Expansion",
           "description": "Enterprise (1000+ employees) is 70% of total addressable market but only 5% of our revenue. High willingness to pay for security & compliance features",
           "impact_level": "high",
-          "tags": ["enterprise", "expansion", "revenue"],
+          "tags": [
+            "enterprise",
+            "expansion",
+            "revenue"
+          ],
           "created_at": "2026-01-27T00:00:00.000000",
           "created_by": "Sales VP"
         },
@@ -65,7 +81,11 @@
           "title": "AI-Powered Workflow Automation",
           "description": "Customer interviews show 80% want AI to automate repetitive tasks. No competitor has launched compelling AI features yet",
           "impact_level": "high",
-          "tags": ["ai", "automation", "differentiation"],
+          "tags": [
+            "ai",
+            "automation",
+            "differentiation"
+          ],
           "created_at": "2026-01-27T00:00:00.000000",
           "created_by": "Product Team"
         },
@@ -75,7 +95,11 @@
           "title": "Strategic Partnerships with Consulting Firms",
           "description": "Management consultancies (McKinsey, BCG, Deloitte) are looking for modern collaboration tools for client work. Could drive 500+ enterprise deals",
           "impact_level": "medium",
-          "tags": ["partnerships", "b2b", "consulting"],
+          "tags": [
+            "partnerships",
+            "b2b",
+            "consulting"
+          ],
           "created_at": "2026-01-27T00:00:00.000000",
           "created_by": "BD Lead"
         },
@@ -85,7 +109,11 @@
           "title": "Increasing Competition from Microsoft & Slack",
           "description": "Microsoft Teams and Slack are aggressively adding similar features. They have 100x our budget and existing enterprise relationships",
           "impact_level": "high",
-          "tags": ["competition", "threat", "incumbents"],
+          "tags": [
+            "competition",
+            "threat",
+            "incumbents"
+          ],
           "created_at": "2026-01-27T00:00:00.000000",
           "created_by": "CEO"
         },
@@ -95,7 +123,11 @@
           "title": "Macro Economic Slowdown Reducing B2B Spend",
           "description": "Enterprise software budgets down 20% in Q4 2025. Longer sales cycles (6 months vs 3 months)",
           "impact_level": "high",
-          "tags": ["economy", "budgets", "risk"],
+          "tags": [
+            "economy",
+            "budgets",
+            "risk"
+          ],
           "created_at": "2026-01-27T00:00:00.000000",
           "created_by": "CFO"
         },
@@ -105,7 +137,11 @@
           "title": "Data Privacy Regulations (GDPR, CCPA)",
           "description": "Enterprise customers require SOC 2, ISO 27001, GDPR compliance. Regulations getting stricter in 2026",
           "impact_level": "medium",
-          "tags": ["compliance", "security", "regulatory"],
+          "tags": [
+            "compliance",
+            "security",
+            "regulatory"
+          ],
           "created_at": "2026-01-27T00:00:00.000000",
           "created_by": "Legal"
         },
@@ -115,7 +151,11 @@
           "title": "Limited Enterprise Sales Capacity",
           "description": "Only 3 enterprise account executives. Takes 9-12 months to ramp new sales hires. Can't pursue all opportunities simultaneously",
           "impact_level": "high",
-          "tags": ["sales", "capacity", "hiring"],
+          "tags": [
+            "sales",
+            "capacity",
+            "hiring"
+          ],
           "created_at": "2026-01-27T00:00:00.000000",
           "created_by": "Sales VP"
         },
@@ -125,7 +165,11 @@
           "title": "Runway: 18 Months to Profitability or Next Funding",
           "description": "Current burn rate gives us 18 months runway. Need to show 3x ARR growth or reach profitability to raise Series B",
           "impact_level": "high",
-          "tags": ["funding", "burn-rate", "runway"],
+          "tags": [
+            "funding",
+            "burn-rate",
+            "runway"
+          ],
           "created_at": "2026-01-27T00:00:00.000000",
           "created_by": "CFO"
         },
@@ -135,7 +179,11 @@
           "title": "Technical Debt in Core Platform",
           "description": "Rapid growth created tech debt. Monolithic architecture limits scaling. Refactoring would take 6-9 months of engineering time",
           "impact_level": "medium",
-          "tags": ["technical-debt", "architecture", "scaling"],
+          "tags": [
+            "technical-debt",
+            "architecture",
+            "scaling"
+          ],
           "created_at": "2026-01-27T00:00:00.000000",
           "created_by": "CTO"
         }
@@ -170,8 +218,13 @@
           "consideration_risk": 3,
           "constraint_impact": 4,
           "rationale": "Enterprise expansion leverages our product strength but constrained by limited sales capacity. Competition risk is high.",
-          "related_strengths": ["d202fe88-e9ad-46b2-b241-a65e09c8d970"],
-          "related_constraints": ["3baf87c0-8de9-4890-b04a-e174cba35a3a", "67e8b9dc-bd7f-42ee-84c8-a83681a77e54"],
+          "related_strengths": [
+            "d202fe88-e9ad-46b2-b241-a65e09c8d970"
+          ],
+          "related_constraints": [
+            "3baf87c0-8de9-4890-b04a-e174cba35a3a",
+            "67e8b9dc-bd7f-42ee-84c8-a83681a77e54"
+          ],
           "created_at": "2026-01-27T00:00:00.000000"
         },
         {
@@ -180,8 +233,13 @@
           "consideration_risk": 2,
           "constraint_impact": 2,
           "rationale": "AI automation plays to our engineering strength. Low competition risk (no one has shipped yet). Moderate technical debt constraint.",
-          "related_strengths": ["103e2144-b172-411d-90ff-56d9ca56a69c", "9bfb956c-fcec-4187-b5c3-0cc94987c67c"],
-          "related_constraints": ["237ab412-98b5-483f-8231-339ca9086c89"],
+          "related_strengths": [
+            "103e2144-b172-411d-90ff-56d9ca56a69c",
+            "9bfb956c-fcec-4187-b5c3-0cc94987c67c"
+          ],
+          "related_constraints": [
+            "237ab412-98b5-483f-8231-339ca9086c89"
+          ],
           "created_at": "2026-01-27T00:00:00.000000"
         },
         {
@@ -190,8 +248,12 @@
           "consideration_risk": 2,
           "constraint_impact": 3,
           "rationale": "Partnerships could accelerate enterprise growth but requires sales capacity we don't have. Moderate fit with current strengths.",
-          "related_strengths": ["d202fe88-e9ad-46b2-b241-a65e09c8d970"],
-          "related_constraints": ["3baf87c0-8de9-4890-b04a-e174cba35a3a"],
+          "related_strengths": [
+            "d202fe88-e9ad-46b2-b241-a65e09c8d970"
+          ],
+          "related_constraints": [
+            "3baf87c0-8de9-4890-b04a-e174cba35a3a"
+          ],
           "created_at": "2026-01-27T00:00:00.000000"
         }
       ],
@@ -246,8 +308,15 @@
           "interest_level": "high",
           "influence_level": "high",
           "alignment": "supportive",
-          "key_needs": ["3x ARR growth", "Clear path to Series B", "Retention >95%"],
-          "concerns": ["Burn rate sustainability", "Competition from Microsoft"],
+          "key_needs": [
+            "3x ARR growth",
+            "Clear path to Series B",
+            "Retention >95%"
+          ],
+          "concerns": [
+            "Burn rate sustainability",
+            "Competition from Microsoft"
+          ],
           "engagement_strategy": "Monthly board meetings, weekly metrics sharing, involve in major strategic decisions",
           "created_at": "2026-01-27T00:00:00.000000",
           "last_updated": "2026-01-27T00:00:00.000000"
@@ -259,8 +328,15 @@
           "interest_level": "high",
           "influence_level": "high",
           "alignment": "supportive",
-          "key_needs": ["Technical excellence", "Interesting problems", "Work-life balance"],
-          "concerns": ["Technical debt accumulation", "Burnout from fast pace"],
+          "key_needs": [
+            "Technical excellence",
+            "Interesting problems",
+            "Work-life balance"
+          ],
+          "concerns": [
+            "Technical debt accumulation",
+            "Burnout from fast pace"
+          ],
           "engagement_strategy": "Involve in architectural decisions, dedicate 20% time to tech debt, transparent roadmap",
           "created_at": "2026-01-27T00:00:00.000000",
           "last_updated": "2026-01-27T00:00:00.000000"
@@ -272,8 +348,15 @@
           "interest_level": "high",
           "influence_level": "medium",
           "alignment": "neutral",
-          "key_needs": ["Enterprise security features", "SSO & compliance", "Dedicated support"],
-          "concerns": ["Platform stability at scale", "Vendor risk (startup)"],
+          "key_needs": [
+            "Enterprise security features",
+            "SSO & compliance",
+            "Dedicated support"
+          ],
+          "concerns": [
+            "Platform stability at scale",
+            "Vendor risk (startup)"
+          ],
           "engagement_strategy": "Executive sponsor program, quarterly business reviews, co-development of enterprise features",
           "created_at": "2026-01-27T00:00:00.000000",
           "last_updated": "2026-01-27T00:00:00.000000"
@@ -285,8 +368,15 @@
           "interest_level": "medium",
           "influence_level": "low",
           "alignment": "supportive",
-          "key_needs": ["Continued innovation", "Stable pricing", "Easy to use"],
-          "concerns": ["Product becoming too complex for SMB", "Pricing increases"],
+          "key_needs": [
+            "Continued innovation",
+            "Stable pricing",
+            "Easy to use"
+          ],
+          "concerns": [
+            "Product becoming too complex for SMB",
+            "Pricing increases"
+          ],
           "engagement_strategy": "Maintain free tier, regular feature launches, responsive support",
           "created_at": "2026-01-27T00:00:00.000000",
           "last_updated": "2026-01-27T00:00:00.000000"
@@ -298,8 +388,14 @@
           "interest_level": "low",
           "influence_level": "high",
           "alignment": "neutral",
-          "key_needs": ["Technology acquisition", "Talent acquisition"],
-          "concerns": ["Product overlap", "Integration complexity"],
+          "key_needs": [
+            "Technology acquisition",
+            "Talent acquisition"
+          ],
+          "concerns": [
+            "Product overlap",
+            "Integration complexity"
+          ],
           "engagement_strategy": "Maintain relationships, showcase product growth, keep options open",
           "created_at": "2026-01-27T00:00:00.000000",
           "last_updated": "2026-01-27T00:00:00.000000"
@@ -385,7 +481,9 @@
       "notes": "Directly addresses opportunity OPP-002 (AI automation) - our highest-scoring opportunity (score: +7)",
       "name": "AI-First Product Leadership",
       "description": "Become the first collaboration platform with truly intelligent automation that learns from how teams work and eliminates repetitive tasks",
-      "addresses_opportunities": ["4b30e2b2-b1c9-41ae-9e40-bf1dc32158a7"],
+      "addresses_opportunities": [
+        "4b30e2b2-b1c9-41ae-9e40-bf1dc32158a7"
+      ],
       "order": 0
     },
     {
@@ -396,7 +494,9 @@
       "notes": "Addresses opportunity OPP-001 (Enterprise expansion) - second highest-scoring (score: +1)",
       "name": "Enterprise Market Expansion",
       "description": "Expand from mid-market strength into enterprise (1000+ employees) with enterprise-grade security, compliance, and support",
-      "addresses_opportunities": ["3ef397e3-e88a-4307-aae8-f05997975c0a"],
+      "addresses_opportunities": [
+        "3ef397e3-e88a-4307-aae8-f05997975c0a"
+      ],
       "order": 1
     },
     {
@@ -493,7 +593,8 @@
       "primary_intent_id": "a01a9a60-61ad-45f1-9f16-83687094dfb1",
       "owner": "VP Product",
       "success_criteria": "5000+ teams using AI meeting assistant daily, 80% satisfaction rating",
-      "order": 0
+      "order": 0,
+      "name": "Launch AI Meeting Assistant"
     },
     {
       "id": "6feb9740-6b40-48fa-b325-23937771d4dc",
@@ -509,7 +610,8 @@
       "primary_intent_id": "a01a9a60-61ad-45f1-9f16-83687094dfb1",
       "owner": "Head of AI",
       "success_criteria": "100+ automations in marketplace, 40% of teams using 3+ automations",
-      "order": 1
+      "order": 1,
+      "name": "Build AI Workflow Automations Marketplace"
     },
     {
       "id": "54f0ff93-7a14-482d-b24e-29d23b73e656",
@@ -521,11 +623,14 @@
       "description": "Complete SOC 2 Type II audit with zero findings, enabling enterprise sales to regulated industries (healthcare, finance)",
       "horizon": "H2",
       "primary_driver_id": "7befcb75-d67a-405c-a75c-60f66ff238c9",
-      "supporting_driver_ids": ["6da8211e-7f15-48e6-abb3-a4e6850b6265"],
+      "supporting_driver_ids": [
+        "6da8211e-7f15-48e6-abb3-a4e6850b6265"
+      ],
       "primary_intent_id": "3a7ae1f6-a703-4f79-a1cf-409ce07d7f38",
       "owner": "VP Engineering",
       "success_criteria": "SOC 2 Type II certified, security page on website, 20+ enterprise customers citing compliance as key purchase factor",
-      "order": 2
+      "order": 2,
+      "name": "Achieve SOC 2 Type II Certification"
     },
     {
       "id": "5e07e057-1f53-4caa-b257-df69cd7c5a28",
@@ -541,7 +646,8 @@
       "primary_intent_id": "3d7fa434-33dd-4a23-b5c7-d59d49db1dcd",
       "owner": "VP Sales",
       "success_criteria": "$5M in enterprise ARR, 25 customers >1000 employees, average deal size >$100K",
-      "order": 3
+      "order": 3,
+      "name": "Build Enterprise Sales Motion"
     },
     {
       "id": "b3d28f6b-e92a-4bc4-8044-3f782edddb64",
@@ -553,11 +659,15 @@
       "description": "Decompose monolith into 12 microservices (auth, collaboration, AI, storage, etc) with Kubernetes orchestration",
       "horizon": "H3",
       "primary_driver_id": "6da8211e-7f15-48e6-abb3-a4e6850b6265",
-      "supporting_driver_ids": ["2f29a186-73c0-4b6d-ad10-b98bc643eb33", "7befcb75-d67a-405c-a75c-60f66ff238c9"],
+      "supporting_driver_ids": [
+        "2f29a186-73c0-4b6d-ad10-b98bc643eb33",
+        "7befcb75-d67a-405c-a75c-60f66ff238c9"
+      ],
       "primary_intent_id": "e7fa7b5e-4c78-4b61-8bc7-3437eb975467",
       "owner": "CTO",
       "success_criteria": "All services migrated, <200ms p95 latency maintained, zero downtime migration, 10x load capacity demonstrated",
-      "order": 4
+      "order": 4,
+      "name": "Microservices Architecture Migration"
     }
   ],
   "team_objectives": [],
