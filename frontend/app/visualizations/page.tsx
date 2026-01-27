@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePyramidStore } from "@/lib/store";
+import { contextApi, type SOCCItem, type OpportunityScore, type StrategicTension, type Stakeholder } from "@/lib/api-client";
 import { Button } from "@/components/ui/Button";
 import { UnsavedChangesIndicator } from "@/components/ui/UnsavedChangesIndicator";
 import TimeHorizonView from "@/components/visualizations/TimeHorizonView";
@@ -10,18 +11,56 @@ import StrategicHealthDashboard from "@/components/visualizations/StrategicHealt
 import StrategicBalanceScorecard from "@/components/visualizations/StrategicBalanceScorecard";
 import CommitmentTraceabilityFlow from "@/components/visualizations/CommitmentTraceabilityFlow";
 import { ArrowLeft, Calendar, Activity, BarChart2, GitBranch, Target, Users } from "lucide-react";
-import { useState } from "react";
 
 export default function VisualizationsPage() {
   const router = useRouter();
-  const { pyramid } = usePyramidStore();
+  const { pyramid, sessionId } = usePyramidStore();
   const [activeTab, setActiveTab] = useState<"context" | "opportunities" | "horizon" | "health" | "balance" | "traceability">("context");
+
+  // Step 1 context data
+  const [soccItems, setSoccItems] = useState<SOCCItem[]>([]);
+  const [opportunityScores, setOpportunityScores] = useState<Record<string, OpportunityScore>>({});
+  const [tensions, setTensions] = useState<StrategicTension[]>([]);
+  const [stakeholders, setStakeholders] = useState<Stakeholder[]>([]);
 
   useEffect(() => {
     if (!pyramid) {
       router.push("/");
     }
   }, [pyramid, router]);
+
+  // Fetch Step 1 context data
+  useEffect(() => {
+    const fetchContextData = async () => {
+      if (!sessionId) return;
+
+      try {
+        // Fetch SOCC analysis
+        const socc = await contextApi.getSOCCAnalysis(sessionId);
+        setSoccItems(socc.items || []);
+
+        // Fetch opportunity scoring
+        const scoring = await contextApi.getOpportunityScoring(sessionId);
+        const scoresMap: Record<string, OpportunityScore> = {};
+        (scoring.scores || []).forEach((score: OpportunityScore) => {
+          scoresMap[score.opportunity_item_id] = score;
+        });
+        setOpportunityScores(scoresMap);
+
+        // Fetch strategic tensions
+        const tensionsData = await contextApi.getStrategicTensions(sessionId);
+        setTensions(tensionsData.tensions || []);
+
+        // Fetch stakeholders
+        const stakeholdersData = await contextApi.getStakeholders(sessionId);
+        setStakeholders(stakeholdersData.stakeholders || []);
+      } catch (error) {
+        console.error("Failed to fetch context data:", error);
+      }
+    };
+
+    fetchContextData();
+  }, [sessionId]);
 
   if (!pyramid) {
     return null;
@@ -142,25 +181,25 @@ export default function VisualizationsPage() {
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                       <div className="text-sm font-medium text-green-700 mb-1">Strengths</div>
                       <div className="text-2xl font-bold text-green-900">
-                        {pyramid.context?.socc_analysis?.items?.filter((i: any) => i.quadrant === "strength").length || 0}
+                        {soccItems.filter((i) => i.quadrant === "strength").length}
                       </div>
                     </div>
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <div className="text-sm font-medium text-blue-700 mb-1">Opportunities</div>
                       <div className="text-2xl font-bold text-blue-900">
-                        {pyramid.context?.socc_analysis?.items?.filter((i: any) => i.quadrant === "opportunity").length || 0}
+                        {soccItems.filter((i) => i.quadrant === "opportunity").length}
                       </div>
                     </div>
                     <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                       <div className="text-sm font-medium text-orange-700 mb-1">Considerations</div>
                       <div className="text-2xl font-bold text-orange-900">
-                        {pyramid.context?.socc_analysis?.items?.filter((i: any) => i.quadrant === "consideration").length || 0}
+                        {soccItems.filter((i) => i.quadrant === "consideration").length}
                       </div>
                     </div>
                     <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                       <div className="text-sm font-medium text-red-700 mb-1">Constraints</div>
                       <div className="text-2xl font-bold text-red-900">
-                        {pyramid.context?.socc_analysis?.items?.filter((i: any) => i.quadrant === "constraint").length || 0}
+                        {soccItems.filter((i) => i.quadrant === "constraint").length}
                       </div>
                     </div>
                   </div>
@@ -171,11 +210,11 @@ export default function VisualizationsPage() {
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">Strategic Tensions</h3>
                   <div className="bg-gray-50 rounded-lg p-4">
                     <div className="text-sm text-gray-600 mb-2">
-                      Total Tensions Identified: <span className="font-semibold text-gray-900">{pyramid.context?.strategic_tensions?.length || 0}</span>
+                      Total Tensions Identified: <span className="font-semibold text-gray-900">{tensions.length}</span>
                     </div>
-                    {pyramid.context?.strategic_tensions && pyramid.context.strategic_tensions.length > 0 ? (
+                    {tensions.length > 0 ? (
                       <div className="space-y-2 mt-4">
-                        {pyramid.context.strategic_tensions.map((tension: any) => (
+                        {tensions.map((tension) => (
                           <div key={tension.id} className="bg-white border border-gray-200 rounded-lg p-3">
                             <div className="font-medium text-gray-900">{tension.name}</div>
                             <div className="text-sm text-gray-600 mt-1">
@@ -202,28 +241,28 @@ export default function VisualizationsPage() {
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                       <div className="text-sm font-medium text-green-700 mb-1">Key Players</div>
                       <div className="text-2xl font-bold text-green-900">
-                        {pyramid.context?.stakeholders?.filter((s: any) => s.interest_level === "high" && s.influence_level === "high").length || 0}
+                        {stakeholders.filter((s) => s.interest_level === "high" && s.influence_level === "high").length}
                       </div>
                       <div className="text-xs text-green-600 mt-1">High Interest + High Influence</div>
                     </div>
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <div className="text-sm font-medium text-blue-700 mb-1">Keep Satisfied</div>
                       <div className="text-2xl font-bold text-blue-900">
-                        {pyramid.context?.stakeholders?.filter((s: any) => s.interest_level === "low" && s.influence_level === "high").length || 0}
+                        {stakeholders.filter((s) => s.interest_level === "low" && s.influence_level === "high").length}
                       </div>
                       <div className="text-xs text-blue-600 mt-1">Low Interest + High Influence</div>
                     </div>
                     <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                       <div className="text-sm font-medium text-orange-700 mb-1">Keep Informed</div>
                       <div className="text-2xl font-bold text-orange-900">
-                        {pyramid.context?.stakeholders?.filter((s: any) => s.interest_level === "high" && s.influence_level === "low").length || 0}
+                        {stakeholders.filter((s) => s.interest_level === "high" && s.influence_level === "low").length}
                       </div>
                       <div className="text-xs text-orange-600 mt-1">High Interest + Low Influence</div>
                     </div>
                     <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                       <div className="text-sm font-medium text-gray-700 mb-1">Monitor</div>
                       <div className="text-2xl font-bold text-gray-900">
-                        {pyramid.context?.stakeholders?.filter((s: any) => s.interest_level === "low" && s.influence_level === "low").length || 0}
+                        {stakeholders.filter((s) => s.interest_level === "low" && s.influence_level === "low").length}
                       </div>
                       <div className="text-xs text-gray-600 mt-1">Low Interest + Low Influence</div>
                     </div>
@@ -247,11 +286,11 @@ export default function VisualizationsPage() {
                 </p>
               </div>
 
-              {pyramid.context?.opportunity_scores && Object.keys(pyramid.context.opportunity_scores).length > 0 ? (
+              {Object.keys(opportunityScores).length > 0 ? (
                 <div className="space-y-4">
-                  {Object.entries(pyramid.context.opportunity_scores || {})
-                    .map(([opportunityId, score]: [string, any]) => {
-                      const opportunity = pyramid.context?.socc_analysis?.items?.find((i: any) => i.id === opportunityId);
+                  {Object.entries(opportunityScores)
+                    .map(([opportunityId, score]) => {
+                      const opportunity = soccItems.find((i) => i.id === opportunityId);
                       const calculatedScore = (score.strength_match * 2) - score.consideration_risk - score.constraint_impact;
                       const viability = calculatedScore >= 7 ? "High" : calculatedScore >= 4 ? "Moderate" : calculatedScore >= 1 ? "Marginal" : "Low";
                       const viabilityColor = calculatedScore >= 7 ? "green" : calculatedScore >= 4 ? "blue" : calculatedScore >= 1 ? "orange" : "red";
