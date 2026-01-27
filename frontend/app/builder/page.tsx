@@ -25,6 +25,7 @@ import TierHeader from "@/components/ui/TierHeader";
 import TierCard from "@/components/ui/TierCard";
 import PyramidVisualization from "@/components/visualizations/PyramidVisualization";
 import ExecutionReadinessChecklist from "@/components/visualizations/ExecutionReadinessChecklist";
+import { StepNavigation } from "@/components/ui/StepNavigation";
 import { AICoachSidebar } from "@/components/AICoachSidebar";
 import { useAIFieldSuggestion } from "@/hooks/useAIFieldSuggestion";
 import { AIFieldSuggestion, AIFieldSuggestionIndicator } from "@/components/AIFieldSuggestion";
@@ -1069,47 +1070,26 @@ export default function BuilderPage() {
 
       {/* Main Content Area - Side by Side */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar - Fixed Pyramid */}
+        {/* Left Sidebar - Step-based Navigation */}
         <div className="w-96 bg-gradient-to-b from-gray-50 to-white border-r border-gray-200 overflow-y-auto">
           <div className="p-4 space-y-4">
             {/* Unsaved Changes Indicator */}
             <UnsavedChangesIndicator variant="inline" />
 
-            {/* Context Section */}
+            {/* Step Navigation */}
             <div>
-              <h2 className="text-lg font-bold text-gray-800 mb-2">Context Layer</h2>
-              <p className="text-xs text-gray-600 mb-3">Build your strategic foundation</p>
-              <button
-                onClick={() => setActiveTier('context')}
-                className={`w-full text-left px-4 py-3 rounded-lg border-2 transition-all ${
-                  activeTier === 'context'
-                    ? 'border-purple-500 bg-purple-50 shadow-md'
-                    : 'border-gray-200 hover:border-purple-300 hover:bg-purple-50'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${
-                    activeTier === 'context' ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-600'
-                  }`}>
-                    <Lightbulb className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-semibold text-gray-900">SOCC Analysis</div>
-                    <div className="text-xs text-gray-600">Strengths, Opportunities, Considerations, Constraints</div>
-                  </div>
-                </div>
-              </button>
-            </div>
-
-            {/* Pyramid Section */}
-            <div>
-              <h2 className="text-lg font-bold text-gray-800 mb-2">Strategic Pyramid</h2>
-              <p className="text-xs text-gray-600 mb-4">Click any tier to view and edit</p>
-              <PyramidVisualization
+              <h2 className="text-lg font-bold text-gray-800 mb-2">Strategy Builder</h2>
+              <p className="text-xs text-gray-600 mb-4">Complete each step to build your strategy</p>
+              <StepNavigation
                 pyramid={pyramid}
-                onTierClick={handleTierClick}
                 activeTier={activeTier}
-                compact={true}
+                activeContextTab={activeContextTab}
+                onNavigate={(tier, contextTab) => {
+                  setActiveTier(tier);
+                  if (contextTab) {
+                    setActiveContextTab(contextTab as any);
+                  }
+                }}
               />
             </div>
 
