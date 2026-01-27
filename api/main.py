@@ -17,10 +17,10 @@ app = FastAPI(
     version="1.0.4",  # Fixed export parameter mismatches
 )
 
-# Configure CORS for Next.js development
+# Configure CORS for Next.js development and production
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"https://.*\.vercel\.app",  # All Vercel deployments
+    allow_origin_regex=r"^https://.*\.vercel\.app$",  # All Vercel deployments (explicit full match)
     allow_origins=[
         "http://localhost:3000",  # Next.js dev server
         "http://localhost:3001",
@@ -29,6 +29,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],  # Ensure all headers are exposed
 )
 
 # Include routers
