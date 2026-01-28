@@ -95,7 +95,7 @@ class AIValidator:
 
         sections = []
 
-        # SOCC Analysis
+        # SOCC Analysis - include description and impact level for richer context
         socc_items = self.context_data.get("socc_items", [])
         if socc_items:
             strengths = [item for item in socc_items if item.get("quadrant") == "strength"]
@@ -103,55 +103,97 @@ class AIValidator:
             considerations = [item for item in socc_items if item.get("quadrant") == "consideration"]
             constraints = [item for item in socc_items if item.get("quadrant") == "constraint"]
 
+            def format_socc_item(item):
+                """Format a single SOCC item with title, description, and impact."""
+                title = item.get('title', '')
+                desc = item.get('description', '')
+                impact = item.get('impact_level', '')
+                result = f"  - {title}"
+                if impact:
+                    result += f" [{impact} impact]"
+                if desc:
+                    result += f": {desc[:100]}"
+                return result
+
             socc_text = "CONTEXT ANALYSIS (SOCC):\n"
             if strengths:
                 socc_text += f"\nStrengths ({len(strengths)}):\n"
-                socc_text += "\n".join([f"  - {s.get('title', '')}" for s in strengths[:5]])
+                socc_text += "\n".join([format_socc_item(s) for s in strengths[:5]])
             if opportunities:
                 socc_text += f"\n\nOpportunities ({len(opportunities)}):\n"
-                socc_text += "\n".join([f"  - {o.get('title', '')}" for o in opportunities[:5]])
+                socc_text += "\n".join([format_socc_item(o) for o in opportunities[:5]])
             if considerations:
                 socc_text += f"\n\nConsiderations ({len(considerations)}):\n"
-                socc_text += "\n".join([f"  - {c.get('title', '')}" for c in considerations[:5]])
+                socc_text += "\n".join([format_socc_item(c) for c in considerations[:5]])
             if constraints:
                 socc_text += f"\n\nConstraints ({len(constraints)}):\n"
-                socc_text += "\n".join([f"  - {c.get('title', '')}" for c in constraints[:5]])
+                socc_text += "\n".join([format_socc_item(c) for c in constraints[:5]])
 
             sections.append(socc_text)
 
-        # Scored Opportunities
+        # Scored Opportunities - include full scoring details
         scores = self.context_data.get("opportunity_scores", [])
         if scores:
             score_text = f"\nOPPORTUNITY SCORING ({len(scores)} scored):\n"
-            for score in scores[:3]:
+            for score in scores[:5]:
                 opp_title = score.get("opportunity_title", "Unknown")
                 viability = score.get("viability_level", "unknown")
+                rationale = score.get("rationale", "")
+                strength_match = score.get("strength_match", "")
+                consideration_risk = score.get("consideration_risk", "")
+                constraint_impact = score.get("constraint_impact", "")
+
                 score_text += f"  - {opp_title}: {viability} viability\n"
+                if strength_match:
+                    score_text += f"      Strength alignment: {strength_match}\n"
+                if consideration_risk:
+                    score_text += f"      Consideration risk: {consideration_risk}\n"
+                if constraint_impact:
+                    score_text += f"      Constraint impact: {constraint_impact}\n"
+                if rationale:
+                    score_text += f"      Rationale: {rationale[:100]}\n"
             sections.append(score_text)
 
-        # Strategic Tensions
+        # Strategic Tensions - include rationale
         tensions = self.context_data.get("tensions", [])
         if tensions:
             tension_text = f"\nSTRATEGIC TENSIONS ({len(tensions)} identified):\n"
-            for tension in tensions[:3]:
+            for tension in tensions:
                 left = tension.get("left_pole", "")
                 right = tension.get("right_pole", "")
                 current = tension.get("current_position", 50)
                 target = tension.get("target_position", 50)
+                rationale = tension.get("rationale", "")
                 shift = target - current
                 direction = "toward " + right if shift > 0 else "toward " + left
                 tension_text += f"  - {left} vs. {right}: Shift {abs(shift)} points {direction}\n"
+                if rationale:
+                    tension_text += f"      Rationale: {rationale[:100]}\n"
             sections.append(tension_text)
 
-        # Stakeholders
+        # Stakeholders - include alignment and key needs
         stakeholders = self.context_data.get("stakeholders", [])
         if stakeholders:
             stakeholder_text = f"\nKEY STAKEHOLDERS ({len(stakeholders)} mapped):\n"
-            high_influence = [s for s in stakeholders if s.get("influence_level") == "high"]
-            for s in high_influence[:5]:
+            # Show all stakeholders, prioritize high influence
+            sorted_stakeholders = sorted(
+                stakeholders,
+                key=lambda s: (s.get("influence_level") == "high", s.get("interest_level") == "high"),
+                reverse=True
+            )
+            for s in sorted_stakeholders[:7]:
                 name = s.get("name", "")
                 interest = s.get("interest_level", "")
-                stakeholder_text += f"  - {name} (High influence, {interest} interest)\n"
+                influence = s.get("influence_level", "")
+                alignment = s.get("alignment", "")
+                key_needs = s.get("key_needs", "")
+
+                stakeholder_text += f"  - {name} ({influence} influence, {interest} interest"
+                if alignment:
+                    stakeholder_text += f", {alignment} alignment"
+                stakeholder_text += ")\n"
+                if key_needs:
+                    stakeholder_text += f"      Key needs: {key_needs[:100]}\n"
             sections.append(stakeholder_text)
 
         return "\n".join(sections) if sections else ""
@@ -174,18 +216,75 @@ class AIValidator:
 
         return result
 
+    def _format_pyramid_tiers(self) -> str:
+        """
+        Format all pyramid tiers for AI prompts.
+        Includes: Vision (with statement types), Values, Behaviours, Strategic Intents, Enablers.
+        """
+        sections = []
+
+        # Tier 1: Vision/Mission/Belief/Passion (with type labels)
+        if self.pyramid.vision and self.pyramid.vision.statements:
+            vision_section = "PURPOSE STATEMENTS (Tier 1):\n"
+            for stmt in self.pyramid.vision.get_statements_ordered():
+                stmt_type = stmt.statement_type.value.upper()
+                vision_section += f"  [{stmt_type}]: {stmt.statement}\n"
+            vision_section += "\nNOTE: Each statement above is labeled with its type (VISION, MISSION, BELIEF, PASSION, PURPOSE, or ASPIRATION). "
+            vision_section += "Evaluate each statement against the criteria appropriate for its specific type:\n"
+            vision_section += "  - VISION: Future-focused, paints a picture of what could be\n"
+            vision_section += "  - MISSION: Purpose-focused, explains why the organization exists\n"
+            vision_section += "  - BELIEF: Conviction-focused, articulates core beliefs that guide decisions\n"
+            vision_section += "  - PASSION: Energy-focused, expresses what drives and motivates\n"
+            vision_section += "  - PURPOSE: Meaning-focused, defines the deeper reason for existence\n"
+            sections.append(vision_section)
+
+        # Tier 2: Values
+        if self.pyramid.values:
+            values_section = f"\nVALUES (Tier 2) - {len(self.pyramid.values)} core values:\n"
+            for value in self.pyramid.values:
+                desc = f": {value.description}" if value.description else ""
+                values_section += f"  - {value.name}{desc}\n"
+            sections.append(values_section)
+
+        # Tier 3: Behaviours
+        if self.pyramid.behaviours:
+            behaviours_section = f"\nBEHAVIOURS (Tier 3) - {len(self.pyramid.behaviours)} observable behaviours:\n"
+            for behaviour in self.pyramid.behaviours:
+                behaviours_section += f"  - {behaviour.statement}\n"
+            sections.append(behaviours_section)
+
+        # Tier 4: Strategic Intents
+        if self.pyramid.strategic_intents:
+            intents_section = f"\nSTRATEGIC INTENTS (Tier 4) - {len(self.pyramid.strategic_intents)} intents:\n"
+            for intent in self.pyramid.strategic_intents:
+                driver_name = self._get_driver_name(str(intent.driver_id))
+                intents_section += f"  - {intent.statement} (Driver: {driver_name})\n"
+            sections.append(intents_section)
+
+        # Tier 6: Enablers
+        if self.pyramid.enablers:
+            enablers_section = f"\nENABLERS (Tier 6) - {len(self.pyramid.enablers)} enablers:\n"
+            for enabler in self.pyramid.enablers:
+                enabler_type = f" [{enabler.enabler_type}]" if enabler.enabler_type else ""
+                enablers_section += f"  - {enabler.name}{enabler_type}: {enabler.description[:100]}\n"
+            sections.append(enablers_section)
+
+        return "\n".join(sections) if sections else ""
+
     def _check_strategic_coherence(self, result: ValidationResult):
         """
         Check 9: Strategic Coherence
         Analyzes whether vision aligns with drivers and commitments,
         and whether the strategy is grounded in context.
         """
-        vision_text = ""
-        if self.pyramid.vision and self.pyramid.vision.statements:
-            vision_text = " ".join([s.statement for s in self.pyramid.vision.statements])
+        # Check for any vision statements
+        has_vision = self.pyramid.vision and self.pyramid.vision.statements
 
-        if not vision_text or not self.pyramid.strategic_drivers:
+        if not has_vision or not self.pyramid.strategic_drivers:
             return  # Skip if insufficient data
+
+        # Get formatted pyramid tiers (includes vision with statement types)
+        pyramid_tiers_text = self._format_pyramid_tiers()
 
         drivers_text = "\n".join([
             f"- {d.name}: {d.description}"
@@ -203,25 +302,28 @@ class AIValidator:
 
         prompt = f"""You are a strategic planning expert reviewing a strategic pyramid for coherence.
 
-Vision/Mission:
-{vision_text}
+{pyramid_tiers_text}
 
-Strategic Drivers:
+STRATEGIC DRIVERS (Tier 5):
 {drivers_text}
 
-Top Iconic Commitments:
+TOP ICONIC COMMITMENTS (Tier 7):
 {commitments_text}
 {context_section}
 
-Analyze whether the strategic drivers and commitments genuinely support the stated vision.
+IMPORTANT: When evaluating purpose statements, assess each statement against the criteria for its labeled type (VISION, MISSION, BELIEF, etc.). Do not evaluate a MISSION statement using VISION criteria, or vice versa.
+
+Analyze whether the strategic drivers and commitments genuinely support the stated purpose.
 {f"Also check whether the strategy is grounded in the context analysis (SOCC) provided above." if context_text else ""}
 
 Look for:
-1. Misalignment: Drivers or commitments that don't connect to the vision
-2. Missing coverage: Aspects of the vision not addressed by any driver
-3. Strong alignment: Where execution clearly supports vision
-{f"4. Context grounding: Are drivers and commitments leveraging identified strengths and opportunities?" if context_text else ""}
-{f"5. Tension awareness: Does the strategy acknowledge and navigate identified trade-offs?" if context_text else ""}
+1. Misalignment: Drivers or commitments that don't connect to the purpose statements
+2. Missing coverage: Aspects of the purpose not addressed by any driver
+3. Strong alignment: Where execution clearly supports the stated purpose
+4. Values-Behaviour alignment: Do behaviours demonstrate the stated values?
+5. Intent coherence: Do strategic intents logically connect drivers to commitments?
+{f"6. Context grounding: Are drivers and commitments leveraging identified strengths and opportunities?" if context_text else ""}
+{f"7. Tension awareness: Does the strategy acknowledge and navigate identified trade-offs?" if context_text else ""}
 
 Respond in JSON format:
 {{
@@ -522,14 +624,22 @@ Respond in JSON format:
         Returns:
             Dictionary with narrative review sections
         """
-        vision_text = ""
-        if self.pyramid.vision and self.pyramid.vision.statements:
-            vision_text = " ".join([s.statement for s in self.pyramid.vision.statements])
+        # Get all pyramid tiers formatted with statement types
+        pyramid_tiers_text = self._format_pyramid_tiers()
 
         drivers_text = "\n".join([
             f"- {d.name}: {d.description[:100]}"
             for d in self.pyramid.strategic_drivers
         ])
+
+        # Include all strategic intents with driver mapping
+        intents_text = ""
+        if self.pyramid.strategic_intents:
+            intents_text = "\nStrategic Intents ({}):\n".format(len(self.pyramid.strategic_intents))
+            intents_text += "\n".join([
+                f"- {i.statement} (Driver: {self._get_driver_name(str(i.driver_id))})"
+                for i in self.pyramid.strategic_intents
+            ])
 
         commitments_text = "\n".join([
             f"- {c.name} (Primary: {self._get_driver_name(c.primary_driver_id)}, Horizon: {c.horizon.value})"
@@ -540,27 +650,33 @@ Respond in JSON format:
         context_text = self._format_context_data()
         context_section = f"\n{context_text}" if context_text else ""
         context_guidance = """
-5. CONTEXT ALIGNMENT: How well does the strategy leverage the identified context (strengths, opportunities) and navigate challenges (considerations, constraints, tensions)?""" if context_text else ""
+6. CONTEXT ALIGNMENT: How well does the strategy leverage the identified context (strengths, opportunities) and navigate challenges (considerations, constraints, tensions)?""" if context_text else ""
+        context_alignment_field = ',\n  "context_alignment": "Assessment of how well strategy leverages context"' if context_text else ""
 
         prompt = f"""You are a seasoned strategy consultant reviewing a strategic pyramid.
 
 Provide a comprehensive but concise narrative review covering:
 {context_section}
 
-PYRAMID OVERVIEW:
-Vision: {vision_text}
+COMPLETE PYRAMID OVERVIEW:
 
-Strategic Drivers ({len(self.pyramid.strategic_drivers)}):
+{pyramid_tiers_text}
+
+STRATEGIC DRIVERS (Tier 5) - {len(self.pyramid.strategic_drivers)} drivers:
 {drivers_text}
+{intents_text}
 
-Iconic Commitments ({len(self.pyramid.iconic_commitments)}):
+ICONIC COMMITMENTS (Tier 7) - {len(self.pyramid.iconic_commitments)} commitments:
 {commitments_text}
+
+IMPORTANT: When evaluating purpose statements (Tier 1), assess each statement against the criteria for its labeled type. Do not evaluate a MISSION statement using VISION criteria, or vice versa.
 
 Please provide:
 1. OVERALL IMPRESSION (2-3 sentences)
 2. KEY STRENGTHS (2-3 bullet points)
 3. KEY CONCERNS (2-3 bullet points)
-4. TOP 3 RECOMMENDATIONS (prioritized){context_guidance}
+4. TOP 3 RECOMMENDATIONS (prioritized)
+5. VALUES & BEHAVIOURS ASSESSMENT: Do the behaviours authentically demonstrate the stated values?{context_guidance}
 
 Be direct and actionable. Reference the Strategic Pyramid methodology: force hard decisions, elevate language, ensure traceability.
 {f"Consider how well the strategy is grounded in the context analysis provided." if context_text else ""}
@@ -574,7 +690,8 @@ Respond in JSON format:
     {{"priority": 1, "title": "Recommendation 1", "description": "Why and how"}},
     {{"priority": 2, "title": "Recommendation 2", "description": "Why and how"}},
     {{"priority": 3, "title": "Recommendation 3", "description": "Why and how"}}
-  ]{f',\n  "context_alignment": "Assessment of how well strategy leverages context"' if context_text else ""}
+  ],
+  "values_behaviours_assessment": "Assessment of whether behaviours authentically demonstrate stated values"{context_alignment_field}
 }}"""
 
         try:
