@@ -29,6 +29,7 @@ import ExecutionReadinessChecklist from "@/components/visualizations/ExecutionRe
 import { StepNavigation } from "@/components/ui/StepNavigation";
 import { AICoachSidebar } from "@/components/AICoachSidebar";
 import HelpHub, { HelpButton } from "@/components/HelpHub";
+import TierGuide from "@/components/TierGuide";
 import { useAIFieldSuggestion } from "@/hooks/useAIFieldSuggestion";
 import { AIFieldSuggestion, AIFieldSuggestionIndicator } from "@/components/AIFieldSuggestion";
 import { AIDraftGenerator } from "@/components/AIDraftGenerator";
@@ -97,6 +98,7 @@ export default function BuilderPage() {
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [showHomeConfirmation, setShowHomeConfirmation] = useState(false);
   const [showHelpHub, setShowHelpHub] = useState(false);
+  const [openTierGuide, setOpenTierGuide] = useState<string | null>(null);
 
   // Form states
   const [visionStatementType, setVisionStatementType] = useState<StatementType>(StatementType.VISION);
@@ -1305,6 +1307,7 @@ export default function BuilderPage() {
                   variant="blue"
                   onAddNew={() => openAddModal('vision')}
                   onBack={() => setActiveTier(undefined)}
+                  onOpenGuide={() => setOpenTierGuide('vision')}
                 />
 
                 {/* Thread Labels Toggle */}
@@ -1374,6 +1377,7 @@ export default function BuilderPage() {
                   variant="blue"
                   onAddNew={() => openAddModal('value')}
                   onBack={() => setActiveTier(undefined)}
+                  onOpenGuide={() => setOpenTierGuide('values')}
                 />
 
                 {/* Thread Labels Toggle */}
@@ -1456,6 +1460,7 @@ export default function BuilderPage() {
                   variant="green"
                   onAddNew={pyramid.values.length > 0 ? () => openAddModal('behaviour') : undefined}
                   onBack={() => setActiveTier(undefined)}
+                  onOpenGuide={() => setOpenTierGuide('behaviours')}
                 />
 
                 {/* Thread Labels Toggle */}
@@ -1625,6 +1630,7 @@ export default function BuilderPage() {
                   variant="purple"
                   onAddNew={() => openAddModal('driver')}
                   onBack={() => setActiveTier(undefined)}
+                  onOpenGuide={() => setOpenTierGuide('drivers')}
                 />
 
                 {/* Thread Labels Toggle */}
@@ -1724,6 +1730,7 @@ export default function BuilderPage() {
                   variant="purple"
                   onAddNew={pyramid.strategic_drivers.length > 0 ? () => openAddModal('intent') : undefined}
                   onBack={() => setActiveTier(undefined)}
+                  onOpenGuide={() => setOpenTierGuide('intents')}
                 />
 
                 {/* Thread Labels Toggle */}
@@ -1904,6 +1911,7 @@ export default function BuilderPage() {
                   variant="purple"
                   onAddNew={() => openAddModal('enabler')}
                   onBack={() => setActiveTier(undefined)}
+                  onOpenGuide={() => setOpenTierGuide('enablers')}
                 />
 
                 {/* Thread Labels Toggle */}
@@ -2078,6 +2086,7 @@ export default function BuilderPage() {
                   variant="orange"
                   onAddNew={pyramid.strategic_drivers.length > 0 ? () => openAddModal('commitment') : undefined}
                   onBack={() => setActiveTier(undefined)}
+                  onOpenGuide={() => setOpenTierGuide('commitments')}
                 />
 
                 {pyramid.strategic_drivers.length > 0 ? (
@@ -2558,6 +2567,7 @@ export default function BuilderPage() {
                   variant="orange"
                   onAddNew={() => openAddModal('team_objective')}
                   onBack={() => setActiveTier(undefined)}
+                  onOpenGuide={() => setOpenTierGuide('team')}
                 />
 
                 {/* Thread Labels Toggle */}
@@ -2782,6 +2792,7 @@ export default function BuilderPage() {
                   variant="teal"
                   onAddNew={() => openAddModal('individual_objective')}
                   onBack={() => setActiveTier(undefined)}
+                  onOpenGuide={() => setOpenTierGuide('individual')}
                 />
 
                 {/* Thread Labels Toggle */}
@@ -4630,6 +4641,13 @@ export default function BuilderPage() {
         onOpenAICoach={() => {
           showToast('Click the sparkle button in the bottom-right corner to open the AI Coach!', 'info');
         }}
+      />
+
+      {/* Tier Methodology Guide Panel */}
+      <TierGuide
+        isOpen={openTierGuide !== null}
+        onClose={() => setOpenTierGuide(null)}
+        tierKey={openTierGuide || ''}
       />
     </div>
   );

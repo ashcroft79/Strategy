@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Plus, ChevronLeft } from 'lucide-react';
+import { Plus, ChevronLeft, BookOpen } from 'lucide-react';
 
 interface TierHeaderProps {
   tierName: string;
@@ -10,6 +10,7 @@ interface TierHeaderProps {
   variant?: 'blue' | 'green' | 'purple' | 'orange' | 'teal';
   onAddNew?: () => void;
   onBack?: () => void;
+  onOpenGuide?: () => void;
 }
 
 export default function TierHeader({
@@ -19,6 +20,7 @@ export default function TierHeader({
   variant = 'blue',
   onAddNew,
   onBack,
+  onOpenGuide,
 }: TierHeaderProps) {
   const variantStyles = {
     blue: {
@@ -96,16 +98,31 @@ export default function TierHeader({
             <p className="text-white/90 text-sm max-w-2xl">{tierDescription}</p>
           </div>
 
-          {/* Add button */}
-          {onAddNew && (
-            <button
-              onClick={onAddNew}
-              className="flex items-center gap-2 px-4 py-3 bg-white text-gray-900 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
-            >
-              <Plus className="w-5 h-5" />
-              <span>Add New</span>
-            </button>
-          )}
+          {/* Action buttons */}
+          <div className="flex items-center gap-3">
+            {/* Guide button */}
+            {onOpenGuide && (
+              <button
+                onClick={onOpenGuide}
+                className="flex items-center gap-2 px-3 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg font-medium transition-colors"
+                title="Open methodology guide"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span className="text-sm">Guide</span>
+              </button>
+            )}
+
+            {/* Add button */}
+            {onAddNew && (
+              <button
+                onClick={onAddNew}
+                className="flex items-center gap-2 px-4 py-3 bg-white text-gray-900 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
+              >
+                <Plus className="w-5 h-5" />
+                <span>Add New</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
