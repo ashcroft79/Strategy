@@ -32,6 +32,7 @@ import HelpHub, { HelpButton } from "@/components/HelpHub";
 import TierGuide from "@/components/TierGuide";
 import LearningCenter from "@/components/LearningCenter";
 import ExampleGallery from "@/components/ExampleGallery";
+import QuickTour from "@/components/QuickTour";
 import { useAIFieldSuggestion } from "@/hooks/useAIFieldSuggestion";
 import { AIFieldSuggestion, AIFieldSuggestionIndicator } from "@/components/AIFieldSuggestion";
 import { AIDraftGenerator } from "@/components/AIDraftGenerator";
@@ -102,6 +103,7 @@ export default function BuilderPage() {
   const [showHelpHub, setShowHelpHub] = useState(false);
   const [showLearningCenter, setShowLearningCenter] = useState(false);
   const [showExampleGallery, setShowExampleGallery] = useState(false);
+  const [showQuickTour, setShowQuickTour] = useState(false);
   const [openTierGuide, setOpenTierGuide] = useState<string | null>(null);
 
   // Form states
@@ -4634,7 +4636,8 @@ export default function BuilderPage() {
         isOpen={showHelpHub}
         onClose={() => setShowHelpHub(false)}
         onStartTour={() => {
-          showToast('Quick Tour coming soon! For now, explore using the step navigation on the left.', 'info');
+          setShowHelpHub(false);
+          setShowQuickTour(true);
         }}
         onOpenLearningCenter={() => {
           setShowHelpHub(false);
@@ -4666,6 +4669,12 @@ export default function BuilderPage() {
       <ExampleGallery
         isOpen={showExampleGallery}
         onClose={() => setShowExampleGallery(false)}
+      />
+
+      {/* Quick Tour */}
+      <QuickTour
+        isOpen={showQuickTour}
+        onClose={() => setShowQuickTour(false)}
       />
     </div>
   );

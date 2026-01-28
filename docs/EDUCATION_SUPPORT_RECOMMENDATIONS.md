@@ -639,25 +639,27 @@ This section tracks the implementation status of recommendations.
 | **AI Coach Quick Actions** | 3fb24b7 | "What's next?" and "Review" buttons in AI Coach sidebar. Analyzes pyramid state and provides contextual guidance. |
 | **Learning Center** | 9dafc9e | Full methodology learning center with 3 sections (Overview, Step 1, Step 2), sidebar navigation, 17 topics covering why strategies fail, SOCC framework, opportunity scoring, 9-tier architecture, red thread methodology, and common pitfalls. Accessible from HelpHub. |
 | **Example Gallery** | 301f2c4 | 4 complete example pyramids (TechStart SaaS, Regional Health, Urban Education, GreenFuture Manufacturing) with full context, vision, values, drivers, intents, commitments, and key learnings. Each element includes rationale explaining why it's effective. |
+| **Quick Tour** | TBD | Interactive 8-step spotlight tour highlighting key features: step navigation, pyramid builder, tier guides, tooltips, AI Coach, and Help Hub. Keyboard navigation (arrows, Escape), progress dots, smooth transitions. |
 
 ### In Progress
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Quick Tour | Planned | Interactive spotlight tour of key features |
 | Progress Tracking | Planned | Visual journey progress and quality indicators |
 
 ### Implementation Files
 
 ```
 frontend/components/
-├── AICoachSidebar.tsx       # Updated with quick action buttons
+├── AICoachSidebar.tsx       # Updated with quick actions and data-tour
 ├── ExampleGallery.tsx       # Example pyramids with rationale
-├── HelpHub.tsx              # Getting Started hub modal
+├── HelpHub.tsx              # Getting Started hub modal with data-tour
 ├── LearningCenter.tsx       # Full methodology learning center
+├── QuickTour.tsx            # Interactive spotlight tour
 ├── TierGuide.tsx            # Tier methodology slide-out panels
 └── ui/
-    └── TierHeader.tsx       # Updated with onOpenGuide prop
+    ├── StepNavigation.tsx   # Updated with data-tour
+    └── TierHeader.tsx       # Updated with onOpenGuide and data-tour
 ```
 
 ---

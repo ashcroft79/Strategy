@@ -226,6 +226,7 @@ Use ✓ for strengths and ⚠ for suggestions. Keep it brief and actionable.`;
         onClick={() => setIsOpen(true)}
         className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all z-50"
         aria-label="Open AI Coach"
+        data-tour="ai-coach"
       >
         <Sparkles className="w-6 h-6" />
       </button>

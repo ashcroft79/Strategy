@@ -211,7 +211,7 @@ export function StepNavigation({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" data-tour="step-navigation">
       {steps.map((step) => {
         const isExpanded = expandedSteps.includes(step.number);
         const colors = getStepColorClasses(step.number);

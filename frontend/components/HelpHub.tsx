@@ -188,6 +188,7 @@ export function HelpButton({ onClick }: { onClick: () => void }) {
       onClick={onClick}
       className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
       title="Getting Started & Help"
+      data-tour="help-hub"
     >
       <HelpCircle className="w-5 h-5" />
       <span className="text-sm font-medium">Help</span>

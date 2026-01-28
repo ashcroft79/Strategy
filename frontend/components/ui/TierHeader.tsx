@@ -106,6 +106,7 @@ export default function TierHeader({
                 onClick={onOpenGuide}
                 className="flex items-center gap-2 px-3 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg font-medium transition-colors"
                 title="Open methodology guide"
+                data-tour="tier-guide"
               >
                 <BookOpen className="w-4 h-4" />
                 <span className="text-sm">Guide</span>
