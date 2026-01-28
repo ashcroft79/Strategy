@@ -640,7 +640,7 @@ This section tracks the implementation status of recommendations.
 | **Learning Center** | 9dafc9e | Full methodology learning center with 3 sections (Overview, Step 1, Step 2), sidebar navigation, 17 topics covering why strategies fail, SOCC framework, opportunity scoring, 9-tier architecture, red thread methodology, and common pitfalls. Accessible from HelpHub. |
 | **Example Gallery** | 301f2c4 | 4 complete example pyramids (TechStart SaaS, Regional Health, Urban Education, GreenFuture Manufacturing) with full context, vision, values, drivers, intents, commitments, and key learnings. Each element includes rationale explaining why it's effective. |
 | **Quick Tour** | f770cdc | Interactive 8-step spotlight tour highlighting key features: step navigation, pyramid builder, tier guides, tooltips, AI Coach, and Help Hub. Keyboard navigation (arrows, Escape), progress dots, smooth transitions. |
-| **Progress Tracker** | TBD | Visual progress dashboard showing: overall completion percentage, context foundation (SOCC counts), tier completion status with recommendations, horizon balance chart with health warnings, and contextual tips. |
+| **Progress Tracker** | d580d4a | Visual progress dashboard showing: overall completion percentage, context foundation (SOCC counts), tier completion status with recommendations, horizon balance chart with health warnings, and contextual tips. |
 
 ### Implementation Files
 
