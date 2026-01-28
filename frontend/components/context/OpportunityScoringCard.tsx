@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { type SortedOpportunity, type OpportunityScore } from "@/lib/api-client";
+import { type SortedOpportunity, type OpportunityScore, type SOCCItem } from "@/lib/api-client";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Slider } from "@/components/ui/slider";
@@ -12,11 +12,12 @@ import { ChevronDown, ChevronUp, Save, X, TrendingUp, AlertTriangle, Lock } from
 interface OpportunityScoringCardProps {
   opportunity: SortedOpportunity;
   rank: number;
+  soccItems: SOCCItem[];
   onScore: (score: Partial<OpportunityScore>) => void;
   onDeleteScore: () => void;
 }
 
-export function OpportunityScoringCard({ opportunity, rank, onScore, onDeleteScore }: OpportunityScoringCardProps) {
+export function OpportunityScoringCard({ opportunity, rank, soccItems, onScore, onDeleteScore }: OpportunityScoringCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -25,6 +26,14 @@ export function OpportunityScoringCard({ opportunity, rank, onScore, onDeleteSco
   const [considerationRisk, setConsiderationRisk] = useState(opportunity.score?.consideration_risk || 3);
   const [constraintImpact, setConstraintImpact] = useState(opportunity.score?.constraint_impact || 3);
   const [rationale, setRationale] = useState(opportunity.score?.rationale || "");
+  const [relatedStrengths, setRelatedStrengths] = useState<string[]>(opportunity.score?.related_strengths || []);
+  const [relatedConsiderations, setRelatedConsiderations] = useState<string[]>(opportunity.score?.related_considerations || []);
+  const [relatedConstraints, setRelatedConstraints] = useState<string[]>(opportunity.score?.related_constraints || []);
+
+  // Filter SOCC items by quadrant
+  const strengths = soccItems.filter(item => item.quadrant === 'strength');
+  const considerations = soccItems.filter(item => item.quadrant === 'consideration');
+  const constraints = soccItems.filter(item => item.quadrant === 'constraint');
 
   // Update local state when score changes from outside
   useEffect(() => {
@@ -33,6 +42,9 @@ export function OpportunityScoringCard({ opportunity, rank, onScore, onDeleteSco
       setConsiderationRisk(opportunity.score.consideration_risk);
       setConstraintImpact(opportunity.score.constraint_impact);
       setRationale(opportunity.score.rationale || "");
+      setRelatedStrengths(opportunity.score.related_strengths || []);
+      setRelatedConsiderations(opportunity.score.related_considerations || []);
+      setRelatedConstraints(opportunity.score.related_constraints || []);
     }
   }, [opportunity.score]);
 
@@ -79,6 +91,9 @@ export function OpportunityScoringCard({ opportunity, rank, onScore, onDeleteSco
       consideration_risk: considerationRisk,
       constraint_impact: constraintImpact,
       rationale: rationale || undefined,
+      related_strengths: relatedStrengths,
+      related_considerations: relatedConsiderations,
+      related_constraints: relatedConstraints,
     });
     setIsEditing(false);
     setIsExpanded(false);
@@ -90,6 +105,9 @@ export function OpportunityScoringCard({ opportunity, rank, onScore, onDeleteSco
       setConsiderationRisk(opportunity.score.consideration_risk);
       setConstraintImpact(opportunity.score.constraint_impact);
       setRationale(opportunity.score.rationale || "");
+      setRelatedStrengths(opportunity.score.related_strengths || []);
+      setRelatedConsiderations(opportunity.score.related_considerations || []);
+      setRelatedConstraints(opportunity.score.related_constraints || []);
     }
     setIsEditing(false);
     if (!opportunity.score) {
@@ -169,6 +187,57 @@ export function OpportunityScoringCard({ opportunity, rank, onScore, onDeleteSco
                 <div className="bg-gray-50 rounded-lg p-3">
                   <div className="text-xs text-gray-600 mb-1">Rationale</div>
                   <p className="text-sm text-gray-900">{rationale}</p>
+                </div>
+              )}
+
+              {/* Related Items Display */}
+              {(relatedStrengths.length > 0 || relatedConsiderations.length > 0 || relatedConstraints.length > 0) && (
+                <div className="space-y-3">
+                  {relatedStrengths.length > 0 && (
+                    <div>
+                      <div className="text-xs text-gray-600 mb-2">Related Strengths</div>
+                      <div className="flex flex-wrap gap-2">
+                        {relatedStrengths.map(id => {
+                          const item = strengths.find(s => s.id === id);
+                          return item ? (
+                            <Badge key={id} variant="secondary" className="bg-green-100 text-green-800">
+                              {item.title}
+                            </Badge>
+                          ) : null;
+                        })}
+                      </div>
+                    </div>
+                  )}
+                  {relatedConsiderations.length > 0 && (
+                    <div>
+                      <div className="text-xs text-gray-600 mb-2">Related Considerations</div>
+                      <div className="flex flex-wrap gap-2">
+                        {relatedConsiderations.map(id => {
+                          const item = considerations.find(c => c.id === id);
+                          return item ? (
+                            <Badge key={id} variant="secondary" className="bg-orange-100 text-orange-800">
+                              {item.title}
+                            </Badge>
+                          ) : null;
+                        })}
+                      </div>
+                    </div>
+                  )}
+                  {relatedConstraints.length > 0 && (
+                    <div>
+                      <div className="text-xs text-gray-600 mb-2">Related Constraints</div>
+                      <div className="flex flex-wrap gap-2">
+                        {relatedConstraints.map(id => {
+                          const item = constraints.find(c => c.id === id);
+                          return item ? (
+                            <Badge key={id} variant="secondary" className="bg-red-100 text-red-800">
+                              {item.title}
+                            </Badge>
+                          ) : null;
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -289,6 +358,108 @@ export function OpportunityScoringCard({ opportunity, rank, onScore, onDeleteSco
                   className="w-full"
                 />
               </div>
+
+              {/* Related Strengths Multi-Select */}
+              {strengths.length > 0 && (
+                <div>
+                  <label className="text-sm font-semibold text-gray-900 mb-2 block">
+                    Related Strengths (Optional)
+                  </label>
+                  <p className="text-xs text-gray-600 mb-2">Select which strengths this opportunity leverages</p>
+                  <div className="space-y-2 max-h-40 overflow-y-auto bg-gray-50 rounded-lg p-3 border border-gray-200">
+                    {strengths.map((strength) => (
+                      <label key={strength.id} className="flex items-start gap-2 cursor-pointer hover:bg-white p-2 rounded">
+                        <input
+                          type="checkbox"
+                          checked={relatedStrengths.includes(strength.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setRelatedStrengths([...relatedStrengths, strength.id]);
+                            } else {
+                              setRelatedStrengths(relatedStrengths.filter(id => id !== strength.id));
+                            }
+                          }}
+                          className="mt-0.5 flex-shrink-0"
+                        />
+                        <div className="flex-1">
+                          <span className="text-sm font-medium text-gray-900">{strength.title}</span>
+                          {strength.description && (
+                            <p className="text-xs text-gray-600">{strength.description}</p>
+                          )}
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Related Considerations Multi-Select */}
+              {considerations.length > 0 && (
+                <div>
+                  <label className="text-sm font-semibold text-gray-900 mb-2 block">
+                    Related Considerations (Optional)
+                  </label>
+                  <p className="text-xs text-gray-600 mb-2">Select which external factors could impact this opportunity</p>
+                  <div className="space-y-2 max-h-40 overflow-y-auto bg-gray-50 rounded-lg p-3 border border-gray-200">
+                    {considerations.map((consideration) => (
+                      <label key={consideration.id} className="flex items-start gap-2 cursor-pointer hover:bg-white p-2 rounded">
+                        <input
+                          type="checkbox"
+                          checked={relatedConsiderations.includes(consideration.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setRelatedConsiderations([...relatedConsiderations, consideration.id]);
+                            } else {
+                              setRelatedConsiderations(relatedConsiderations.filter(id => id !== consideration.id));
+                            }
+                          }}
+                          className="mt-0.5 flex-shrink-0"
+                        />
+                        <div className="flex-1">
+                          <span className="text-sm font-medium text-gray-900">{consideration.title}</span>
+                          {consideration.description && (
+                            <p className="text-xs text-gray-600">{consideration.description}</p>
+                          )}
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Related Constraints Multi-Select */}
+              {constraints.length > 0 && (
+                <div>
+                  <label className="text-sm font-semibold text-gray-900 mb-2 block">
+                    Related Constraints (Optional)
+                  </label>
+                  <p className="text-xs text-gray-600 mb-2">Select which internal constraints could limit this opportunity</p>
+                  <div className="space-y-2 max-h-40 overflow-y-auto bg-gray-50 rounded-lg p-3 border border-gray-200">
+                    {constraints.map((constraint) => (
+                      <label key={constraint.id} className="flex items-start gap-2 cursor-pointer hover:bg-white p-2 rounded">
+                        <input
+                          type="checkbox"
+                          checked={relatedConstraints.includes(constraint.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setRelatedConstraints([...relatedConstraints, constraint.id]);
+                            } else {
+                              setRelatedConstraints(relatedConstraints.filter(id => id !== constraint.id));
+                            }
+                          }}
+                          className="mt-0.5 flex-shrink-0"
+                        />
+                        <div className="flex-1">
+                          <span className="text-sm font-medium text-gray-900">{constraint.title}</span>
+                          {constraint.description && (
+                            <p className="text-xs text-gray-600">{constraint.description}</p>
+                          )}
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div className="flex gap-2">

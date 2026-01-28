@@ -13,7 +13,8 @@ import {
   enablersApi,
   commitmentsApi,
   teamObjectivesApi,
-  individualObjectivesApi
+  individualObjectivesApi,
+  contextApi
 } from "@/lib/api-client";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -25,6 +26,7 @@ import TierHeader from "@/components/ui/TierHeader";
 import TierCard from "@/components/ui/TierCard";
 import PyramidVisualization from "@/components/visualizations/PyramidVisualization";
 import ExecutionReadinessChecklist from "@/components/visualizations/ExecutionReadinessChecklist";
+import { StepNavigation } from "@/components/ui/StepNavigation";
 import { AICoachSidebar } from "@/components/AICoachSidebar";
 import { useAIFieldSuggestion } from "@/hooks/useAIFieldSuggestion";
 import { AIFieldSuggestion, AIFieldSuggestionIndicator } from "@/components/AIFieldSuggestion";
@@ -38,6 +40,7 @@ import { OpportunityScoring } from "@/components/context/OpportunityScoring";
 import { StrategicTensions } from "@/components/context/StrategicTensions";
 import { StakeholderMapping } from "@/components/context/StakeholderMapping";
 import { StatementType, Horizon } from "@/types/pyramid";
+import type { SOCCItem } from "@/lib/context-types";
 import { Save, Home, CheckCircle, FileDown, Eye, Trash2, Edit, Plus, BarChart3, Lightbulb } from "lucide-react";
 import { TIER1_TOOLTIPS, TIER2_TOOLTIPS, TIER3_TOOLTIPS, TIER4_TOOLTIPS, TIER5_TOOLTIPS, TIER6_TOOLTIPS, TIER7_TOOLTIPS, TIER8_TOOLTIPS, TIER9_TOOLTIPS } from "@/config/tooltips";
 
@@ -103,6 +106,8 @@ export default function BuilderPage() {
   const [driverName, setDriverName] = useState("");
   const [driverDescription, setDriverDescription] = useState("");
   const [driverRationale, setDriverRationale] = useState("");
+  const [driverOpportunities, setDriverOpportunities] = useState<string[]>([]);
+  const [soccItems, setSoccItems] = useState<SOCCItem[]>([]);
   const [intentStatement, setIntentStatement] = useState("");
   const [selectedDriver, setSelectedDriver] = useState("");
   const [enablerName, setEnablerName] = useState("");
@@ -401,6 +406,22 @@ export default function BuilderPage() {
     }
   };
 
+  // Fetch SOCC items for driver-opportunity linking
+  useEffect(() => {
+    const loadSOCCItems = async () => {
+      if (!sessionId) return;
+      try {
+        const data = await contextApi.getSOCC(sessionId);
+        setSoccItems(data.items);
+      } catch (err: any) {
+        // Silently fail if no SOCC data exists yet
+        console.log("No SOCC data available yet");
+      }
+    };
+
+    loadSOCCItems();
+  }, [sessionId]);
+
   const handleTierClick = (tierId: string) => {
     // Simply set the active tier - content will appear in the right panel
     setActiveTier(tierId);
@@ -695,7 +716,8 @@ export default function BuilderPage() {
             itemId,
             editFormData.name,
             editFormData.description,
-            editFormData.rationale
+            editFormData.rationale,
+            editFormData.addresses_opportunities
           );
           break;
         case "intent":
@@ -844,10 +866,11 @@ export default function BuilderPage() {
 
     try {
       setLoading(true);
-      await driversApi.add(sessionId, driverName, driverDescription, driverRationale || undefined);
+      await driversApi.add(sessionId, driverName, driverDescription, driverRationale || undefined, driverOpportunities);
       setDriverName("");
       setDriverDescription("");
       setDriverRationale("");
+      setDriverOpportunities([]);
       await refreshPyramid();
       showToast("Strategic driver added successfully", "success");
       incrementUnsavedChanges();
@@ -1069,47 +1092,27 @@ export default function BuilderPage() {
 
       {/* Main Content Area - Side by Side */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar - Fixed Pyramid */}
+        {/* Left Sidebar - Step-based Navigation */}
         <div className="w-96 bg-gradient-to-b from-gray-50 to-white border-r border-gray-200 overflow-y-auto">
           <div className="p-4 space-y-4">
             {/* Unsaved Changes Indicator */}
             <UnsavedChangesIndicator variant="inline" />
 
-            {/* Context Section */}
+            {/* Step Navigation */}
             <div>
-              <h2 className="text-lg font-bold text-gray-800 mb-2">Context Layer</h2>
-              <p className="text-xs text-gray-600 mb-3">Build your strategic foundation</p>
-              <button
-                onClick={() => setActiveTier('context')}
-                className={`w-full text-left px-4 py-3 rounded-lg border-2 transition-all ${
-                  activeTier === 'context'
-                    ? 'border-purple-500 bg-purple-50 shadow-md'
-                    : 'border-gray-200 hover:border-purple-300 hover:bg-purple-50'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${
-                    activeTier === 'context' ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-600'
-                  }`}>
-                    <Lightbulb className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-semibold text-gray-900">SOCC Analysis</div>
-                    <div className="text-xs text-gray-600">Strengths, Opportunities, Considerations, Constraints</div>
-                  </div>
-                </div>
-              </button>
-            </div>
-
-            {/* Pyramid Section */}
-            <div>
-              <h2 className="text-lg font-bold text-gray-800 mb-2">Strategic Pyramid</h2>
-              <p className="text-xs text-gray-600 mb-4">Click any tier to view and edit</p>
-              <PyramidVisualization
+              <h2 className="text-lg font-bold text-gray-800 mb-2">Strategy Builder</h2>
+              <p className="text-xs text-gray-600 mb-4">Complete each step to build your strategy</p>
+              <StepNavigation
                 pyramid={pyramid}
-                onTierClick={handleTierClick}
                 activeTier={activeTier}
-                compact={true}
+                activeContextTab={activeContextTab}
+                onNavigate={(tier, contextTab) => {
+                  setActiveTier(tier);
+                  if (contextTab) {
+                    setActiveContextTab(contextTab as any);
+                  }
+                }}
+                onTierClick={handleTierClick}
               />
             </div>
 
@@ -3504,6 +3507,69 @@ export default function BuilderPage() {
                   />
                 )}
               </div>
+
+              {/* Opportunity Selection */}
+              {soccItems.length > 0 && (
+                <div>
+                  <label className="text-sm font-semibold text-gray-900 mb-2 block">
+                    Addresses Opportunities (Optional)
+                  </label>
+                  <p className="text-xs text-gray-600 mb-3">
+                    Select which opportunities from your SOCC analysis this driver addresses
+                  </p>
+                  {(() => {
+                    const opportunities = soccItems.filter((item: SOCCItem) => item.quadrant === 'opportunity');
+                    if (opportunities.length === 0) {
+                      return (
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-600">
+                          No opportunities found in SOCC analysis. Add opportunities to link them to this driver.
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="space-y-2 max-h-40 overflow-y-auto bg-gray-50 rounded-lg p-3 border border-gray-200">
+                        {opportunities.map((opportunity: SOCCItem) => {
+                          const isSelected = modalMode === 'edit'
+                            ? (editFormData.addresses_opportunities || []).includes(opportunity.id)
+                            : driverOpportunities.includes(opportunity.id);
+
+                          return (
+                            <label key={opportunity.id} className="flex items-start gap-2 cursor-pointer hover:bg-white p-2 rounded">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={(e) => {
+                                  if (modalMode === 'edit') {
+                                    const current = editFormData.addresses_opportunities || [];
+                                    const updated = e.target.checked
+                                      ? [...current, opportunity.id]
+                                      : current.filter((id: string) => id !== opportunity.id);
+                                    setEditFormData({ ...editFormData, addresses_opportunities: updated });
+                                  } else {
+                                    if (e.target.checked) {
+                                      setDriverOpportunities([...driverOpportunities, opportunity.id]);
+                                    } else {
+                                      setDriverOpportunities(driverOpportunities.filter(id => id !== opportunity.id));
+                                    }
+                                  }
+                                }}
+                                className="mt-0.5 flex-shrink-0"
+                              />
+                              <div className="flex-1">
+                                <span className="text-sm font-medium text-gray-900">{opportunity.title}</span>
+                                {opportunity.description && (
+                                  <p className="text-xs text-gray-600 mt-0.5">{opportunity.description}</p>
+                                )}
+                              </div>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
               <div className="flex gap-3 justify-end pt-4 border-t">
                 <Button type="button" variant="ghost" onClick={closeModal}>
                   Cancel
