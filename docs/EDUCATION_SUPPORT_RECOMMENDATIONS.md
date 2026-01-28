@@ -638,7 +638,7 @@ This section tracks the implementation status of recommendations.
 | **Tier Guide Buttons** | 4547d29 | Guide button on all 9 TierHeaders. Slide-out panel with methodology content: key insights, examples, pitfalls, tips. Content extracted from STEP2_STRATEGY.md. |
 | **AI Coach Quick Actions** | 3fb24b7 | "What's next?" and "Review" buttons in AI Coach sidebar. Analyzes pyramid state and provides contextual guidance. |
 | **Learning Center** | 9dafc9e | Full methodology learning center with 3 sections (Overview, Step 1, Step 2), sidebar navigation, 17 topics covering why strategies fail, SOCC framework, opportunity scoring, 9-tier architecture, red thread methodology, and common pitfalls. Accessible from HelpHub. |
-| **Example Gallery** | TBD | 4 complete example pyramids (TechStart SaaS, Regional Health, Urban Education, GreenFuture Manufacturing) with full context, vision, values, drivers, intents, commitments, and key learnings. Each element includes rationale explaining why it's effective. |
+| **Example Gallery** | 301f2c4 | 4 complete example pyramids (TechStart SaaS, Regional Health, Urban Education, GreenFuture Manufacturing) with full context, vision, values, drivers, intents, commitments, and key learnings. Each element includes rationale explaining why it's effective. |
 
 ### In Progress
 
