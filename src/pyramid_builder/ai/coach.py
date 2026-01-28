@@ -75,6 +75,15 @@ class AICoach:
         - Ensure Traceability: Vision → Drivers → Intents → Commitments
         """
 
+    def _get_driver_name(self, driver_id: str) -> str:
+        """Helper to get driver name by ID."""
+        if not self.pyramid or not self.pyramid.strategic_drivers:
+            return "Unknown"
+        for driver in self.pyramid.strategic_drivers:
+            if str(driver.id) == driver_id:
+                return driver.name
+        return "Unknown"
+
     def suggest_field_improvement(
         self,
         tier: str,
@@ -396,30 +405,71 @@ Suggest specific, measurable alternatives. Respond in JSON:
         """
         pyramid_context = ""
         if self.pyramid:
+            sections = []
             summary = []
 
-            # Tier 1: Vision
+            # Tier 1: Vision/Mission/Belief/Passion (with type labels)
             if self.pyramid.vision and self.pyramid.vision.statements:
-                summary.append(f"Vision: {self.pyramid.vision.statements[0].statement}")
+                tier1_lines = ["### PURPOSE STATEMENTS (Tier 1):"]
+                for stmt in self.pyramid.vision.get_statements_ordered():
+                    stmt_type = stmt.statement_type.value.upper()
+                    tier1_lines.append(f"  [{stmt_type}]: {stmt.statement}")
+                tier1_lines.append("")
+                tier1_lines.append("Note: Each statement type has different criteria:")
+                tier1_lines.append("  - VISION: Future-focused, paints a picture of what could be")
+                tier1_lines.append("  - MISSION: Purpose-focused, explains why the organization exists")
+                tier1_lines.append("  - BELIEF: Conviction-focused, articulates core beliefs that guide decisions")
+                tier1_lines.append("  - PASSION: Energy-focused, expresses what drives and motivates")
+                sections.append("\n".join(tier1_lines))
+                summary.append(f"Purpose Statements: {len(self.pyramid.vision.statements)}")
 
             # Tier 2: Values
             if self.pyramid.values:
-                summary.append(f"Values ({len(self.pyramid.values)}): {', '.join([v.name for v in self.pyramid.values])}")
+                tier2_lines = [f"### VALUES (Tier 2) - {len(self.pyramid.values)} core values:"]
+                for value in self.pyramid.values:
+                    desc = f": {value.description[:80]}" if value.description else ""
+                    tier2_lines.append(f"  - {value.name}{desc}")
+                sections.append("\n".join(tier2_lines))
+                summary.append(f"Values: {len(self.pyramid.values)}")
 
             # Tier 3: Behaviours
             if self.pyramid.behaviours:
+                tier3_lines = [f"### BEHAVIOURS (Tier 3) - {len(self.pyramid.behaviours)} observable behaviours:"]
+                for behaviour in self.pyramid.behaviours[:5]:
+                    tier3_lines.append(f"  - {behaviour.statement}")
+                if len(self.pyramid.behaviours) > 5:
+                    tier3_lines.append(f"  ... and {len(self.pyramid.behaviours) - 5} more")
+                sections.append("\n".join(tier3_lines))
                 summary.append(f"Behaviours: {len(self.pyramid.behaviours)}")
 
             # Tier 5: Strategic Drivers
             if self.pyramid.strategic_drivers:
-                summary.append(f"Drivers ({len(self.pyramid.strategic_drivers)}): {', '.join([d.name for d in self.pyramid.strategic_drivers[:3]])}")
+                tier5_lines = [f"### STRATEGIC DRIVERS (Tier 5) - {len(self.pyramid.strategic_drivers)} drivers:"]
+                for driver in self.pyramid.strategic_drivers:
+                    tier5_lines.append(f"  - {driver.name}: {driver.description[:80]}")
+                sections.append("\n".join(tier5_lines))
+                summary.append(f"Drivers: {len(self.pyramid.strategic_drivers)}")
 
             # Tier 4: Strategic Intents
             if self.pyramid.strategic_intents:
+                tier4_lines = [f"### STRATEGIC INTENTS (Tier 4) - {len(self.pyramid.strategic_intents)} intents:"]
+                for intent in self.pyramid.strategic_intents[:5]:
+                    driver_name = self._get_driver_name(str(intent.driver_id))
+                    tier4_lines.append(f"  - {intent.statement[:100]} (Driver: {driver_name})")
+                if len(self.pyramid.strategic_intents) > 5:
+                    tier4_lines.append(f"  ... and {len(self.pyramid.strategic_intents) - 5} more")
+                sections.append("\n".join(tier4_lines))
                 summary.append(f"Intents: {len(self.pyramid.strategic_intents)}")
 
             # Tier 6: Enablers
             if self.pyramid.enablers:
+                tier6_lines = [f"### ENABLERS (Tier 6) - {len(self.pyramid.enablers)} enablers:"]
+                for enabler in self.pyramid.enablers[:5]:
+                    enabler_type = f" [{enabler.enabler_type}]" if enabler.enabler_type else ""
+                    tier6_lines.append(f"  - {enabler.name}{enabler_type}: {enabler.description[:60]}")
+                if len(self.pyramid.enablers) > 5:
+                    tier6_lines.append(f"  ... and {len(self.pyramid.enablers) - 5} more")
+                sections.append("\n".join(tier6_lines))
                 summary.append(f"Enablers: {len(self.pyramid.enablers)}")
 
             # Tier 7: Iconic Commitments
@@ -429,7 +479,14 @@ Suggest specific, measurable alternatives. Respond in JSON:
                     horizon = c.horizon.value
                     commitments_by_horizon.setdefault(horizon, []).append(c)
                 horizon_summary = [f"{h}:{len(cs)}" for h, cs in sorted(commitments_by_horizon.items())]
-                summary.append(f"Commitments ({len(self.pyramid.iconic_commitments)}): {','.join(horizon_summary)}")
+                tier7_lines = [f"### ICONIC COMMITMENTS (Tier 7) - {len(self.pyramid.iconic_commitments)} commitments ({', '.join(horizon_summary)}):"]
+                for c in self.pyramid.iconic_commitments[:5]:
+                    driver_name = self._get_driver_name(str(c.primary_driver_id))
+                    tier7_lines.append(f"  - {c.name} [{c.horizon.value}] (Driver: {driver_name})")
+                if len(self.pyramid.iconic_commitments) > 5:
+                    tier7_lines.append(f"  ... and {len(self.pyramid.iconic_commitments) - 5} more")
+                sections.append("\n".join(tier7_lines))
+                summary.append(f"Commitments: {','.join(horizon_summary)}")
 
             # Tier 8: Team Objectives
             if self.pyramid.team_objectives:
@@ -439,11 +496,17 @@ Suggest specific, measurable alternatives. Respond in JSON:
             if self.pyramid.individual_objectives:
                 summary.append(f"Individual Objectives: {len(self.pyramid.individual_objectives)}")
 
+            pyramid_details = "\n\n".join(sections) if sections else ""
+
             pyramid_context = f"""
 ## CURRENT PYRAMID STATE (ALWAYS FRESH - TRUST THIS OVER CHAT HISTORY)
-{' | '.join(summary)}
+Summary: {' | '.join(summary)}
 
-IMPORTANT: This pyramid state is updated in real-time. If the user just added, edited, or removed elements, the counts and details above reflect those changes. Always refer to this fresh state, not previous mentions in our conversation."""
+{pyramid_details}
+
+IMPORTANT: This pyramid state is updated in real-time. If the user just added, edited, or removed elements, the counts and details above reflect those changes. Always refer to this fresh state, not previous mentions in our conversation.
+
+When evaluating purpose statements, assess each against its specific type (VISION, MISSION, BELIEF, PASSION) - do not evaluate a MISSION using VISION criteria."""
 
         # Build Context (SOCC) summary
         context_summary = ""

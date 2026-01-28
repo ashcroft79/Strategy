@@ -135,18 +135,29 @@ async def quick_validate(session_id: str):
 
 
 def _get_context_data(session_id: str) -> dict:
-    """Gather Step 1 context data for AI validation."""
+    """
+    Gather Step 1 context data for AI validation.
+
+    This should match the data collected by build_context_data() in ai.py
+    to ensure consistency between AI validation and AI Coach flows.
+    """
     context_data = {}
 
-    # SOCC items
+    # SOCC items - include all fields for comprehensive context
     if session_id in socc_storage:
         socc = socc_storage[session_id]
         context_data["socc_items"] = [
-            {"id": item.id, "title": item.title, "description": item.description, "quadrant": item.quadrant}
+            {
+                "id": item.id,
+                "title": item.title,
+                "description": item.description,
+                "quadrant": item.quadrant,
+                "impact_level": getattr(item, 'impact_level', None)  # Include impact level if available
+            }
             for item in socc.items
         ]
 
-    # Opportunity scores
+    # Opportunity scores - include full scoring details
     if session_id in scoring_storage:
         scores = scoring_storage[session_id]
         scored_opps = []
@@ -162,17 +173,22 @@ def _get_context_data(session_id: str) -> dict:
             calc_score = (score.strength_match * 2) - score.consideration_risk - score.constraint_impact
             viability = "high" if calc_score >= 7 else "moderate" if calc_score >= 4 else "marginal" if calc_score >= 1 else "low"
             scored_opps.append({
+                "opportunity_item_id": score.opportunity_item_id,
                 "opportunity_title": opp_title,
                 "viability_level": viability,
+                "strength_match": score.strength_match,
+                "consideration_risk": score.consideration_risk,
+                "constraint_impact": score.constraint_impact,
                 "rationale": score.rationale
             })
         context_data["opportunity_scores"] = scored_opps
 
-    # Strategic tensions
+    # Strategic tensions - include name and rationale
     if session_id in tension_storage:
         tensions = tension_storage[session_id]
         context_data["tensions"] = [
             {
+                "name": getattr(t, 'name', f"{t.left_pole} vs {t.right_pole}"),
                 "left_pole": t.left_pole,
                 "right_pole": t.right_pole,
                 "current_position": t.current_position,
@@ -182,14 +198,16 @@ def _get_context_data(session_id: str) -> dict:
             for t in tensions.tensions
         ]
 
-    # Stakeholders
+    # Stakeholders - include alignment and key_needs for complete context
     if session_id in stakeholder_storage:
         stakeholders = stakeholder_storage[session_id]
         context_data["stakeholders"] = [
             {
                 "name": s.name,
                 "interest_level": s.interest_level,
-                "influence_level": s.influence_level
+                "influence_level": s.influence_level,
+                "alignment": getattr(s, 'alignment', None),
+                "key_needs": getattr(s, 'key_needs', None)
             }
             for s in stakeholders.stakeholders
         ]
