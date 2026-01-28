@@ -13,7 +13,8 @@ import {
   enablersApi,
   commitmentsApi,
   teamObjectivesApi,
-  individualObjectivesApi
+  individualObjectivesApi,
+  contextApi
 } from "@/lib/api-client";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -39,6 +40,7 @@ import { OpportunityScoring } from "@/components/context/OpportunityScoring";
 import { StrategicTensions } from "@/components/context/StrategicTensions";
 import { StakeholderMapping } from "@/components/context/StakeholderMapping";
 import { StatementType, Horizon } from "@/types/pyramid";
+import type { SOCCItem } from "@/lib/context-types";
 import { Save, Home, CheckCircle, FileDown, Eye, Trash2, Edit, Plus, BarChart3, Lightbulb } from "lucide-react";
 import { TIER1_TOOLTIPS, TIER2_TOOLTIPS, TIER3_TOOLTIPS, TIER4_TOOLTIPS, TIER5_TOOLTIPS, TIER6_TOOLTIPS, TIER7_TOOLTIPS, TIER8_TOOLTIPS, TIER9_TOOLTIPS } from "@/config/tooltips";
 
@@ -105,6 +107,7 @@ export default function BuilderPage() {
   const [driverDescription, setDriverDescription] = useState("");
   const [driverRationale, setDriverRationale] = useState("");
   const [driverOpportunities, setDriverOpportunities] = useState<string[]>([]);
+  const [soccItems, setSoccItems] = useState<SOCCItem[]>([]);
   const [intentStatement, setIntentStatement] = useState("");
   const [selectedDriver, setSelectedDriver] = useState("");
   const [enablerName, setEnablerName] = useState("");
@@ -402,6 +405,22 @@ export default function BuilderPage() {
       setError(err.response?.data?.detail || "Failed to refresh pyramid");
     }
   };
+
+  // Fetch SOCC items for driver-opportunity linking
+  useEffect(() => {
+    const loadSOCCItems = async () => {
+      if (!sessionId) return;
+      try {
+        const data = await contextApi.getSOCC(sessionId);
+        setSoccItems(data.items);
+      } catch (err: any) {
+        // Silently fail if no SOCC data exists yet
+        console.log("No SOCC data available yet");
+      }
+    };
+
+    loadSOCCItems();
+  }, [sessionId]);
 
   const handleTierClick = (tierId: string) => {
     // Simply set the active tier - content will appear in the right panel
@@ -3490,7 +3509,7 @@ export default function BuilderPage() {
               </div>
 
               {/* Opportunity Selection */}
-              {pyramid?.context?.socc_analysis?.items && (
+              {soccItems.length > 0 && (
                 <div>
                   <label className="text-sm font-semibold text-gray-900 mb-2 block">
                     Addresses Opportunities (Optional)
@@ -3499,7 +3518,7 @@ export default function BuilderPage() {
                     Select which opportunities from your SOCC analysis this driver addresses
                   </p>
                   {(() => {
-                    const opportunities = pyramid.context.socc_analysis.items.filter((item: any) => item.quadrant === 'opportunity');
+                    const opportunities = soccItems.filter((item: SOCCItem) => item.quadrant === 'opportunity');
                     if (opportunities.length === 0) {
                       return (
                         <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-600">
@@ -3509,7 +3528,7 @@ export default function BuilderPage() {
                     }
                     return (
                       <div className="space-y-2 max-h-40 overflow-y-auto bg-gray-50 rounded-lg p-3 border border-gray-200">
-                        {opportunities.map((opportunity: any) => {
+                        {opportunities.map((opportunity: SOCCItem) => {
                           const isSelected = modalMode === 'edit'
                             ? (editFormData.addresses_opportunities || []).includes(opportunity.id)
                             : driverOpportunities.includes(opportunity.id);
