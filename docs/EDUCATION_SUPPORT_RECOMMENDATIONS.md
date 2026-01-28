@@ -637,7 +637,7 @@ This section tracks the implementation status of recommendations.
 | **Getting Started Hub** | 4ed04f6 | Help button in nav opens hub with 4 path cards (Quick Tour, Learn Methodology, Browse Examples, Ask AI Coach). Placeholder actions for upcoming features. |
 | **Tier Guide Buttons** | 4547d29 | Guide button on all 9 TierHeaders. Slide-out panel with methodology content: key insights, examples, pitfalls, tips. Content extracted from STEP2_STRATEGY.md. |
 | **AI Coach Quick Actions** | 3fb24b7 | "What's next?" and "Review" buttons in AI Coach sidebar. Analyzes pyramid state and provides contextual guidance. |
-| **Learning Center** | a65cb44 | Full methodology learning center with 3 sections (Overview, Step 1, Step 2), sidebar navigation, 17 topics covering why strategies fail, SOCC framework, opportunity scoring, 9-tier architecture, red thread methodology, and common pitfalls. Accessible from HelpHub. |
+| **Learning Center** | 9dafc9e | Full methodology learning center with 3 sections (Overview, Step 1, Step 2), sidebar navigation, 17 topics covering why strategies fail, SOCC framework, opportunity scoring, 9-tier architecture, red thread methodology, and common pitfalls. Accessible from HelpHub. |
 
 ### In Progress
 
