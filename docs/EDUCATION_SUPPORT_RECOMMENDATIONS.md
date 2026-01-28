@@ -636,7 +636,7 @@ This section tracks the implementation status of recommendations.
 |---------|--------|-------------|
 | **Getting Started Hub** | 4ed04f6 | Help button in nav opens hub with 4 path cards (Quick Tour, Learn Methodology, Browse Examples, Ask AI Coach). Placeholder actions for upcoming features. |
 | **Tier Guide Buttons** | 4547d29 | Guide button on all 9 TierHeaders. Slide-out panel with methodology content: key insights, examples, pitfalls, tips. Content extracted from STEP2_STRATEGY.md. |
-| **AI Coach Quick Actions** | TBD | "What's next?" and "Review" buttons in AI Coach sidebar. Analyzes pyramid state and provides contextual guidance. |
+| **AI Coach Quick Actions** | 3fb24b7 | "What's next?" and "Review" buttons in AI Coach sidebar. Analyzes pyramid state and provides contextual guidance. |
 
 ### In Progress
 
