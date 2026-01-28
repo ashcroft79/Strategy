@@ -31,6 +31,7 @@ import { AICoachSidebar } from "@/components/AICoachSidebar";
 import HelpHub, { HelpButton } from "@/components/HelpHub";
 import TierGuide from "@/components/TierGuide";
 import LearningCenter from "@/components/LearningCenter";
+import ExampleGallery from "@/components/ExampleGallery";
 import { useAIFieldSuggestion } from "@/hooks/useAIFieldSuggestion";
 import { AIFieldSuggestion, AIFieldSuggestionIndicator } from "@/components/AIFieldSuggestion";
 import { AIDraftGenerator } from "@/components/AIDraftGenerator";
@@ -100,6 +101,7 @@ export default function BuilderPage() {
   const [showHomeConfirmation, setShowHomeConfirmation] = useState(false);
   const [showHelpHub, setShowHelpHub] = useState(false);
   const [showLearningCenter, setShowLearningCenter] = useState(false);
+  const [showExampleGallery, setShowExampleGallery] = useState(false);
   const [openTierGuide, setOpenTierGuide] = useState<string | null>(null);
 
   // Form states
@@ -4639,7 +4641,8 @@ export default function BuilderPage() {
           setShowLearningCenter(true);
         }}
         onOpenExamples={() => {
-          showToast('Example Gallery coming soon! Use the AI Coach for examples and best practices.', 'info');
+          setShowHelpHub(false);
+          setShowExampleGallery(true);
         }}
         onOpenAICoach={() => {
           showToast('Click the sparkle button in the bottom-right corner to open the AI Coach!', 'info');
@@ -4657,6 +4660,12 @@ export default function BuilderPage() {
       <LearningCenter
         isOpen={showLearningCenter}
         onClose={() => setShowLearningCenter(false)}
+      />
+
+      {/* Example Gallery */}
+      <ExampleGallery
+        isOpen={showExampleGallery}
+        onClose={() => setShowExampleGallery(false)}
       />
     </div>
   );
