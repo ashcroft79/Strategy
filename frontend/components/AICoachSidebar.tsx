@@ -4,15 +4,45 @@ import { useState, useRef, useEffect } from "react";
 import { aiApi } from "@/lib/api-client";
 import { usePyramidStore } from "@/lib/store";
 import { Button } from "./ui/Button";
-import { MessageCircle, X, Send, Sparkles } from "lucide-react";
+import { MessageCircle, X, Send, Sparkles, Target, Lightbulb } from "lucide-react";
 
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
 }
 
+// Helper to generate pyramid summary for AI context
+function getPyramidSummary(pyramid: any): string {
+  if (!pyramid) return "No pyramid loaded yet.";
+
+  const visionCount = pyramid.vision?.statements?.length || 0;
+  const valuesCount = pyramid.values?.length || 0;
+  const behavioursCount = pyramid.behaviours?.length || 0;
+  const driversCount = pyramid.strategic_drivers?.length || 0;
+  const intentsCount = pyramid.strategic_intents?.length || 0;
+  const enablersCount = pyramid.enablers?.length || 0;
+  const commitmentsCount = pyramid.iconic_commitments?.length || 0;
+  const teamCount = pyramid.team_objectives?.length || 0;
+  const individualCount = pyramid.individual_objectives?.length || 0;
+
+  const parts = [];
+  if (visionCount > 0) parts.push(`${visionCount} vision/mission statement(s)`);
+  if (valuesCount > 0) parts.push(`${valuesCount} value(s)`);
+  if (behavioursCount > 0) parts.push(`${behavioursCount} behaviour(s)`);
+  if (driversCount > 0) parts.push(`${driversCount} strategic driver(s)`);
+  if (intentsCount > 0) parts.push(`${intentsCount} strategic intent(s)`);
+  if (enablersCount > 0) parts.push(`${enablersCount} enabler(s)`);
+  if (commitmentsCount > 0) parts.push(`${commitmentsCount} iconic commitment(s)`);
+  if (teamCount > 0) parts.push(`${teamCount} team objective(s)`);
+  if (individualCount > 0) parts.push(`${individualCount} individual objective(s)`);
+
+  if (parts.length === 0) return "The pyramid is empty - no tiers have content yet.";
+
+  return `Current pyramid has: ${parts.join(", ")}.`;
+}
+
 export function AICoachSidebar() {
-  const { sessionId } = usePyramidStore();
+  const { sessionId, pyramid } = usePyramidStore();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -80,6 +110,116 @@ export function AICoachSidebar() {
     }
   };
 
+  // Quick action: What should I do next?
+  const handleWhatsNext = async () => {
+    if (isLoading) return;
+
+    const pyramidContext = getPyramidSummary(pyramid);
+    const prompt = `Based on my current pyramid state, what should I focus on next? ${pyramidContext}
+
+Please analyze what I have and suggest the most important next step. Consider:
+- Which tiers are empty or underdeveloped?
+- What's the logical next step in building a coherent strategy?
+- Are there any obvious gaps I should address?
+
+Give me one clear, actionable recommendation.`;
+
+    // Add user message (showing the quick action)
+    const newMessages: ChatMessage[] = [
+      ...messages,
+      { role: "user", content: "🎯 What should I do next?" },
+    ];
+    setMessages(newMessages);
+    setIsLoading(true);
+
+    try {
+      const response = await aiApi.chat(sessionId, prompt, messages);
+      setMessages([
+        ...newMessages,
+        { role: "assistant", content: response.response },
+      ]);
+    } catch (err) {
+      console.error("Chat error:", err);
+      setMessages([
+        ...newMessages,
+        {
+          role: "assistant",
+          content: "Sorry, I encountered an error. Please check your API configuration and try again.",
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Quick action: Review my pyramid
+  const handleReviewPyramid = async () => {
+    if (isLoading) return;
+
+    const pyramidContext = getPyramidSummary(pyramid);
+
+    // Get more detailed info for the review
+    let detailedContext = pyramidContext;
+    if (pyramid) {
+      const details = [];
+
+      // Check driver count (should be 3-5)
+      const driverCount = pyramid.strategic_drivers?.length || 0;
+      if (driverCount > 0) {
+        details.push(`Drivers (${driverCount}): ${pyramid.strategic_drivers.map((d: any) => d.name).join(", ")}`);
+      }
+
+      // Check horizon balance
+      const commitments = pyramid.iconic_commitments || [];
+      const h1 = commitments.filter((c: any) => c.horizon === "H1").length;
+      const h2 = commitments.filter((c: any) => c.horizon === "H2").length;
+      const h3 = commitments.filter((c: any) => c.horizon === "H3").length;
+      if (commitments.length > 0) {
+        details.push(`Horizon balance: H1=${h1}, H2=${h2}, H3=${h3}`);
+      }
+
+      if (details.length > 0) {
+        detailedContext += "\n\nDetails:\n" + details.join("\n");
+      }
+    }
+
+    const prompt = `Please review my strategic pyramid and give me constructive feedback. ${detailedContext}
+
+Analyze the current state and provide observations in a conversational, helpful tone:
+- What's strong about the current structure?
+- What could be improved or refined?
+- Are there any common pitfalls I might be falling into?
+
+Use ✓ for strengths and ⚠ for suggestions. Keep it brief and actionable.`;
+
+    // Add user message
+    const newMessages: ChatMessage[] = [
+      ...messages,
+      { role: "user", content: "💡 Review my pyramid" },
+    ];
+    setMessages(newMessages);
+    setIsLoading(true);
+
+    try {
+      const response = await aiApi.chat(sessionId, prompt, messages);
+      setMessages([
+        ...newMessages,
+        { role: "assistant", content: response.response },
+      ]);
+    } catch (err) {
+      console.error("Chat error:", err);
+      setMessages([
+        ...newMessages,
+        {
+          role: "assistant",
+          content: "Sorry, I encountered an error. Please check your API configuration and try again.",
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!isOpen) {
     return (
       <button
@@ -110,6 +250,28 @@ export function AICoachSidebar() {
         >
           <X className="w-5 h-5" />
         </button>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="px-3 py-2 border-b border-gray-200 bg-gray-50">
+        <div className="flex gap-2">
+          <button
+            onClick={handleWhatsNext}
+            disabled={isLoading}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Target className="w-4 h-4" />
+            <span>What's next?</span>
+          </button>
+          <button
+            onClick={handleReviewPyramid}
+            disabled={isLoading}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-amber-50 hover:border-amber-300 hover:text-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Lightbulb className="w-4 h-4" />
+            <span>Review</span>
+          </button>
+        </div>
       </div>
 
       {/* Messages */}
