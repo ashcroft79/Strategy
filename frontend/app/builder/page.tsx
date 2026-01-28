@@ -28,6 +28,7 @@ import PyramidVisualization from "@/components/visualizations/PyramidVisualizati
 import ExecutionReadinessChecklist from "@/components/visualizations/ExecutionReadinessChecklist";
 import { StepNavigation } from "@/components/ui/StepNavigation";
 import { AICoachSidebar } from "@/components/AICoachSidebar";
+import HelpHub, { HelpButton } from "@/components/HelpHub";
 import { useAIFieldSuggestion } from "@/hooks/useAIFieldSuggestion";
 import { AIFieldSuggestion, AIFieldSuggestionIndicator } from "@/components/AIFieldSuggestion";
 import { AIDraftGenerator } from "@/components/AIDraftGenerator";
@@ -95,6 +96,7 @@ export default function BuilderPage() {
   const [modalItemType, setModalItemType] = useState<string>('');
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [showHomeConfirmation, setShowHomeConfirmation] = useState(false);
+  const [showHelpHub, setShowHelpHub] = useState(false);
 
   // Form states
   const [visionStatementType, setVisionStatementType] = useState<StatementType>(StatementType.VISION);
@@ -1122,6 +1124,9 @@ export default function BuilderPage() {
                 <FileDown className="w-4 h-4 mr-2" />
                 Export
               </Button>
+
+              {/* Help Button */}
+              <HelpButton onClick={() => setShowHelpHub(true)} />
             </div>
           </div>
         </div>
@@ -4608,6 +4613,24 @@ export default function BuilderPage() {
 
       {/* AI Coach Sidebar */}
       <AICoachSidebar />
+
+      {/* Help Hub Modal */}
+      <HelpHub
+        isOpen={showHelpHub}
+        onClose={() => setShowHelpHub(false)}
+        onStartTour={() => {
+          showToast('Quick Tour coming soon! For now, explore using the step navigation on the left.', 'info');
+        }}
+        onOpenLearningCenter={() => {
+          showToast('Learning Center coming soon! Check the tooltips (?) throughout the app for guidance.', 'info');
+        }}
+        onOpenExamples={() => {
+          showToast('Example Gallery coming soon! Use the AI Coach for examples and best practices.', 'info');
+        }}
+        onOpenAICoach={() => {
+          showToast('Click the sparkle button in the bottom-right corner to open the AI Coach!', 'info');
+        }}
+      />
     </div>
   );
 }
