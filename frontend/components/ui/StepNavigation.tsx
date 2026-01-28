@@ -28,6 +28,7 @@ interface NavigationStep {
 
 interface StepNavigationProps {
   pyramid: any;
+  contextSummary?: any;
   activeTier?: string;
   activeContextTab?: string;
   onNavigate: (tier: string, contextTab?: string) => void;
@@ -36,6 +37,7 @@ interface StepNavigationProps {
 
 export function StepNavigation({
   pyramid,
+  contextSummary,
   activeTier,
   activeContextTab,
   onNavigate,
@@ -67,15 +69,15 @@ export function StepNavigation({
 
   // Calculate completion percentages
   const calculateStep1Completion = () => {
-    if (!pyramid.context) return 0;
-    const context = pyramid.context;
+    if (!contextSummary) return 0;
     let completed = 0;
     let total = 4;
 
-    if (context.socc_analysis?.items?.length > 0) completed++;
-    if (context.opportunity_scoring?.scores?.length > 0) completed++;
-    if (context.strategic_tensions?.tensions?.length > 0) completed++;
-    if (context.stakeholder_analysis?.stakeholders?.length > 0) completed++;
+    // Each area is complete with at least 1 item (new threshold)
+    if (contextSummary.socc_item_count >= 1) completed++;
+    if (contextSummary.opportunities_scored_count >= 1) completed++;
+    if (contextSummary.tensions_identified_count >= 1) completed++;
+    if (contextSummary.stakeholders_mapped_count >= 1) completed++;
 
     return Math.round((completed / total) * 100);
   };
@@ -106,25 +108,25 @@ export function StepNavigation({
           id: "socc",
           label: "SOCC Canvas",
           icon: Target,
-          count: pyramid.context?.socc_analysis?.items?.length || 0
+          count: contextSummary?.socc_item_count || 0
         },
         {
           id: "scoring",
           label: "Opportunity Scoring",
           icon: TrendingUp,
-          count: pyramid.context?.opportunity_scoring?.scores?.length || 0
+          count: contextSummary?.opportunities_scored_count || 0
         },
         {
           id: "tensions",
           label: "Strategic Tensions",
           icon: Scale,
-          count: pyramid.context?.strategic_tensions?.tensions?.length || 0
+          count: contextSummary?.tensions_identified_count || 0
         },
         {
           id: "stakeholders",
           label: "Stakeholder Mapping",
           icon: Users,
-          count: pyramid.context?.stakeholder_analysis?.stakeholders?.length || 0
+          count: contextSummary?.stakeholders_mapped_count || 0
         },
       ],
     },
