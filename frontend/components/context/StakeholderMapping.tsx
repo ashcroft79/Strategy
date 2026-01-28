@@ -170,25 +170,23 @@ export function StakeholderMapping() {
       </div>
 
       {/* 2x2 Matrix with Axes */}
-      <div className="relative pl-12">
+      <div className="relative pl-16">
         {/* Y-axis label (Influence - vertical) */}
-        <div className="absolute left-0 top-1/2 transform -translate-y-1/2">
-          <div className="flex flex-col items-center">
-            <div className="text-xs text-gray-500 mb-2">High</div>
-            <div className="text-sm font-bold text-gray-700 transform -rotate-90 whitespace-nowrap">
-              Influence
-            </div>
-            <div className="text-xs text-gray-500 mt-2">Low</div>
+        <div className="absolute left-0 top-0 bottom-0 w-14 flex flex-col items-center justify-between py-16">
+          <div className="text-xs text-gray-500 font-medium">High</div>
+          <div className="text-sm font-bold text-gray-700 transform -rotate-90 whitespace-nowrap">
+            Influence
           </div>
+          <div className="text-xs text-gray-500 font-medium">Low</div>
         </div>
 
         {/* Matrix Grid */}
         <div className="space-y-2">
           {/* X-axis label (Interest - horizontal, top) */}
-          <div className="flex justify-center items-center gap-2 mb-2">
-            <span className="text-xs text-gray-500">Low</span>
+          <div className="flex justify-center items-center gap-4 mb-2">
+            <span className="text-xs text-gray-500 font-medium">Low</span>
             <span className="text-sm font-bold text-gray-700">Interest</span>
-            <span className="text-xs text-gray-500">High</span>
+            <span className="text-xs text-gray-500 font-medium">High</span>
           </div>
 
           <div className="grid grid-rows-2 gap-4 min-h-[600px]">

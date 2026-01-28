@@ -291,11 +291,11 @@ class ContextSummary(BaseModel):
     tensions_identified_count: int = 0
     stakeholders_mapped_count: int = 0
 
-    # Completion criteria
-    socc_complete: bool = False  # ≥20 items
-    opportunities_complete: bool = False  # ≥3 scored
-    tensions_complete: bool = False  # ≥2 identified
-    stakeholders_complete: bool = False  # ≥5 mapped
+    # Completion criteria (≥1 item each)
+    socc_complete: bool = False
+    opportunities_complete: bool = False
+    tensions_complete: bool = False
+    stakeholders_complete: bool = False
 
     @property
     def overall_complete(self) -> bool:

@@ -134,6 +134,69 @@ async def quick_validate(session_id: str):
     }
 
 
+def _get_context_data(session_id: str) -> dict:
+    """Gather Step 1 context data for AI validation."""
+    context_data = {}
+
+    # SOCC items
+    if session_id in socc_storage:
+        socc = socc_storage[session_id]
+        context_data["socc_items"] = [
+            {"id": item.id, "title": item.title, "description": item.description, "quadrant": item.quadrant}
+            for item in socc.items
+        ]
+
+    # Opportunity scores
+    if session_id in scoring_storage:
+        scores = scoring_storage[session_id]
+        scored_opps = []
+        for score in scores.scores:
+            # Find the opportunity title
+            opp_title = "Unknown"
+            if session_id in socc_storage:
+                for item in socc_storage[session_id].items:
+                    if item.id == score.opportunity_item_id:
+                        opp_title = item.title
+                        break
+            # Calculate viability
+            calc_score = (score.strength_match * 2) - score.consideration_risk - score.constraint_impact
+            viability = "high" if calc_score >= 7 else "moderate" if calc_score >= 4 else "marginal" if calc_score >= 1 else "low"
+            scored_opps.append({
+                "opportunity_title": opp_title,
+                "viability_level": viability,
+                "rationale": score.rationale
+            })
+        context_data["opportunity_scores"] = scored_opps
+
+    # Strategic tensions
+    if session_id in tension_storage:
+        tensions = tension_storage[session_id]
+        context_data["tensions"] = [
+            {
+                "left_pole": t.left_pole,
+                "right_pole": t.right_pole,
+                "current_position": t.current_position,
+                "target_position": t.target_position,
+                "rationale": t.rationale
+            }
+            for t in tensions.tensions
+        ]
+
+    # Stakeholders
+    if session_id in stakeholder_storage:
+        stakeholders = stakeholder_storage[session_id]
+        context_data["stakeholders"] = [
+            {
+                "name": s.name,
+                "interest_level": s.interest_level,
+                "influence_level": s.influence_level
+            }
+            for s in stakeholders.stakeholders
+        ]
+
+    return context_data
+
+
 @router.get("/{session_id}/ai")
 async def ai_validate_pyramid(session_id: str):
     """
@@ -144,6 +207,7 @@ async def ai_validate_pyramid(session_id: str):
     - Commitment-intent alignment (semantic fit)
     - Horizon realism (capacity assessment)
     - Language boldness (inspiration quality)
+    - Context grounding (SOCC, tensions, stakeholders)
 
     Requires ANTHROPIC_API_KEY environment variable.
     """
@@ -173,9 +237,12 @@ async def ai_validate_pyramid(session_id: str):
     # Add context validation
     result = validate_context(session_id, result)
 
-    # Enhance with AI validation
+    # Gather context data for AI validation
+    context_data = _get_context_data(session_id)
+
+    # Enhance with AI validation (including context data)
     try:
-        ai_validator = AIValidator(manager.pyramid)
+        ai_validator = AIValidator(manager.pyramid, context_data=context_data)
         result = ai_validator.validate_with_ai(result)
     except Exception as e:
         # If AI validation fails, return standard validation with error note
@@ -198,6 +265,7 @@ async def ai_review_pyramid(session_id: str):
     - Key strengths
     - Key concerns
     - Top 3 prioritized recommendations
+    - Context alignment (if Step 1 data available)
 
     Requires ANTHROPIC_API_KEY environment variable.
     """
@@ -220,8 +288,11 @@ async def ai_review_pyramid(session_id: str):
     if not manager.pyramid:
         raise HTTPException(status_code=404, detail="No pyramid initialized")
 
+    # Gather context data for AI review
+    context_data = _get_context_data(session_id)
+
     try:
-        ai_validator = AIValidator(manager.pyramid)
+        ai_validator = AIValidator(manager.pyramid, context_data=context_data)
         review = ai_validator.get_narrative_review()
         return review
     except Exception as e:

@@ -48,23 +48,23 @@ export default function ExecutionReadinessChecklist({ pyramid, className = "" }:
       items.push({
         id: "socc",
         label: "SOCC Analysis (Context Foundation)",
-        status: soccCount >= 12 ? "complete" : soccCount >= 8 ? "partial" : soccCount > 0 ? "incomplete" : "critical",
+        status: soccCount >= 1 ? "complete" : "critical",
         count: soccCount,
-        target: 12,
-        details: soccCount >= 12 ? `${soccCount} context items (strong foundation)` : soccCount > 0 ? `Add ${12 - soccCount} more items for complete context` : "Capture Strengths, Opportunities, Considerations, Constraints"
+        target: 1,
+        details: soccCount >= 1 ? `${soccCount} context item${soccCount === 1 ? '' : 's'} captured` : "Capture at least one item to get started"
       });
 
       // 0b. Opportunity Scoring Check
       const scoredOpportunities = contextSummary.scored_opportunities_count || 0;
       const totalOpportunities = contextSummary.total_opportunities || 0;
-      const opportunityStatus = totalOpportunities === 0 ? "incomplete" : scoredOpportunities >= 3 ? "complete" : scoredOpportunities > 0 ? "partial" : "incomplete";
+      const opportunityStatus = totalOpportunities === 0 ? "incomplete" : scoredOpportunities >= 1 ? "complete" : "incomplete";
       items.push({
         id: "opportunity-scoring",
         label: "Opportunity Scoring",
         status: opportunityStatus,
         count: scoredOpportunities,
-        target: Math.max(3, totalOpportunities),
-        details: scoredOpportunities >= 3 ? `${scoredOpportunities} opportunities scored and prioritized` : scoredOpportunities > 0 ? `Score ${Math.max(3, totalOpportunities) - scoredOpportunities} more opportunities` : totalOpportunities > 0 ? "Score your opportunities to prioritize" : "Add opportunities to SOCC first"
+        target: Math.max(1, totalOpportunities),
+        details: scoredOpportunities >= 1 ? `${scoredOpportunities} opportunit${scoredOpportunities === 1 ? 'y' : 'ies'} scored` : totalOpportunities > 0 ? "Score at least one opportunity" : "Add opportunities to SOCC first"
       });
 
       // 0c. Strategic Tensions Check
@@ -72,10 +72,10 @@ export default function ExecutionReadinessChecklist({ pyramid, className = "" }:
       items.push({
         id: "tensions",
         label: "Strategic Tensions (Trade-offs)",
-        status: tensionsCount >= 2 ? "complete" : tensionsCount > 0 ? "partial" : "incomplete",
+        status: tensionsCount >= 1 ? "complete" : "incomplete",
         count: tensionsCount,
-        target: 2,
-        details: tensionsCount >= 2 ? `${tensionsCount} tension${tensionsCount === 1 ? '' : 's'} mapped` : tensionsCount > 0 ? "Map 1 more key trade-off" : "Identify key strategic trade-offs"
+        target: 1,
+        details: tensionsCount >= 1 ? `${tensionsCount} tension${tensionsCount === 1 ? '' : 's'} mapped` : "Identify at least one strategic trade-off"
       });
 
       // 0d. Stakeholder Mapping Check
@@ -83,10 +83,10 @@ export default function ExecutionReadinessChecklist({ pyramid, className = "" }:
       items.push({
         id: "stakeholders",
         label: "Stakeholder Mapping",
-        status: stakeholdersCount >= 5 ? "complete" : stakeholdersCount >= 3 ? "partial" : stakeholdersCount > 0 ? "incomplete" : "incomplete",
+        status: stakeholdersCount >= 1 ? "complete" : "incomplete",
         count: stakeholdersCount,
-        target: 5,
-        details: stakeholdersCount >= 5 ? `${stakeholdersCount} stakeholder${stakeholdersCount === 1 ? '' : 's'} mapped` : stakeholdersCount > 0 ? `Add ${5 - stakeholdersCount} more stakeholders` : "Map key stakeholders by interest/influence"
+        target: 1,
+        details: stakeholdersCount >= 1 ? `${stakeholdersCount} stakeholder${stakeholdersCount === 1 ? '' : 's'} mapped` : "Map at least one key stakeholder"
       });
     }
 

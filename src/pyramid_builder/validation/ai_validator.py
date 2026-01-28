@@ -29,16 +29,18 @@ class AIValidator:
     Uses Claude API to provide deep strategic insights.
     """
 
-    def __init__(self, pyramid: StrategyPyramid, api_key: Optional[str] = None):
+    def __init__(self, pyramid: StrategyPyramid, api_key: Optional[str] = None, context_data: Optional[Dict[str, Any]] = None):
         """
         Initialize AI validator.
 
         Args:
             pyramid: StrategyPyramid to validate
             api_key: Anthropic API key (defaults to ANTHROPIC_API_KEY env var)
+            context_data: Optional Step 1 context data (SOCC, tensions, stakeholders, scores)
         """
         self.pyramid = pyramid
         self.api_key = api_key or os.getenv("ANTHROPIC_API_KEY")
+        self.context_data = context_data or {}
 
         if not ANTHROPIC_AVAILABLE:
             raise ImportError(
@@ -86,6 +88,74 @@ class AIValidator:
         - Traceability: Vision → Drivers → Intents → Commitments → Teams → Individuals
         """
 
+    def _format_context_data(self) -> str:
+        """Format Step 1 context data for AI prompts."""
+        if not self.context_data:
+            return ""
+
+        sections = []
+
+        # SOCC Analysis
+        socc_items = self.context_data.get("socc_items", [])
+        if socc_items:
+            strengths = [item for item in socc_items if item.get("quadrant") == "strength"]
+            opportunities = [item for item in socc_items if item.get("quadrant") == "opportunity"]
+            considerations = [item for item in socc_items if item.get("quadrant") == "consideration"]
+            constraints = [item for item in socc_items if item.get("quadrant") == "constraint"]
+
+            socc_text = "CONTEXT ANALYSIS (SOCC):\n"
+            if strengths:
+                socc_text += f"\nStrengths ({len(strengths)}):\n"
+                socc_text += "\n".join([f"  - {s.get('title', '')}" for s in strengths[:5]])
+            if opportunities:
+                socc_text += f"\n\nOpportunities ({len(opportunities)}):\n"
+                socc_text += "\n".join([f"  - {o.get('title', '')}" for o in opportunities[:5]])
+            if considerations:
+                socc_text += f"\n\nConsiderations ({len(considerations)}):\n"
+                socc_text += "\n".join([f"  - {c.get('title', '')}" for c in considerations[:5]])
+            if constraints:
+                socc_text += f"\n\nConstraints ({len(constraints)}):\n"
+                socc_text += "\n".join([f"  - {c.get('title', '')}" for c in constraints[:5]])
+
+            sections.append(socc_text)
+
+        # Scored Opportunities
+        scores = self.context_data.get("opportunity_scores", [])
+        if scores:
+            score_text = f"\nOPPORTUNITY SCORING ({len(scores)} scored):\n"
+            for score in scores[:3]:
+                opp_title = score.get("opportunity_title", "Unknown")
+                viability = score.get("viability_level", "unknown")
+                score_text += f"  - {opp_title}: {viability} viability\n"
+            sections.append(score_text)
+
+        # Strategic Tensions
+        tensions = self.context_data.get("tensions", [])
+        if tensions:
+            tension_text = f"\nSTRATEGIC TENSIONS ({len(tensions)} identified):\n"
+            for tension in tensions[:3]:
+                left = tension.get("left_pole", "")
+                right = tension.get("right_pole", "")
+                current = tension.get("current_position", 50)
+                target = tension.get("target_position", 50)
+                shift = target - current
+                direction = "toward " + right if shift > 0 else "toward " + left
+                tension_text += f"  - {left} vs. {right}: Shift {abs(shift)} points {direction}\n"
+            sections.append(tension_text)
+
+        # Stakeholders
+        stakeholders = self.context_data.get("stakeholders", [])
+        if stakeholders:
+            stakeholder_text = f"\nKEY STAKEHOLDERS ({len(stakeholders)} mapped):\n"
+            high_influence = [s for s in stakeholders if s.get("influence_level") == "high"]
+            for s in high_influence[:5]:
+                name = s.get("name", "")
+                interest = s.get("interest_level", "")
+                stakeholder_text += f"  - {name} (High influence, {interest} interest)\n"
+            sections.append(stakeholder_text)
+
+        return "\n".join(sections) if sections else ""
+
     def validate_with_ai(self, result: ValidationResult) -> ValidationResult:
         """
         Enhance validation results with AI-powered checks.
@@ -107,7 +177,8 @@ class AIValidator:
     def _check_strategic_coherence(self, result: ValidationResult):
         """
         Check 9: Strategic Coherence
-        Analyzes whether vision aligns with drivers and commitments.
+        Analyzes whether vision aligns with drivers and commitments,
+        and whether the strategy is grounded in context.
         """
         vision_text = ""
         if self.pyramid.vision and self.pyramid.vision.statements:
@@ -126,6 +197,10 @@ class AIValidator:
             for c in self.pyramid.iconic_commitments[:5]  # Limit to top 5
         ])
 
+        # Include context data if available
+        context_text = self._format_context_data()
+        context_section = f"\n\n{context_text}" if context_text else ""
+
         prompt = f"""You are a strategic planning expert reviewing a strategic pyramid for coherence.
 
 Vision/Mission:
@@ -136,13 +211,17 @@ Strategic Drivers:
 
 Top Iconic Commitments:
 {commitments_text}
+{context_section}
 
 Analyze whether the strategic drivers and commitments genuinely support the stated vision.
+{f"Also check whether the strategy is grounded in the context analysis (SOCC) provided above." if context_text else ""}
 
 Look for:
 1. Misalignment: Drivers or commitments that don't connect to the vision
 2. Missing coverage: Aspects of the vision not addressed by any driver
 3. Strong alignment: Where execution clearly supports vision
+{f"4. Context grounding: Are drivers and commitments leveraging identified strengths and opportunities?" if context_text else ""}
+{f"5. Tension awareness: Does the strategy acknowledge and navigate identified trade-offs?" if context_text else ""}
 
 Respond in JSON format:
 {{
@@ -457,9 +536,16 @@ Respond in JSON format:
             for c in self.pyramid.iconic_commitments
         ])
 
+        # Include context data if available
+        context_text = self._format_context_data()
+        context_section = f"\n{context_text}" if context_text else ""
+        context_guidance = """
+5. CONTEXT ALIGNMENT: How well does the strategy leverage the identified context (strengths, opportunities) and navigate challenges (considerations, constraints, tensions)?""" if context_text else ""
+
         prompt = f"""You are a seasoned strategy consultant reviewing a strategic pyramid.
 
 Provide a comprehensive but concise narrative review covering:
+{context_section}
 
 PYRAMID OVERVIEW:
 Vision: {vision_text}
@@ -474,9 +560,10 @@ Please provide:
 1. OVERALL IMPRESSION (2-3 sentences)
 2. KEY STRENGTHS (2-3 bullet points)
 3. KEY CONCERNS (2-3 bullet points)
-4. TOP 3 RECOMMENDATIONS (prioritized)
+4. TOP 3 RECOMMENDATIONS (prioritized){context_guidance}
 
 Be direct and actionable. Reference the Strategic Pyramid methodology: force hard decisions, elevate language, ensure traceability.
+{f"Consider how well the strategy is grounded in the context analysis provided." if context_text else ""}
 
 Respond in JSON format:
 {{
@@ -487,7 +574,7 @@ Respond in JSON format:
     {{"priority": 1, "title": "Recommendation 1", "description": "Why and how"}},
     {{"priority": 2, "title": "Recommendation 2", "description": "Why and how"}},
     {{"priority": 3, "title": "Recommendation 3", "description": "Why and how"}}
-  ]
+  ]{f',\n  "context_alignment": "Assessment of how well strategy leverages context"' if context_text else ""}
 }}"""
 
         try:

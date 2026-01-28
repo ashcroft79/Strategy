@@ -143,6 +143,9 @@ export default function BuilderPage() {
     return true;
   });
 
+  // Context summary for step navigation progress
+  const [contextSummary, setContextSummary] = useState<any>(null);
+
   // Load AI preference from localStorage
   useEffect(() => {
     const savedAiPref = localStorage.getItem('ai-enabled');
@@ -421,6 +424,40 @@ export default function BuilderPage() {
 
     loadSOCCItems();
   }, [sessionId]);
+
+  // Load context summary for step navigation progress
+  useEffect(() => {
+    const loadContextSummary = async () => {
+      if (!sessionId) return;
+      try {
+        const summary = await contextApi.getContextSummary(sessionId);
+        setContextSummary(summary);
+      } catch (err: any) {
+        // Silently fail if no context data exists yet
+        console.log("No context summary available yet");
+      }
+    };
+
+    loadContextSummary();
+  }, [sessionId]);
+
+  // Refresh context summary when context tab changes or content is modified
+  const refreshContextSummary = async () => {
+    if (!sessionId) return;
+    try {
+      const summary = await contextApi.getContextSummary(sessionId);
+      setContextSummary(summary);
+    } catch (err: any) {
+      console.error("Failed to refresh context summary:", err);
+    }
+  };
+
+  // Refresh context summary when switching context tabs or when context tier is active
+  useEffect(() => {
+    if (activeTier === 'context') {
+      refreshContextSummary();
+    }
+  }, [activeTier, activeContextTab]);
 
   const handleTierClick = (tierId: string) => {
     // Simply set the active tier - content will appear in the right panel
@@ -1104,6 +1141,7 @@ export default function BuilderPage() {
               <p className="text-xs text-gray-600 mb-4">Complete each step to build your strategy</p>
               <StepNavigation
                 pyramid={pyramid}
+                contextSummary={contextSummary}
                 activeTier={activeTier}
                 activeContextTab={activeContextTab}
                 onNavigate={(tier, contextTab) => {

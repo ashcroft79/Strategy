@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/Badge";
+import Modal from "@/components/ui/Modal";
 import { ChevronDown, ChevronUp, Save, X, TrendingUp, AlertTriangle, Lock } from "lucide-react";
 
 interface OpportunityScoringCardProps {
@@ -19,7 +20,7 @@ interface OpportunityScoringCardProps {
 
 export function OpportunityScoringCard({ opportunity, rank, soccItems, onScore, onDeleteScore }: OpportunityScoringCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Local state for scoring inputs
   const [strengthMatch, setStrengthMatch] = useState(opportunity.score?.strength_match || 3);
@@ -95,8 +96,7 @@ export function OpportunityScoringCard({ opportunity, rank, soccItems, onScore, 
       related_considerations: relatedConsiderations,
       related_constraints: relatedConstraints,
     });
-    setIsEditing(false);
-    setIsExpanded(false);
+    setIsModalOpen(false);
   };
 
   const handleCancel = () => {
@@ -109,10 +109,30 @@ export function OpportunityScoringCard({ opportunity, rank, soccItems, onScore, 
       setRelatedConsiderations(opportunity.score.related_considerations || []);
       setRelatedConstraints(opportunity.score.related_constraints || []);
     }
-    setIsEditing(false);
-    if (!opportunity.score) {
-      setIsExpanded(false);
+    setIsModalOpen(false);
+  };
+
+  const openScoringModal = () => {
+    // Reset to current values when opening modal
+    if (opportunity.score) {
+      setStrengthMatch(opportunity.score.strength_match);
+      setConsiderationRisk(opportunity.score.consideration_risk);
+      setConstraintImpact(opportunity.score.constraint_impact);
+      setRationale(opportunity.score.rationale || "");
+      setRelatedStrengths(opportunity.score.related_strengths || []);
+      setRelatedConsiderations(opportunity.score.related_considerations || []);
+      setRelatedConstraints(opportunity.score.related_constraints || []);
+    } else {
+      // Reset to defaults for new score
+      setStrengthMatch(3);
+      setConsiderationRisk(3);
+      setConstraintImpact(3);
+      setRationale("");
+      setRelatedStrengths([]);
+      setRelatedConsiderations([]);
+      setRelatedConstraints([]);
     }
+    setIsModalOpen(true);
   };
 
   const hasScore = !!opportunity.score;
@@ -147,113 +167,132 @@ export function OpportunityScoringCard({ opportunity, rank, soccItems, onScore, 
             )}
           </div>
 
-          {/* Expand/Collapse Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setIsExpanded(!isExpanded);
-              if (!isExpanded && !hasScore) {
-                setIsEditing(true);
-              }
-            }}
-          >
-            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </Button>
+          {/* Score / Expand Button */}
+          {hasScore ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
+              {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </Button>
+          ) : (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={openScoringModal}
+            >
+              Score
+            </Button>
+          )}
         </div>
       </CardHeader>
 
-      {isExpanded && (
+      {isExpanded && hasScore && (
         <CardContent>
-          {!isEditing && hasScore ? (
-            // Display Mode
-            <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-4">
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="text-xs text-gray-600 mb-1">Strength Match</div>
-                  <div className="text-2xl font-bold text-gray-900">{strengthMatch}/5</div>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="text-xs text-gray-600 mb-1">Consideration Risk</div>
-                  <div className="text-2xl font-bold text-gray-900">{considerationRisk}/5</div>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="text-xs text-gray-600 mb-1">Constraint Impact</div>
-                  <div className="text-2xl font-bold text-gray-900">{constraintImpact}/5</div>
-                </div>
+          {/* Display Mode */}
+          <div className="space-y-4">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="text-xs text-gray-600 mb-1">Strength Match</div>
+                <div className="text-2xl font-bold text-gray-900">{opportunity.score?.strength_match}/5</div>
               </div>
-
-              {rationale && (
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="text-xs text-gray-600 mb-1">Rationale</div>
-                  <p className="text-sm text-gray-900">{rationale}</p>
-                </div>
-              )}
-
-              {/* Related Items Display */}
-              {(relatedStrengths.length > 0 || relatedConsiderations.length > 0 || relatedConstraints.length > 0) && (
-                <div className="space-y-3">
-                  {relatedStrengths.length > 0 && (
-                    <div>
-                      <div className="text-xs text-gray-600 mb-2">Related Strengths</div>
-                      <div className="flex flex-wrap gap-2">
-                        {relatedStrengths.map(id => {
-                          const item = strengths.find(s => s.id === id);
-                          return item ? (
-                            <Badge key={id} variant="secondary" className="bg-green-100 text-green-800">
-                              {item.title}
-                            </Badge>
-                          ) : null;
-                        })}
-                      </div>
-                    </div>
-                  )}
-                  {relatedConsiderations.length > 0 && (
-                    <div>
-                      <div className="text-xs text-gray-600 mb-2">Related Considerations</div>
-                      <div className="flex flex-wrap gap-2">
-                        {relatedConsiderations.map(id => {
-                          const item = considerations.find(c => c.id === id);
-                          return item ? (
-                            <Badge key={id} variant="secondary" className="bg-orange-100 text-orange-800">
-                              {item.title}
-                            </Badge>
-                          ) : null;
-                        })}
-                      </div>
-                    </div>
-                  )}
-                  {relatedConstraints.length > 0 && (
-                    <div>
-                      <div className="text-xs text-gray-600 mb-2">Related Constraints</div>
-                      <div className="flex flex-wrap gap-2">
-                        {relatedConstraints.map(id => {
-                          const item = constraints.find(c => c.id === id);
-                          return item ? (
-                            <Badge key={id} variant="secondary" className="bg-red-100 text-red-800">
-                              {item.title}
-                            </Badge>
-                          ) : null;
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="flex gap-2">
-                <Button variant="secondary" size="sm" onClick={() => setIsEditing(true)}>
-                  Edit Score
-                </Button>
-                <Button variant="ghost" size="sm" onClick={onDeleteScore}>
-                  Remove Score
-                </Button>
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="text-xs text-gray-600 mb-1">Consideration Risk</div>
+                <div className="text-2xl font-bold text-gray-900">{opportunity.score?.consideration_risk}/5</div>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="text-xs text-gray-600 mb-1">Constraint Impact</div>
+                <div className="text-2xl font-bold text-gray-900">{opportunity.score?.constraint_impact}/5</div>
               </div>
             </div>
-          ) : (
-            // Editing Mode
-            <div className="space-y-6">
-              {/* Strength Match Slider */}
+
+            {opportunity.score?.rationale && (
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="text-xs text-gray-600 mb-1">Rationale</div>
+                <p className="text-sm text-gray-900">{opportunity.score.rationale}</p>
+              </div>
+            )}
+
+            {/* Related Items Display */}
+            {((opportunity.score?.related_strengths?.length || 0) > 0 || (opportunity.score?.related_considerations?.length || 0) > 0 || (opportunity.score?.related_constraints?.length || 0) > 0) && (
+              <div className="space-y-3">
+                {(opportunity.score?.related_strengths?.length || 0) > 0 && (
+                  <div>
+                    <div className="text-xs text-gray-600 mb-2">Related Strengths</div>
+                    <div className="flex flex-wrap gap-2">
+                      {opportunity.score?.related_strengths?.map(id => {
+                        const item = strengths.find(s => s.id === id);
+                        return item ? (
+                          <Badge key={id} variant="secondary" className="bg-green-100 text-green-800">
+                            {item.title}
+                          </Badge>
+                        ) : null;
+                      })}
+                    </div>
+                  </div>
+                )}
+                {(opportunity.score?.related_considerations?.length || 0) > 0 && (
+                  <div>
+                    <div className="text-xs text-gray-600 mb-2">Related Considerations</div>
+                    <div className="flex flex-wrap gap-2">
+                      {opportunity.score?.related_considerations?.map(id => {
+                        const item = considerations.find(c => c.id === id);
+                        return item ? (
+                          <Badge key={id} variant="secondary" className="bg-orange-100 text-orange-800">
+                            {item.title}
+                          </Badge>
+                        ) : null;
+                      })}
+                    </div>
+                  </div>
+                )}
+                {(opportunity.score?.related_constraints?.length || 0) > 0 && (
+                  <div>
+                    <div className="text-xs text-gray-600 mb-2">Related Constraints</div>
+                    <div className="flex flex-wrap gap-2">
+                      {opportunity.score?.related_constraints?.map(id => {
+                        const item = constraints.find(c => c.id === id);
+                        return item ? (
+                          <Badge key={id} variant="secondary" className="bg-red-100 text-red-800">
+                            {item.title}
+                          </Badge>
+                        ) : null;
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <Button variant="secondary" size="sm" onClick={openScoringModal}>
+                Edit Score
+              </Button>
+              <Button variant="ghost" size="sm" onClick={onDeleteScore}>
+                Remove Score
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      )}
+
+      {/* Scoring Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleCancel}
+        title={hasScore ? `Edit Score: ${opportunity.opportunity.title}` : `Score: ${opportunity.opportunity.title}`}
+        size="lg"
+      >
+        <div className="space-y-6">
+          {/* Opportunity Info */}
+          {opportunity.opportunity.description && (
+            <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+              <p className="text-sm text-blue-800">{opportunity.opportunity.description}</p>
+            </div>
+          )}
+
+          {/* Strength Match Slider */}
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <div>
@@ -461,20 +500,18 @@ export function OpportunityScoringCard({ opportunity, rank, soccItems, onScore, 
                 </div>
               )}
 
-              {/* Action Buttons */}
-              <div className="flex gap-2">
-                <Button onClick={handleSave} size="sm">
-                  <Save className="w-4 h-4 mr-1" />
-                  Save Score
-                </Button>
-                <Button variant="secondary" onClick={handleCancel} size="sm">
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      )}
+          {/* Action Buttons */}
+          <div className="flex gap-2 pt-4 border-t border-gray-200">
+            <Button onClick={handleSave}>
+              <Save className="w-4 h-4 mr-1" />
+              Save Score
+            </Button>
+            <Button variant="secondary" onClick={handleCancel}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </Card>
   );
 }

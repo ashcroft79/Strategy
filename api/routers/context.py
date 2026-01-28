@@ -420,17 +420,42 @@ async def get_context_summary(session_id: str):
     tensions_count = len(tensions.tensions)
     stakeholders_count = len(stakeholders.stakeholders)
 
-    return ContextSummary(
-        session_id=session_id,
-        socc_item_count=socc_count,
-        opportunities_scored_count=opportunities_count,
-        tensions_identified_count=tensions_count,
-        stakeholders_mapped_count=stakeholders_count,
-        socc_complete=socc_count >= 20,
-        opportunities_complete=opportunities_count >= 3,
-        tensions_complete=tensions_count >= 2,
-        stakeholders_complete=stakeholders_count >= 5,
+    # Calculate completion with new thresholds (1 item each)
+    socc_complete = socc_count >= 1
+    opportunities_complete = opportunities_count >= 1
+    tensions_complete = tensions_count >= 1
+    stakeholders_complete = stakeholders_count >= 1
+
+    # Calculate overall completion percentage
+    completed_sections = sum([
+        socc_complete,
+        opportunities_complete,
+        tensions_complete,
+        stakeholders_complete,
+    ])
+    completion_percentage = int((completed_sections / 4) * 100)
+
+    # Overall complete when all sections have at least 1 item
+    overall_complete = (
+        socc_complete and
+        opportunities_complete and
+        tensions_complete and
+        stakeholders_complete
     )
+
+    return {
+        "session_id": session_id,
+        "socc_item_count": socc_count,
+        "opportunities_scored_count": opportunities_count,
+        "tensions_identified_count": tensions_count,
+        "stakeholders_mapped_count": stakeholders_count,
+        "socc_complete": socc_complete,
+        "opportunities_complete": opportunities_complete,
+        "tensions_complete": tensions_complete,
+        "stakeholders_complete": stakeholders_complete,
+        "completion_percentage": completion_percentage,
+        "overall_complete": overall_complete,
+    }
 
 
 @router.get("/{session_id}/export")
@@ -442,7 +467,7 @@ async def export_context(session_id: str):
         "opportunity_scores": get_or_create_scoring(session_id).dict(),
         "tensions": get_or_create_tensions(session_id).dict(),
         "stakeholders": get_or_create_stakeholders(session_id).dict(),
-        "summary": (await get_context_summary(session_id)).dict(),
+        "summary": await get_context_summary(session_id),
     }
 
 

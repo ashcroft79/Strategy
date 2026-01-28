@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
+import Modal from "@/components/ui/Modal";
 import { ChevronDown, ChevronUp, Save, X, Edit, Trash2, ArrowRight } from "lucide-react";
 
 interface TensionCardProps {
@@ -16,7 +17,7 @@ interface TensionCardProps {
 
 export function TensionCard({ tension, onUpdate, onDelete }: TensionCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Local state for editing
   const [currentPosition, setCurrentPosition] = useState(tension.current_position);
@@ -39,7 +40,7 @@ export function TensionCard({ tension, onUpdate, onDelete }: TensionCardProps) {
       rationale,
       implications: implications || undefined,
     });
-    setIsEditing(false);
+    setIsModalOpen(false);
   };
 
   const handleCancel = () => {
@@ -47,7 +48,16 @@ export function TensionCard({ tension, onUpdate, onDelete }: TensionCardProps) {
     setTargetPosition(tension.target_position);
     setRationale(tension.rationale);
     setImplications(tension.implications || "");
-    setIsEditing(false);
+    setIsModalOpen(false);
+  };
+
+  const openEditModal = () => {
+    // Reset to current values when opening modal
+    setCurrentPosition(tension.current_position);
+    setTargetPosition(tension.target_position);
+    setRationale(tension.rationale);
+    setImplications(tension.implications || "");
+    setIsModalOpen(true);
   };
 
   const getPositionColor = (position: number) => {
@@ -129,16 +139,11 @@ export function TensionCard({ tension, onUpdate, onDelete }: TensionCardProps) {
             </div>
           </div>
 
-          {/* Expand/Collapse Button */}
+          {/* Edit / Expand Buttons */}
           <div className="flex items-center gap-2">
-            {!isEditing && (
-              <Button variant="ghost" size="sm" onClick={() => {
-                setIsEditing(true);
-                setIsExpanded(true);
-              }}>
-                <Edit className="w-4 h-4" />
-              </Button>
-            )}
+            <Button variant="ghost" size="sm" onClick={openEditModal}>
+              <Edit className="w-4 h-4" />
+            </Button>
             <Button variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)}>
               {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </Button>
@@ -148,122 +153,127 @@ export function TensionCard({ tension, onUpdate, onDelete }: TensionCardProps) {
 
       {isExpanded && (
         <CardContent>
-          {isEditing ? (
-            // Editing Mode
-            <div className="space-y-6">
-              {/* Current Position Slider */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <label className="text-sm font-semibold text-gray-900">Current Position</label>
-                  <div className="text-lg font-bold text-blue-600">{currentPosition}</div>
-                </div>
-                <Slider
-                  value={[currentPosition]}
-                  onValueChange={([value]) => setCurrentPosition(value)}
-                  min={0}
-                  max={100}
-                  step={5}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>{tension.left_pole}</span>
-                  <span>{getPositionLabel(currentPosition, tension.left_pole, tension.right_pole)}</span>
-                  <span>{tension.right_pole}</span>
-                </div>
+          {/* Display Mode */}
+          <div className="space-y-4">
+            {tension.rationale && (
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="text-xs text-gray-600 font-semibold mb-1">Rationale</div>
+                <p className="text-sm text-gray-900">{tension.rationale}</p>
               </div>
+            )}
 
-              {/* Target Position Slider */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <label className="text-sm font-semibold text-gray-900">Target Position</label>
-                  <div className="text-lg font-bold text-purple-600">{targetPosition}</div>
-                </div>
-                <Slider
-                  value={[targetPosition]}
-                  onValueChange={([value]) => setTargetPosition(value)}
-                  min={0}
-                  max={100}
-                  step={5}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>{tension.left_pole}</span>
-                  <span>{getPositionLabel(targetPosition, tension.left_pole, tension.right_pole)}</span>
-                  <span>{tension.right_pole}</span>
-                </div>
+            {tension.implications && (
+              <div className="bg-blue-50 rounded-lg p-3">
+                <div className="text-xs text-blue-700 font-semibold mb-1">Strategic Implications</div>
+                <p className="text-sm text-gray-900">{tension.implications}</p>
               </div>
+            )}
 
-              {/* Rationale */}
-              <div>
-                <label className="text-sm font-semibold text-gray-900 mb-2 block">
-                  Rationale <span className="text-red-500">*</span>
-                </label>
-                <Textarea
-                  value={rationale}
-                  onChange={(e) => setRationale(e.target.value)}
-                  placeholder="Why does this tension exist? Why did you choose these positions?"
-                  rows={3}
-                  className="w-full"
-                />
-              </div>
-
-              {/* Implications */}
-              <div>
-                <label className="text-sm font-semibold text-gray-900 mb-2 block">Implications (Optional)</label>
-                <Textarea
-                  value={implications}
-                  onChange={(e) => setImplications(e.target.value)}
-                  placeholder="What does this positioning mean for your strategy? What will you need to do differently?"
-                  rows={3}
-                  className="w-full"
-                />
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-2">
-                <Button onClick={handleSave} size="sm" disabled={!rationale.trim()}>
-                  <Save className="w-4 h-4 mr-1" />
-                  Save Changes
-                </Button>
-                <Button variant="secondary" onClick={handleCancel} size="sm">
-                  Cancel
-                </Button>
-                <Button variant="ghost" onClick={onDelete} size="sm" className="ml-auto text-red-600 hover:text-red-700">
-                  <Trash2 className="w-4 h-4 mr-1" />
-                  Delete
-                </Button>
-              </div>
+            <div className="flex gap-2">
+              <Button variant="secondary" size="sm" onClick={openEditModal}>
+                Edit Tension
+              </Button>
+              <Button variant="ghost" size="sm" onClick={onDelete} className="text-red-600 hover:text-red-700">
+                <Trash2 className="w-4 h-4 mr-1" />
+                Delete
+              </Button>
             </div>
-          ) : (
-            // Display Mode
-            <div className="space-y-4">
-              {rationale && (
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="text-xs text-gray-600 font-semibold mb-1">Rationale</div>
-                  <p className="text-sm text-gray-900">{rationale}</p>
-                </div>
-              )}
-
-              {implications && (
-                <div className="bg-blue-50 rounded-lg p-3">
-                  <div className="text-xs text-blue-700 font-semibold mb-1">Strategic Implications</div>
-                  <p className="text-sm text-gray-900">{implications}</p>
-                </div>
-              )}
-
-              <div className="flex gap-2">
-                <Button variant="secondary" size="sm" onClick={() => setIsEditing(true)}>
-                  Edit Tension
-                </Button>
-                <Button variant="ghost" size="sm" onClick={onDelete} className="text-red-600 hover:text-red-700">
-                  <Trash2 className="w-4 h-4 mr-1" />
-                  Delete
-                </Button>
-              </div>
-            </div>
-          )}
+          </div>
         </CardContent>
       )}
+
+      {/* Edit Tension Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleCancel}
+        title={`Edit: ${tension.name}`}
+        size="lg"
+      >
+        <div className="space-y-6">
+          {/* Current Position Slider */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-sm font-semibold text-gray-900">Current Position</label>
+              <div className="text-lg font-bold text-blue-600">{currentPosition}</div>
+            </div>
+            <Slider
+              value={[currentPosition]}
+              onValueChange={([value]) => setCurrentPosition(value)}
+              min={0}
+              max={100}
+              step={5}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>{tension.left_pole}</span>
+              <span>{getPositionLabel(currentPosition, tension.left_pole, tension.right_pole)}</span>
+              <span>{tension.right_pole}</span>
+            </div>
+          </div>
+
+          {/* Target Position Slider */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-sm font-semibold text-gray-900">Target Position</label>
+              <div className="text-lg font-bold text-purple-600">{targetPosition}</div>
+            </div>
+            <Slider
+              value={[targetPosition]}
+              onValueChange={([value]) => setTargetPosition(value)}
+              min={0}
+              max={100}
+              step={5}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>{tension.left_pole}</span>
+              <span>{getPositionLabel(targetPosition, tension.left_pole, tension.right_pole)}</span>
+              <span>{tension.right_pole}</span>
+            </div>
+          </div>
+
+          {/* Rationale */}
+          <div>
+            <label className="text-sm font-semibold text-gray-900 mb-2 block">
+              Rationale <span className="text-red-500">*</span>
+            </label>
+            <Textarea
+              value={rationale}
+              onChange={(e) => setRationale(e.target.value)}
+              placeholder="Why does this tension exist? Why did you choose these positions?"
+              rows={3}
+              className="w-full"
+            />
+          </div>
+
+          {/* Implications */}
+          <div>
+            <label className="text-sm font-semibold text-gray-900 mb-2 block">Implications (Optional)</label>
+            <Textarea
+              value={implications}
+              onChange={(e) => setImplications(e.target.value)}
+              placeholder="What does this positioning mean for your strategy? What will you need to do differently?"
+              rows={3}
+              className="w-full"
+            />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-2 pt-4 border-t border-gray-200">
+            <Button onClick={handleSave} disabled={!rationale.trim()}>
+              <Save className="w-4 h-4 mr-1" />
+              Save Changes
+            </Button>
+            <Button variant="secondary" onClick={handleCancel}>
+              Cancel
+            </Button>
+            <Button variant="ghost" onClick={onDelete} className="ml-auto text-red-600 hover:text-red-700">
+              <Trash2 className="w-4 h-4 mr-1" />
+              Delete
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </Card>
   );
 }

@@ -50,24 +50,27 @@ export function ContextTraceability() {
 
   // Get all opportunities from SOCC
   const opportunities = soccData.items.filter((item) => item.quadrant === "opportunity");
+  const opportunityIds = new Set(opportunities.map((opp) => opp.id));
 
   // Get all drivers
   const drivers = pyramid.strategic_drivers || [];
 
-  // Build traceability map
+  // Build traceability map - only count IDs that actually exist in current opportunities
   const addressedOpportunityIds = new Set<string>();
   const driverToOpportunities = new Map<string, string[]>();
 
   drivers.forEach((driver) => {
     const oppIds = driver.addresses_opportunities || [];
-    oppIds.forEach((id: string) => addressedOpportunityIds.add(id));
-    driverToOpportunities.set(driver.id, oppIds);
+    // Filter to only include opportunity IDs that still exist
+    const validOppIds = oppIds.filter((id: string) => opportunityIds.has(id));
+    validOppIds.forEach((id: string) => addressedOpportunityIds.add(id));
+    driverToOpportunities.set(driver.id, validOppIds);
   });
 
-  // Calculate coverage
+  // Calculate coverage - addressedCount can never exceed totalCount now
   const addressedCount = addressedOpportunityIds.size;
   const totalCount = opportunities.length;
-  const coveragePercentage = totalCount > 0 ? (addressedCount / totalCount) * 100 : 0;
+  const coveragePercentage = totalCount > 0 ? Math.min((addressedCount / totalCount) * 100, 100) : 0;
 
   // Get unaddressed opportunities
   const unaddressedOpportunities = opportunities.filter((opp) => !addressedOpportunityIds.has(opp.id));
@@ -98,12 +101,12 @@ export function ContextTraceability() {
         </CardHeader>
         <CardContent>
           {/* Progress Bar */}
-          <div className="w-full bg-gray-200 rounded-full h-4 mb-4">
+          <div className="w-full bg-gray-200 rounded-full h-4 mb-4 overflow-hidden">
             <div
               className={`h-4 rounded-full transition-all ${
                 coveragePercentage === 100 ? 'bg-green-600' : 'bg-orange-600'
               }`}
-              style={{ width: `${coveragePercentage}%` }}
+              style={{ width: `${Math.min(coveragePercentage, 100)}%` }}
             />
           </div>
 
