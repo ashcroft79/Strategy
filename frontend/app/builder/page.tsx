@@ -33,6 +33,7 @@ import TierGuide from "@/components/TierGuide";
 import LearningCenter from "@/components/LearningCenter";
 import ExampleGallery from "@/components/ExampleGallery";
 import QuickTour from "@/components/QuickTour";
+import ProgressTracker from "@/components/ProgressTracker";
 import { useAIFieldSuggestion } from "@/hooks/useAIFieldSuggestion";
 import { AIFieldSuggestion, AIFieldSuggestionIndicator } from "@/components/AIFieldSuggestion";
 import { AIDraftGenerator } from "@/components/AIDraftGenerator";
@@ -1169,6 +1170,32 @@ export default function BuilderPage() {
 
             {/* Execution Readiness Checklist */}
             <ExecutionReadinessChecklist pyramid={pyramid} />
+
+            {/* Progress Tracker */}
+            <div className="mt-4">
+              <ProgressTracker
+                pyramid={{
+                  vision: pyramid?.vision?.statements?.length ? { statement: pyramid.vision.statements[0]?.statement } : undefined,
+                  values: pyramid?.values,
+                  behaviours: pyramid?.behaviours,
+                  drivers: pyramid?.strategic_drivers,
+                  intents: pyramid?.strategic_intents,
+                  enablers: pyramid?.enablers,
+                  commitments: pyramid?.iconic_commitments?.map((c: any) => ({
+                    id: c.id,
+                    horizon: c.horizon,
+                    primaryDriverId: c.primary_driver_id,
+                  })),
+                  teamObjectives: pyramid?.team_objectives,
+                  individualObjectives: pyramid?.individual_objectives,
+                }}
+                context={{
+                  items: contextSummary?.items,
+                  tensions: contextSummary?.tensions,
+                  stakeholders: contextSummary?.stakeholders,
+                }}
+              />
+            </div>
           </div>
         </div>
 
