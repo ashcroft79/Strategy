@@ -6,6 +6,7 @@ import { usePyramidStore } from "@/lib/store";
 import { TensionCard } from "./TensionCard";
 import { Button } from "@/components/ui/Button";
 import { Slider } from "@/components/ui/slider";
+import { Textarea } from "@/components/ui/textarea";
 import { AlertCircle, Plus, Lightbulb, Scale } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 
@@ -22,6 +23,8 @@ export function StrategicTensions() {
   const [rightPole, setRightPole] = useState("");
   const [currentPosition, setCurrentPosition] = useState(50);
   const [targetPosition, setTargetPosition] = useState(50);
+  const [rationale, setRationale] = useState("");
+  const [implications, setImplications] = useState("");
 
   const loadTensions = async () => {
     if (!sessionId) return;
@@ -55,10 +58,12 @@ export function StrategicTensions() {
     setRightPole("");
     setCurrentPosition(50);
     setTargetPosition(50);
+    setRationale("");
+    setImplications("");
   };
 
   const handleAddTension = async () => {
-    if (!leftPole.trim() || !rightPole.trim()) return;
+    if (!leftPole.trim() || !rightPole.trim() || !rationale.trim()) return;
 
     try {
       await contextApi.addTension(sessionId, {
@@ -67,7 +72,8 @@ export function StrategicTensions() {
         right_pole: rightPole,
         current_position: currentPosition,
         target_position: targetPosition,
-        rationale: "",
+        rationale: rationale,
+        implications: implications || undefined,
         created_by: "user",
       });
       await loadTensions();
@@ -304,8 +310,34 @@ export function StrategicTensions() {
             <p className="text-xs text-gray-500 mt-1">Where do you want to be?</p>
           </div>
 
-          <div className="flex gap-2">
-            <Button onClick={handleAddTension} disabled={!leftPole.trim() || !rightPole.trim()}>
+          {/* Rationale */}
+          <div>
+            <label className="text-sm font-semibold text-gray-900 mb-2 block">
+              Rationale <span className="text-red-500">*</span>
+            </label>
+            <Textarea
+              value={rationale}
+              onChange={(e) => setRationale(e.target.value)}
+              placeholder="Why does this tension exist? Why did you choose these positions?"
+              rows={3}
+              className="w-full"
+            />
+          </div>
+
+          {/* Implications */}
+          <div>
+            <label className="text-sm font-semibold text-gray-900 mb-2 block">Implications (Optional)</label>
+            <Textarea
+              value={implications}
+              onChange={(e) => setImplications(e.target.value)}
+              placeholder="What does this positioning mean for your strategy? What will you need to do differently?"
+              rows={3}
+              className="w-full"
+            />
+          </div>
+
+          <div className="flex gap-2 pt-4 border-t border-gray-200">
+            <Button onClick={handleAddTension} disabled={!leftPole.trim() || !rightPole.trim() || !rationale.trim()}>
               Add Tension
             </Button>
             <Button variant="secondary" onClick={() => setShowAddModal(false)}>

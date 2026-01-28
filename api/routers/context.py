@@ -426,10 +426,10 @@ async def get_context_summary(session_id: str):
         opportunities_scored_count=opportunities_count,
         tensions_identified_count=tensions_count,
         stakeholders_mapped_count=stakeholders_count,
-        socc_complete=socc_count >= 20,
-        opportunities_complete=opportunities_count >= 3,
-        tensions_complete=tensions_count >= 2,
-        stakeholders_complete=stakeholders_count >= 5,
+        socc_complete=socc_count >= 1,
+        opportunities_complete=opportunities_count >= 1,
+        tensions_complete=tensions_count >= 1,
+        stakeholders_complete=stakeholders_count >= 1,
     )
 
 

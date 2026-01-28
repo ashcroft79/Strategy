@@ -205,22 +205,22 @@ export function SOCCCanvas() {
         </div>
 
         {/* Progress indicator */}
-        {totalItems > 0 && totalItems < 20 && (
+        {totalItems === 0 && (
           <div className="mt-4 pt-4 border-t border-gray-200">
             <div className="flex items-center justify-between text-sm mb-2">
-              <span className="text-gray-600">Recommended: 20+ items for complete context</span>
-              <span className="font-semibold text-gray-900">{totalItems} / 20</span>
+              <span className="text-gray-600">Add at least 1 item per quadrant to get started</span>
+              <span className="font-semibold text-gray-900">{totalItems} / 4</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
                 className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${Math.min((totalItems / 20) * 100, 100)}%` }}
+                style={{ width: `${Math.min((totalItems / 4) * 100, 100)}%` }}
               ></div>
             </div>
           </div>
         )}
 
-        {totalItems >= 20 && (
+        {totalItems >= 1 && (
           <div className="mt-4 pt-4 border-t border-gray-200">
             <div className="flex items-center gap-2 text-green-700">
               <svg

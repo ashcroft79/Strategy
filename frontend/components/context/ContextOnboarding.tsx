@@ -28,7 +28,7 @@ export function ContextOnboarding({ onDismiss, onStartContext }: ContextOnboardi
         setContextStatus({
           hasItems: itemCount > 0,
           itemCount,
-          isComplete: itemCount >= 20, // 20+ items recommended
+          isComplete: itemCount >= 1, // At least 1 item to get started
         });
       } catch (err) {
         console.error("Failed to check context status:", err);
@@ -105,28 +105,18 @@ export function ContextOnboarding({ onDismiss, onStartContext }: ContextOnboardi
                 <strong>⚠️ You haven't started your Context analysis yet.</strong>
               </p>
               <p className="text-sm text-yellow-700">
-                We recommend completing your SOCC analysis (20+ items) before building the pyramid.
+                Add at least one item to each SOCC quadrant to establish your context foundation.
                 This ensures your strategy is grounded in reality, not hope.
-              </p>
-            </div>
-          ) : !contextStatus.isComplete ? (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-              <p className="text-sm text-blue-800 mb-2">
-                <strong>✓ Context Started ({contextStatus.itemCount} items)</strong>
-              </p>
-              <p className="text-sm text-blue-700">
-                Good progress! We recommend 20+ items total (5-7 per quadrant) for a solid foundation.
-                You can add more items as you build your strategy.
               </p>
             </div>
           ) : (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
               <p className="text-sm text-green-800 mb-2">
-                <strong>✓ Context Complete ({contextStatus.itemCount} items)</strong>
+                <strong>✓ Context Started ({contextStatus.itemCount} item{contextStatus.itemCount === 1 ? '' : 's'})</strong>
               </p>
               <p className="text-sm text-green-700">
-                Excellent! Your foundation is solid. You're ready to build your Strategic Pyramid with
-                confidence. Your context will guide your strategic choices.
+                Good start! You're ready to build your Strategic Pyramid.
+                You can continue adding context items as you develop your strategy.
               </p>
             </div>
           )}
