@@ -30,6 +30,7 @@ import { StepNavigation } from "@/components/ui/StepNavigation";
 import { AICoachSidebar } from "@/components/AICoachSidebar";
 import HelpHub, { HelpButton } from "@/components/HelpHub";
 import TierGuide from "@/components/TierGuide";
+import LearningCenter from "@/components/LearningCenter";
 import { useAIFieldSuggestion } from "@/hooks/useAIFieldSuggestion";
 import { AIFieldSuggestion, AIFieldSuggestionIndicator } from "@/components/AIFieldSuggestion";
 import { AIDraftGenerator } from "@/components/AIDraftGenerator";
@@ -98,6 +99,7 @@ export default function BuilderPage() {
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [showHomeConfirmation, setShowHomeConfirmation] = useState(false);
   const [showHelpHub, setShowHelpHub] = useState(false);
+  const [showLearningCenter, setShowLearningCenter] = useState(false);
   const [openTierGuide, setOpenTierGuide] = useState<string | null>(null);
 
   // Form states
@@ -4633,7 +4635,8 @@ export default function BuilderPage() {
           showToast('Quick Tour coming soon! For now, explore using the step navigation on the left.', 'info');
         }}
         onOpenLearningCenter={() => {
-          showToast('Learning Center coming soon! Check the tooltips (?) throughout the app for guidance.', 'info');
+          setShowHelpHub(false);
+          setShowLearningCenter(true);
         }}
         onOpenExamples={() => {
           showToast('Example Gallery coming soon! Use the AI Coach for examples and best practices.', 'info');
@@ -4648,6 +4651,12 @@ export default function BuilderPage() {
         isOpen={openTierGuide !== null}
         onClose={() => setOpenTierGuide(null)}
         tierKey={openTierGuide || ''}
+      />
+
+      {/* Learning Center */}
+      <LearningCenter
+        isOpen={showLearningCenter}
+        onClose={() => setShowLearningCenter(false)}
       />
     </div>
   );
