@@ -2,7 +2,7 @@
 
 **Strategic Pyramid Builder - Phase 1 Roadmap Fulfillment**
 
-Version 1.0 | January 2026
+Version 1.1 | January 2026
 
 ---
 
@@ -16,7 +16,12 @@ The tool has strong foundational support features (60+ tooltips, AI Coach, valid
 
 ### Strategic Approach
 
-All recommendations follow the principle stated in the request: **secondary and additive, never restrictive**. Expert users should experience no friction, while novice users receive guidance exactly when they need it.
+All recommendations follow two core principles:
+
+1. **Secondary and additive, never restrictive** - Expert users experience no friction; guidance never blocks workflow
+2. **User-initiated, never automatic** - Without user persistence/authentication, we cannot distinguish new from returning users. Therefore, all education features follow the established pattern of tooltips (?) and AI Coach sidebar: **the user consciously chooses to explore/interact**
+
+This approach ensures consistency with existing UX patterns and respects user autonomy.
 
 ---
 
@@ -52,30 +57,38 @@ The framework documentation (FRAMEWORK_OVERVIEW.md, STEP1_CONTEXT.md, STEP2_STRA
 
 Based on roadmap analysis, these gaps exist:
 
-1. **No Guided First-Run Experience**: Users face a blank canvas without introduction
-2. **Static Help**: Tooltips must be actively sought; no proactive guidance
-3. **Missing "Why"**: Methodology rationale not explained in-flow
-4. **No Learning Path**: No structured progression from novice to competent
-5. **Workshop Mode Absent**: No facilitation support for group sessions
-6. **Examples Buried**: Template pyramids and worked examples not prominent
+1. **No Accessible Learning Hub**: Rich methodology content exists in docs but no in-app access point
+2. **Missing "Why"**: Methodology rationale not explained when users seek it
+3. **No Structured Learning Path**: Users who want to learn have no clear progression
+4. **Workshop Mode Absent**: No facilitation support for group sessions
+5. **Examples Not Prominent**: Template pyramids and worked examples not easily discoverable
+6. **Common Pitfalls Not Surfaced**: Documentation describes failure patterns but users can't easily find them
 
 ---
 
 ## Recommendations
 
-### Recommendation 1: Contextual Learning Panels
+### Recommendation 1: Enhanced Tooltip "Deep Dive" System
 
-**Purpose**: Surface framework documentation within the app at the moment of relevance.
+**Purpose**: Extend existing tooltip pattern to provide access to deeper methodology content when users want it.
 
-**Implementation**: Collapsible "Learn More" panels that expand to show methodology content from documentation, positioned alongside (not blocking) the working area.
+**Implementation**: Enhance current tooltips with optional "Learn More" expansion that reveals richer content from framework documentation.
 
-#### 1.1 Tier Introduction Panels
+#### 1.1 Tier Guide Buttons
 
-When a user first visits a tier or clicks "Learn about this tier":
+Each tier section header gains a prominent "Guide" button (similar to existing ? tooltips):
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ Strategic Drivers                                    [?] [×] │
+│ Strategic Drivers                              [📖 Guide] [?] │
+└─────────────────────────────────────────────────────────────┘
+```
+
+When user clicks "Guide", a slide-out panel appears:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Strategic Drivers Guide                               [×]   │
 ├─────────────────────────────────────────────────────────────┤
 │ Strategic Drivers are your 3-5 major focus areas.          │
 │                                                             │
@@ -86,36 +99,35 @@ When a user first visits a tier or clicks "Learn about this tier":
 │ ✅ Good: "Customer Intimacy", "Geographic Expansion"        │
 │ ❌ Avoid: "Digital Transformation" (too vague)              │
 │                                                             │
-│ [Show Examples] [View Methodology] [Dismiss]                │
+│ [▸ Common Pitfalls]  [▸ Examples]  [▸ Full Methodology]    │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 **Content Source**: Extract from STEP2_STRATEGY.md Tier 4 section
 
 **Behavior**:
-- Appears once automatically for new users
-- Can be re-opened via (?) icon
-- "Don't show again" preference stored
-- Expert mode: All panels dismissed by default
+- Only appears when user clicks "Guide" button
+- Collapsible sections for progressive depth
+- Links to Learning Center for full methodology
+- Consistent with existing tooltip interaction pattern
 
-#### 1.2 Common Pitfalls Warnings
+#### 1.2 Common Pitfalls Library
 
-Proactive warnings when user behavior suggests a common pitfall:
+A dedicated "Common Pitfalls" section accessible from each tier's Guide panel:
 
-| Trigger | Pitfall | Message |
-|---------|---------|---------|
-| >6 drivers added | "We Have 8 Strategic Drivers" | "You have {n} drivers. Strategy requires hard choices - most successful strategies have 3-5. Which 3 matter MOST?" |
-| Commitment has 4+ secondary drivers | "Everything Links to Every Driver" | "This commitment links to many drivers. Who loses MOST if this fails? That's your primary driver." |
-| 80%+ commitments in H1 | "All Our Commitments Are H1" | "80% of your commitments are in H1. What happens in 18 months? Consider some H2/H3 strategic bets." |
-| Intent has target date | "Intents Sound Like Commitments" | "Intents are timeless aspirations; commitments have dates. Consider moving the deadline to a commitment." |
+| Pitfall | Description | Solution |
+|---------|-------------|----------|
+| "We Have 8 Strategic Drivers" | Can't narrow to 3-5 drivers | Force ranking: "Which 3 matter MOST?" |
+| "Everything Links to Every Driver" | Commitments have 4+ secondary drivers | Ask: "Who loses MOST if this fails?" |
+| "All Our Commitments Are H1" | 80%+ commitments in near term | Ask: "What happens in 18 months?" |
+| "Intents Sound Like Commitments" | Intents have specific dates | Remove dates from intents; move to commitments |
 
 **Content Source**: Extract from STEP2_STRATEGY.md "Common Challenges" section
 
 **Behavior**:
-- Appears as dismissible banner, not modal
-- "Tell me more" expands to full pitfall explanation
-- Does not block any action - user can proceed regardless
-- Can be globally disabled in settings
+- Users access this when they choose to explore the Guide
+- Not triggered automatically based on user behavior
+- Available as reference material whenever needed
 
 ---
 
@@ -208,35 +220,47 @@ Side-by-side comparison of user's pyramid with an example:
 
 ---
 
-### Recommendation 4: First-Run Experience (Welcome Flow)
+### Recommendation 4: "Getting Started" Hub (User-Accessible)
 
-**Purpose**: Guide new users through their first visit without overwhelming.
+**Purpose**: Provide an accessible entry point for users who want guidance, without forcing it on anyone.
 
-#### 4.1 Welcome Screen
+**Key Principle**: This is NOT an automatic popup or first-run wizard. It's a clearly visible navigation option that users can choose to explore when they want help.
+
+#### 4.1 Navigation Entry Point
+
+Add a prominent "Getting Started" or "Help" button to the main navigation:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Context │ Builder │ Validate │ Export │      [? Help]      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+When clicked, opens a Getting Started hub:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                                                             │
-│     Welcome to the Strategic Pyramid Builder                │
+│     Getting Started                                   [×]   │
 │                                                             │
-│     We'll help you build strategy in 3 steps:              │
-│                                                             │
-│     1. UNDERSTAND - Ground strategy in reality              │
-│     2. DEFINE - Make clear choices                          │
-│     3. ADAPT - Keep strategy alive (coming soon)            │
+│     Choose how you'd like to explore:                       │
 │                                                             │
 │     ┌─────────────────┐  ┌─────────────────┐                │
-│     │   Quick Start   │  │   Full Guide    │                │
-│     │   (2 min tour)  │  │   (10 min)      │                │
+│     │  📖 Quick Tour  │  │  🎓 Learn the   │                │
+│     │   (2 min)       │  │   Methodology   │                │
 │     └─────────────────┘  └─────────────────┘                │
 │                                                             │
-│     [ ] I'm experienced with strategic frameworks           │
-│         Skip introduction                                   │
+│     ┌─────────────────┐  ┌─────────────────┐                │
+│     │  📋 Browse      │  │  💬 Ask the     │                │
+│     │   Examples      │  │   AI Coach      │                │
+│     └─────────────────┘  └─────────────────┘                │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-#### 4.2 Quick Tour (2 minutes)
+#### 4.2 Optional Quick Tour
+
+Available from the Getting Started hub (user must click to start):
 
 5-step guided tour highlighting:
 
@@ -246,85 +270,98 @@ Side-by-side comparison of user's pyramid with an example:
 4. **Tooltips**: "Click (?) for guidance on any field"
 5. **Validation**: "Check your work before sharing"
 
-Implementation: Use a lightweight tour library (e.g., intro.js style) with spotlight highlighting.
+**Behavior**:
+- Only runs when user explicitly clicks "Quick Tour"
+- Can be exited at any time
+- No automatic triggers
 
-#### 4.3 Path Selection
+#### 4.3 Path Cards
 
-After tour, offer paths based on user need:
+Each card in the hub links to existing features:
 
-| Path | Description | Effect |
-|------|-------------|--------|
-| **Explore First** | "Let me see an example before I start" | Opens Example Gallery |
-| **Start with Context** | "Help me understand my situation" | Opens Context tab with guidance |
-| **Jump to Building** | "I know my context, let me build" | Opens Builder with empty pyramid |
-| **Learn the Methodology** | "Teach me the framework first" | Opens Learning Center |
+| Card | Destination |
+|------|-------------|
+| **Quick Tour** | Launches spotlight tour (user-initiated) |
+| **Learn the Methodology** | Opens Learning Center |
+| **Browse Examples** | Opens Example Gallery |
+| **Ask the AI Coach** | Opens AI Coach sidebar |
 
 ---
 
-### Recommendation 5: Progressive AI Coaching Enhancements
+### Recommendation 5: Enhanced AI Coach Capabilities
 
-**Purpose**: Make AI Coach more proactive while remaining non-intrusive.
+**Purpose**: Expand what the AI Coach can help with when users choose to engage.
 
-#### 5.1 Milestone Celebrations
+**Key Principle**: All AI Coach interactions remain user-initiated via the existing sidebar pattern. Users open the coach when they want help.
 
-When user achieves significant progress:
+#### 5.1 "What's Next?" Prompt
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│ 🎯 Great progress!                                         │
-│                                                             │
-│ You've defined 4 strategic drivers. This is the "forcing    │
-│ function" of strategy - you're making hard choices about    │
-│ where to focus.                                            │
-│                                                             │
-│ Next step: Define 2-3 bold strategic intents for each      │
-│ driver. These are your "picture of success".               │
-│                                                             │
-│ [Got it] [Show me an example]                              │
-└─────────────────────────────────────────────────────────────┘
-```
-
-Milestones:
-- First context item added
-- SOCC analysis complete
-- Vision/mission defined
-- Drivers defined (3-5)
-- First commitment created
-- Pyramid passes validation
-
-#### 5.2 Proactive Quality Suggestions
-
-The AI Coach sidebar could proactively suggest improvements when it detects:
-
-| Detection | Proactive Message |
-|-----------|-------------------|
-| No context items | "I notice you haven't added context yet. Strategy without context is hope, not strategy. Want to start there?" |
-| Vague driver name | "Your driver '{name}' might be too broad. Great drivers are specific - consider '{suggested_alternative}'?" |
-| Missing primary driver rationale | "I see '{commitment}' doesn't have a clear rationale. What makes this a strategic bet?" |
-| Intent sounds like commitment | "'{intent}' has a specific target. Intents are timeless aspirations - should this be a commitment instead?" |
-
-**Critical**: These appear in the sidebar chat, not as popups. User can ignore without penalty.
-
-#### 5.3 Contextual Tips (Non-Blocking)
-
-Small, subtle tips that appear below input fields based on what user is typing:
+Add a quick action button in the AI Coach that users can click to get contextual guidance:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ Strategic Driver Name                                       │
-│ ┌─────────────────────────────────────────────────────────┐ │
-│ │ Digital Transformation                                  │ │
-│ └─────────────────────────────────────────────────────────┘ │
-│ 💡 Tip: "Digital Transformation" is common but vague.       │
-│    Consider what specifically: "Digital Customer            │
-│    Experience" or "Data-Driven Operations"?                 │
+│ AI Coach                                              [×]   │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│ [🎯 What should I do next?]  [💡 Review my pyramid]         │
+│                                                             │
+│ ─────────────────────────────────────────────────────────── │
+│ Chat with me...                                             │
 └─────────────────────────────────────────────────────────────┘
+```
+
+When clicked, the AI analyzes current pyramid state and suggests next steps:
+
+```
+Based on your pyramid, I'd suggest focusing on Strategic Intents
+next. You have 4 drivers defined but only 2 intents. Each driver
+should have 2-3 bold aspirational statements of what success
+looks like.
+
+Want me to help you draft intents for "Customer Intimacy"?
 ```
 
 **Behavior**:
-- Appears after 2-second pause in typing
-- Dismisses automatically when user continues typing
-- Can be disabled in settings ("Show typing tips")
+- Only triggers when user clicks the button
+- Uses existing pyramid context
+- Provides actionable next steps
+
+#### 5.2 "Review My Pyramid" Quick Check
+
+A button in AI Coach that gives a conversational quality review:
+
+```
+Looking at your pyramid, here are some observations:
+
+✓ Strong: Your vision is specific and aspirational
+⚠ Consider: Driver "Digital Transformation" is quite broad -
+  what specifically? "Digital Customer Experience"?
+✓ Strong: Good horizon balance (50% H1, 30% H2, 20% H3)
+⚠ Consider: Intent "Improve customer satisfaction" sounds
+  like a metric - intents should paint a picture of success
+
+Would you like to work on any of these?
+```
+
+**Behavior**:
+- User-initiated via button click
+- Conversational tone, not pass/fail
+- Offers to help address each observation
+
+#### 5.3 Methodology Q&A
+
+Enhanced AI Coach knowledge to answer methodology questions:
+
+Example user questions the coach can answer:
+- "What's the difference between an intent and a commitment?"
+- "How many drivers should I have?"
+- "What makes a good value statement?"
+- "Why does primary driver matter?"
+
+**Implementation**:
+- Embed framework documentation content in coach's knowledge
+- Coach can reference specific methodology sections
+- Provides "Learn more in methodology" links
 
 ---
 
@@ -452,17 +489,17 @@ Based on roadmap alignment and user impact:
 
 | Recommendation | Effort | Impact | Roadmap Alignment |
 |----------------|--------|--------|-------------------|
-| 4. First-Run Experience | 1 week | High | Epic 1.1.1 |
-| 1.2 Common Pitfall Warnings | 1 week | High | Epic 1.5.3 |
-| 5.1 Milestone Celebrations | 1 week | Medium | Epic 1.5.1 |
+| 4. Getting Started Hub | 1 week | High | Epic 1.1.1 |
+| 1.1 Tier Guide Buttons | 1 week | High | Epic 1.1.2 |
+| 5.1 AI Coach "What's Next?" | 1 week | Medium | Epic 1.5.1 |
 
 ### Phase B: Core Features (2-4 weeks each)
 
 | Recommendation | Effort | Impact | Roadmap Alignment |
 |----------------|--------|--------|-------------------|
 | 2. Learning Center | 3 weeks | High | Epic 1.1.4 |
-| 1.1 Tier Introduction Panels | 2 weeks | High | Epic 1.1.2 |
 | 3. Example Gallery | 2 weeks | High | Epic 1.1.3 |
+| 5.2 AI Coach "Review My Pyramid" | 1 week | Medium | Epic 1.5.1 |
 | 8. Progress Tracking | 2 weeks | Medium | Epic 1.2.4 |
 
 ### Phase C: Advanced Features (4+ weeks)
@@ -470,7 +507,7 @@ Based on roadmap alignment and user impact:
 | Recommendation | Effort | Impact | Roadmap Alignment |
 |----------------|--------|--------|-------------------|
 | 6. Workshop Mode | 4 weeks | Medium | Epic 1.5.5 |
-| 5.2/5.3 Proactive AI Coaching | 3 weeks | High | Epic 1.5.1 |
+| 5.3 Methodology Q&A in Coach | 2 weeks | Medium | Epic 1.5.1 |
 | 7. Methodology References | 1 week | Low | Epic 1.1.2 |
 
 ---
@@ -479,36 +516,43 @@ Based on roadmap alignment and user impact:
 
 All education features should follow these principles:
 
-### 1. Additive, Not Restrictive
+### 1. User-Initiated, Never Automatic
 
-- **No blocking modals** except for first-run welcome
+- **No automatic popups** or first-run wizards
+- **No proactive notifications** based on user behavior
+- **User clicks to access** all educational content
+- **Consistent with existing patterns** (tooltips, AI Coach sidebar)
+
+### 2. Additive, Not Restrictive
+
+- **No blocking modals** under any circumstances
 - **No forced completion** of educational content
-- **Skip always available** for any guidance
-- **Expert mode** that minimizes all guidance
-
-### 2. Contextual, Not Intrusive
-
-- **Right content at right time** (when user needs it)
-- **Dismissible and remembers** preferences
-- **Subtle indicators** (tooltips, inline tips) over popups
+- **Exit always available** for any guidance
+- **Zero friction** for users who don't want help
 
 ### 3. Progressive Disclosure
 
 - **Start simple** with essential guidance
-- **Depth available** for those who want it
-- **Learning Center** for comprehensive education
+- **Depth available** when users seek it
+- **Learning Center** for those who want comprehensive education
 
-### 4. Methodology-Grounded
+### 4. Discoverable but Unobtrusive
+
+- **Clear entry points** (Help button, Guide buttons, AI Coach)
+- **Consistent placement** of educational affordances
+- **Visual hierarchy** that doesn't distract from main workflow
+
+### 5. Methodology-Grounded
 
 - **All guidance traces** to framework documentation
 - **Consistent voice** with existing thought leadership
 - **Reference codes** for traceability
 
-### 5. Non-Judgmental
+### 6. Non-Judgmental
 
 - **Indicators not scores** (health gauges, not grades)
 - **Suggestions not mandates** ("Consider..." not "You must...")
-- **Celebrate progress** without criticizing gaps
+- **Observe without prescribing** unless user asks
 
 ---
 
@@ -520,37 +564,37 @@ The following content from documentation should be surfaced:
 
 | Section | Use In |
 |---------|--------|
-| "Why Strategies Fail" (6 patterns) | Learning Center, Context intro |
+| "Why Strategies Fail" (6 patterns) | Learning Center |
 | "What Success Looks Like" (6 checkmarks) | Progress tracking criteria |
-| "Core Philosophy" (4 principles) | Learning Center, First-run |
-| "Three-Step Framework" | Welcome screen, navigation |
+| "Core Philosophy" (4 principles) | Learning Center, Getting Started hub |
+| "Three-Step Framework" | Getting Started hub, Learning Center |
 | "Quick Start (2 Hours)" | Workshop template |
 
 ### From STEP1_CONTEXT.md
 
 | Section | Use In |
 |---------|--------|
-| "Why Context Matters" (3 patterns) | Context tab intro, pitfall warnings |
-| "SOCC Framework" (detailed) | Tier 0 tooltips enhancement |
-| "Opportunity Scoring" (formula + examples) | Learning Center, scoring UI |
-| "Strategic Tensions" (5 examples) | Tension mapper guidance |
+| "Why Context Matters" (3 patterns) | Learning Center, Context Guide panel |
+| "SOCC Framework" (detailed) | Learning Center, Tier 0 Guide panel |
+| "Opportunity Scoring" (formula + examples) | Learning Center, scoring Guide |
+| "Strategic Tensions" (5 examples) | Tension mapper Guide |
 | "Stakeholder Mapping" (process) | Learning Center |
 | "Empathy Mapping" (canvas) | Advanced Learning Center |
 | "Persona Creation" (templates) | Advanced Learning Center |
 | "Facilitation Guide" (half-day) | Workshop mode templates |
-| "Common Pitfalls" (5 detailed) | Pitfall warning system |
+| "Common Pitfalls" (5 detailed) | Learning Center, Tier Guide panels |
 
 ### From STEP2_STRATEGY.md
 
 | Section | Use In |
 |---------|--------|
-| "9-Tier Architecture" | Learning Center, builder intro |
-| Tier guidance (all 9) | Tier introduction panels |
-| "Red Thread Methodology" | Validation explanation |
-| "Horizon Planning" | Commitment guidance, balance warnings |
-| "Validation & Coherence" (8 checks) | Validation page enhancement |
+| "9-Tier Architecture" | Learning Center, Getting Started hub |
+| Tier guidance (all 9) | Tier Guide panels |
+| "Red Thread Methodology" | Learning Center, validation Guide |
+| "Horizon Planning" | Learning Center, Commitment Guide panel |
+| "Validation & Coherence" (8 checks) | Validation page Guide |
 | "Workshop Facilitation" (4-week) | Workshop mode templates |
-| "Common Challenges" (4 patterns) | Pitfall warning system |
+| "Common Challenges" (4 patterns) | Learning Center, Tier Guide panels |
 
 ---
 
