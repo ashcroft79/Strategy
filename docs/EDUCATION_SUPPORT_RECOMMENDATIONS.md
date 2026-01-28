@@ -626,6 +626,37 @@ Per roadmap Phase 1 OKRs:
 
 ---
 
+## Implementation Progress
+
+This section tracks the implementation status of recommendations.
+
+### Completed
+
+| Feature | Commit | Description |
+|---------|--------|-------------|
+| **Getting Started Hub** | 4ed04f6 | Help button in nav opens hub with 4 path cards (Quick Tour, Learn Methodology, Browse Examples, Ask AI Coach). Placeholder actions for upcoming features. |
+| **Tier Guide Buttons** | 4547d29 | Guide button on all 9 TierHeaders. Slide-out panel with methodology content: key insights, examples, pitfalls, tips. Content extracted from STEP2_STRATEGY.md. |
+
+### In Progress
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| AI Coach "What's Next?" | Planned | Quick action buttons in AI Coach sidebar |
+| Learning Center | Planned | Dedicated methodology learning section |
+| Example Gallery | Planned | Browseable example pyramids with rationale |
+
+### Implementation Files
+
+```
+frontend/components/
+├── HelpHub.tsx              # Getting Started hub modal
+├── TierGuide.tsx            # Tier methodology slide-out panels
+└── ui/
+    └── TierHeader.tsx       # Updated with onOpenGuide prop
+```
+
+---
+
 ## Conclusion
 
 The Strategic Pyramid Builder has excellent foundational education features. The opportunity lies in **surfacing the rich methodology documentation** directly in the application at the moments users need it.
@@ -636,6 +667,7 @@ The framework documentation is the source of truth; the application becomes the 
 
 ---
 
-*Education & Support Recommendations v1.0*
+*Education & Support Recommendations v1.1*
 *Strategic Pyramid Builder*
 *January 2026*
+*Last updated: Implementation started with HelpHub and TierGuide*
