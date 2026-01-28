@@ -11,6 +11,124 @@ interface ChatMessage {
   content: string;
 }
 
+// Simple markdown renderer for AI responses
+function renderMarkdown(text: string): React.ReactNode {
+  // Split into lines for processing
+  const lines = text.split('\n');
+  const elements: React.ReactNode[] = [];
+  let listItems: string[] = [];
+  let listType: 'ul' | 'ol' | null = null;
+
+  const flushList = () => {
+    if (listItems.length > 0 && listType) {
+      const ListTag = listType === 'ul' ? 'ul' : 'ol';
+      elements.push(
+        <ListTag key={elements.length} className={listType === 'ul' ? 'list-disc list-inside my-2' : 'list-decimal list-inside my-2'}>
+          {listItems.map((item, i) => (
+            <li key={i} className="ml-2">{renderInlineMarkdown(item)}</li>
+          ))}
+        </ListTag>
+      );
+      listItems = [];
+      listType = null;
+    }
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Headers
+    if (line.startsWith('### ')) {
+      flushList();
+      elements.push(<h4 key={elements.length} className="font-semibold text-gray-900 mt-3 mb-1">{renderInlineMarkdown(line.slice(4))}</h4>);
+    } else if (line.startsWith('## ')) {
+      flushList();
+      elements.push(<h3 key={elements.length} className="font-bold text-gray-900 mt-3 mb-1">{renderInlineMarkdown(line.slice(3))}</h3>);
+    } else if (line.startsWith('# ')) {
+      flushList();
+      elements.push(<h2 key={elements.length} className="font-bold text-gray-900 text-lg mt-3 mb-1">{renderInlineMarkdown(line.slice(2))}</h2>);
+    }
+    // Unordered list
+    else if (line.match(/^[\-\*]\s/)) {
+      if (listType !== 'ul') {
+        flushList();
+        listType = 'ul';
+      }
+      listItems.push(line.slice(2));
+    }
+    // Ordered list
+    else if (line.match(/^\d+\.\s/)) {
+      if (listType !== 'ol') {
+        flushList();
+        listType = 'ol';
+      }
+      listItems.push(line.replace(/^\d+\.\s/, ''));
+    }
+    // Empty line
+    else if (line.trim() === '') {
+      flushList();
+      elements.push(<br key={elements.length} />);
+    }
+    // Regular paragraph
+    else {
+      flushList();
+      elements.push(<p key={elements.length} className="mb-2">{renderInlineMarkdown(line)}</p>);
+    }
+  }
+
+  flushList();
+  return <>{elements}</>;
+}
+
+// Render inline markdown (bold, italic, code)
+function renderInlineMarkdown(text: string): React.ReactNode {
+  const parts: React.ReactNode[] = [];
+  let remaining = text;
+  let key = 0;
+
+  while (remaining.length > 0) {
+    // Bold with **
+    const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
+    // Italic with *
+    const italicMatch = remaining.match(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/);
+    // Code with `
+    const codeMatch = remaining.match(/`([^`]+)`/);
+
+    // Find the earliest match
+    const matches = [
+      boldMatch ? { match: boldMatch, type: 'bold' as const, index: boldMatch.index! } : null,
+      italicMatch ? { match: italicMatch, type: 'italic' as const, index: italicMatch.index! } : null,
+      codeMatch ? { match: codeMatch, type: 'code' as const, index: codeMatch.index! } : null,
+    ].filter(Boolean).sort((a, b) => a!.index - b!.index);
+
+    if (matches.length === 0) {
+      parts.push(remaining);
+      break;
+    }
+
+    const earliest = matches[0]!;
+
+    // Add text before the match
+    if (earliest.index > 0) {
+      parts.push(remaining.slice(0, earliest.index));
+    }
+
+    // Add the formatted element
+    if (earliest.type === 'bold') {
+      parts.push(<strong key={key++} className="font-semibold">{earliest.match[1]}</strong>);
+      remaining = remaining.slice(earliest.index + earliest.match[0].length);
+    } else if (earliest.type === 'italic') {
+      parts.push(<em key={key++}>{earliest.match[1]}</em>);
+      remaining = remaining.slice(earliest.index + earliest.match[0].length);
+    } else if (earliest.type === 'code') {
+      parts.push(<code key={key++} className="bg-gray-200 px-1 rounded text-sm font-mono">{earliest.match[1]}</code>);
+      remaining = remaining.slice(earliest.index + earliest.match[0].length);
+    }
+  }
+
+  return parts.length === 1 ? parts[0] : <>{parts}</>;
+}
+
 // Helper to generate pyramid summary for AI context
 function getPyramidSummary(pyramid: any): string {
   if (!pyramid) return "No pyramid loaded yet.";
@@ -289,7 +407,11 @@ Use ✓ for strengths and ⚠ for suggestions. Keep it brief and actionable.`;
                   : "bg-gray-100 text-gray-800"
               }`}
             >
-              <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+              {msg.role === "user" ? (
+                <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+              ) : (
+                <div className="text-sm">{renderMarkdown(msg.content)}</div>
+              )}
             </div>
           </div>
         ))}

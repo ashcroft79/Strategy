@@ -25,7 +25,6 @@ import Modal from "@/components/ui/Modal";
 import TierHeader from "@/components/ui/TierHeader";
 import TierCard from "@/components/ui/TierCard";
 import PyramidVisualization from "@/components/visualizations/PyramidVisualization";
-import ExecutionReadinessChecklist from "@/components/visualizations/ExecutionReadinessChecklist";
 import { StepNavigation } from "@/components/ui/StepNavigation";
 import { AICoachSidebar } from "@/components/AICoachSidebar";
 import HelpHub, { HelpButton } from "@/components/HelpHub";
@@ -1167,9 +1166,6 @@ export default function BuilderPage() {
                 onTierClick={handleTierClick}
               />
             </div>
-
-            {/* Execution Readiness Checklist */}
-            <ExecutionReadinessChecklist pyramid={pyramid} />
 
             {/* Progress Tracker */}
             <div className="mt-4">
