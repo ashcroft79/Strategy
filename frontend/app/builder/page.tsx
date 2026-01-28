@@ -25,9 +25,14 @@ import Modal from "@/components/ui/Modal";
 import TierHeader from "@/components/ui/TierHeader";
 import TierCard from "@/components/ui/TierCard";
 import PyramidVisualization from "@/components/visualizations/PyramidVisualization";
-import ExecutionReadinessChecklist from "@/components/visualizations/ExecutionReadinessChecklist";
 import { StepNavigation } from "@/components/ui/StepNavigation";
 import { AICoachSidebar } from "@/components/AICoachSidebar";
+import HelpHub, { HelpButton } from "@/components/HelpHub";
+import TierGuide from "@/components/TierGuide";
+import LearningCenter from "@/components/LearningCenter";
+import ExampleGallery from "@/components/ExampleGallery";
+import QuickTour from "@/components/QuickTour";
+import ProgressTracker from "@/components/ProgressTracker";
 import { useAIFieldSuggestion } from "@/hooks/useAIFieldSuggestion";
 import { AIFieldSuggestion, AIFieldSuggestionIndicator } from "@/components/AIFieldSuggestion";
 import { AIDraftGenerator } from "@/components/AIDraftGenerator";
@@ -95,6 +100,11 @@ export default function BuilderPage() {
   const [modalItemType, setModalItemType] = useState<string>('');
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [showHomeConfirmation, setShowHomeConfirmation] = useState(false);
+  const [showHelpHub, setShowHelpHub] = useState(false);
+  const [showLearningCenter, setShowLearningCenter] = useState(false);
+  const [showExampleGallery, setShowExampleGallery] = useState(false);
+  const [showQuickTour, setShowQuickTour] = useState(false);
+  const [openTierGuide, setOpenTierGuide] = useState<string | null>(null);
 
   // Form states
   const [visionStatementType, setVisionStatementType] = useState<StatementType>(StatementType.VISION);
@@ -1122,6 +1132,9 @@ export default function BuilderPage() {
                 <FileDown className="w-4 h-4 mr-2" />
                 Export
               </Button>
+
+              {/* Help Button */}
+              <HelpButton onClick={() => setShowHelpHub(true)} />
             </div>
           </div>
         </div>
@@ -1154,8 +1167,31 @@ export default function BuilderPage() {
               />
             </div>
 
-            {/* Execution Readiness Checklist */}
-            <ExecutionReadinessChecklist pyramid={pyramid} />
+            {/* Progress Tracker */}
+            <div className="mt-4">
+              <ProgressTracker
+                pyramid={{
+                  vision: pyramid?.vision?.statements?.length ? { statement: pyramid.vision.statements[0]?.statement } : undefined,
+                  values: pyramid?.values,
+                  behaviours: pyramid?.behaviours,
+                  drivers: pyramid?.strategic_drivers,
+                  intents: pyramid?.strategic_intents,
+                  enablers: pyramid?.enablers,
+                  commitments: pyramid?.iconic_commitments?.map((c: any) => ({
+                    id: c.id,
+                    horizon: c.horizon,
+                    primaryDriverId: c.primary_driver_id,
+                  })),
+                  teamObjectives: pyramid?.team_objectives,
+                  individualObjectives: pyramid?.individual_objectives,
+                }}
+                context={{
+                  items: contextSummary?.items,
+                  tensions: contextSummary?.tensions,
+                  stakeholders: contextSummary?.stakeholders,
+                }}
+              />
+            </div>
           </div>
         </div>
 
@@ -1300,6 +1336,7 @@ export default function BuilderPage() {
                   variant="blue"
                   onAddNew={() => openAddModal('vision')}
                   onBack={() => setActiveTier(undefined)}
+                  onOpenGuide={() => setOpenTierGuide('vision')}
                 />
 
                 {/* Thread Labels Toggle */}
@@ -1369,6 +1406,7 @@ export default function BuilderPage() {
                   variant="blue"
                   onAddNew={() => openAddModal('value')}
                   onBack={() => setActiveTier(undefined)}
+                  onOpenGuide={() => setOpenTierGuide('values')}
                 />
 
                 {/* Thread Labels Toggle */}
@@ -1451,6 +1489,7 @@ export default function BuilderPage() {
                   variant="green"
                   onAddNew={pyramid.values.length > 0 ? () => openAddModal('behaviour') : undefined}
                   onBack={() => setActiveTier(undefined)}
+                  onOpenGuide={() => setOpenTierGuide('behaviours')}
                 />
 
                 {/* Thread Labels Toggle */}
@@ -1620,6 +1659,7 @@ export default function BuilderPage() {
                   variant="purple"
                   onAddNew={() => openAddModal('driver')}
                   onBack={() => setActiveTier(undefined)}
+                  onOpenGuide={() => setOpenTierGuide('drivers')}
                 />
 
                 {/* Thread Labels Toggle */}
@@ -1719,6 +1759,7 @@ export default function BuilderPage() {
                   variant="purple"
                   onAddNew={pyramid.strategic_drivers.length > 0 ? () => openAddModal('intent') : undefined}
                   onBack={() => setActiveTier(undefined)}
+                  onOpenGuide={() => setOpenTierGuide('intents')}
                 />
 
                 {/* Thread Labels Toggle */}
@@ -1899,6 +1940,7 @@ export default function BuilderPage() {
                   variant="purple"
                   onAddNew={() => openAddModal('enabler')}
                   onBack={() => setActiveTier(undefined)}
+                  onOpenGuide={() => setOpenTierGuide('enablers')}
                 />
 
                 {/* Thread Labels Toggle */}
@@ -2073,6 +2115,7 @@ export default function BuilderPage() {
                   variant="orange"
                   onAddNew={pyramid.strategic_drivers.length > 0 ? () => openAddModal('commitment') : undefined}
                   onBack={() => setActiveTier(undefined)}
+                  onOpenGuide={() => setOpenTierGuide('commitments')}
                 />
 
                 {pyramid.strategic_drivers.length > 0 ? (
@@ -2553,6 +2596,7 @@ export default function BuilderPage() {
                   variant="orange"
                   onAddNew={() => openAddModal('team_objective')}
                   onBack={() => setActiveTier(undefined)}
+                  onOpenGuide={() => setOpenTierGuide('team')}
                 />
 
                 {/* Thread Labels Toggle */}
@@ -2777,6 +2821,7 @@ export default function BuilderPage() {
                   variant="teal"
                   onAddNew={() => openAddModal('individual_objective')}
                   onBack={() => setActiveTier(undefined)}
+                  onOpenGuide={() => setOpenTierGuide('individual')}
                 />
 
                 {/* Thread Labels Toggle */}
@@ -4608,6 +4653,52 @@ export default function BuilderPage() {
 
       {/* AI Coach Sidebar */}
       <AICoachSidebar />
+
+      {/* Help Hub Modal */}
+      <HelpHub
+        isOpen={showHelpHub}
+        onClose={() => setShowHelpHub(false)}
+        onStartTour={() => {
+          setShowHelpHub(false);
+          setShowQuickTour(true);
+        }}
+        onOpenLearningCenter={() => {
+          setShowHelpHub(false);
+          setShowLearningCenter(true);
+        }}
+        onOpenExamples={() => {
+          setShowHelpHub(false);
+          setShowExampleGallery(true);
+        }}
+        onOpenAICoach={() => {
+          showToast('Click the sparkle button in the bottom-right corner to open the AI Coach!', 'info');
+        }}
+      />
+
+      {/* Tier Methodology Guide Panel */}
+      <TierGuide
+        isOpen={openTierGuide !== null}
+        onClose={() => setOpenTierGuide(null)}
+        tierKey={openTierGuide || ''}
+      />
+
+      {/* Learning Center */}
+      <LearningCenter
+        isOpen={showLearningCenter}
+        onClose={() => setShowLearningCenter(false)}
+      />
+
+      {/* Example Gallery */}
+      <ExampleGallery
+        isOpen={showExampleGallery}
+        onClose={() => setShowExampleGallery(false)}
+      />
+
+      {/* Quick Tour */}
+      <QuickTour
+        isOpen={showQuickTour}
+        onClose={() => setShowQuickTour(false)}
+      />
     </div>
   );
 }
