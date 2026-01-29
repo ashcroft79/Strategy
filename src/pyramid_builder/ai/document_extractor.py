@@ -1,7 +1,8 @@
 """
 AI Document Extraction Service.
 
-Analyzes parsed document content and extracts strategic pyramid elements.
+Analyzes parsed document content and extracts strategic pyramid elements
+including Tier 0 (Context) and Tiers 1-9 (Pyramid Structure).
 """
 
 import os
@@ -18,8 +19,13 @@ except ImportError:
 class DocumentExtractor:
     """
     Extract strategic pyramid elements from parsed document content.
-    Uses Claude AI to identify vision, values, drivers, intents, and commitments.
+    Uses Claude AI to identify:
+    - Tier 0: Context (SOCC, Stakeholders, Tensions)
+    - Tiers 1-9: Pyramid elements (Vision through Individual Objectives)
     """
+
+    # Increased limit for better extraction (Claude can handle much more)
+    MAX_DOCUMENT_LENGTH = 50000
 
     def __init__(self, api_key: Optional[str] = None):
         """
@@ -50,21 +56,33 @@ class DocumentExtractor:
     def _load_tooltips_summary(self) -> str:
         """Load key tooltip guidance for extraction context."""
         return """
-        Key Strategic Pyramid Principles (from tooltips):
+        Key Strategic Pyramid Principles:
 
-        VISION (TT-002): Paint a picture of the future, not list capabilities.
-        VALUES (TT-005): 4-6 values max, specific to your organization.
-        BEHAVIORS (TT-007): Observable actions, not aspirations.
-        DRIVERS (TT-009): 3-5 focus areas, forces prioritization.
-        INTENTS (TT-014): Bold, aspirational, outcome-focused. Outside-in perspective.
-        PRIMARY DRIVER (TT-022): ONE driver per commitment (critical forcing function).
-        HORIZON (TT-024): Balance H1/H2/H3. Don't overload H1.
-        LANGUAGE (TT-040): Avoid jargon: "synergy", "leverage", "drive excellence", "innovative".
+        CONTEXT LAYER (Tier 0):
+        - SOCC Analysis: Strengths (internal capabilities), Opportunities (external potential),
+          Considerations (internal challenges), Constraints (external blockers)
+        - Stakeholders: Anyone affected by or influencing the strategy
+        - Strategic Tensions: Competing goods requiring deliberate choices (e.g., Growth vs Profitability)
 
-        Core Methodology:
-        - Force Hard Decisions: Primary alignment required
-        - Elevate Language: Ban jargon, demand specificity
-        - Ensure Traceability: Vision → Drivers → Intents → Commitments
+        PYRAMID STRUCTURE (Tiers 1-9):
+        - VISION (Tier 1): Paint a picture of the future, not list capabilities. One clear statement.
+        - VALUES (Tier 2): 4-6 values max, specific to your organization, not generic platitudes.
+        - BEHAVIOURS (Tier 3): Observable actions that demonstrate values, not aspirations.
+        - STRATEGIC INTENTS (Tier 4): Bold, aspirational outcomes from stakeholder perspective.
+        - STRATEGIC DRIVERS (Tier 5): 3-5 focus areas (themes/pillars). Named as Adjective+Noun.
+        - ENABLERS (Tier 6): Systems, capabilities, resources that make strategy possible.
+        - ICONIC COMMITMENTS (Tier 7): Time-bound, tangible deliverables. Balance H1/H2/H3.
+        - TEAM OBJECTIVES (Tier 8): Department/team goals linked to commitments.
+        - INDIVIDUAL OBJECTIVES (Tier 9): Personal goals linked to team objectives.
+
+        LANGUAGE PRINCIPLES:
+        - Avoid jargon: "synergy", "leverage", "drive excellence", "innovative", "world-class"
+        - Be specific: measurable, observable, concrete
+        - Be bold: memorable, distinctive, challenging
+
+        TRACEABILITY:
+        - Every element should link to elements above and below
+        - Vision → Drivers → Intents → Commitments → Team → Individual
         """
 
     def extract_pyramid_elements(
@@ -104,83 +122,163 @@ class DocumentExtractor:
         if organization_name:
             org_context = f"Organization: {organization_name}\n"
 
-        # Create extraction prompt
-        # Limit document text to 8000 chars for token efficiency
-        prompt = f"""You are a strategic planning expert analyzing a document to extract strategic pyramid elements.
+        # Use larger document limit for comprehensive extraction
+        doc_text_limited = document_text[:self.MAX_DOCUMENT_LENGTH]
+        truncation_note = ""
+        if len(document_text) > self.MAX_DOCUMENT_LENGTH:
+            truncation_note = f"\n[NOTE: Document truncated from {len(document_text)} to {self.MAX_DOCUMENT_LENGTH} characters]\n"
+
+        # Create comprehensive extraction prompt
+        prompt = f"""You are a strategic planning expert analyzing a document to extract ALL strategic elements comprehensively.
 
 {org_context}
 Document Format: {parsed_content.get('format', 'unknown')}
 Document Length: {len(document_text)} characters
+{truncation_note}
 
-Document Content:
-{document_text[:8000]}
+=== DOCUMENT CONTENT ===
+{doc_text_limited}
+=== END DOCUMENT ===
 
 {self.tooltips_guidance}
 
-**TASK:** Extract strategic pyramid elements from this document. Follow the thought leadership principles above strictly.
+**TASK:** Extract ALL strategic elements from this document - both Context (Tier 0) and Pyramid Structure (Tiers 1-9).
+
+**EXTRACTION PHILOSOPHY:**
+- Be COMPREHENSIVE: Extract everything that could be relevant, even if implicit
+- For explicit content (labeled sections, clear headings): HIGH confidence
+- For implicit content (mentioned in context, discussed but not labeled): MEDIUM confidence
+- For inferred content (reasonable extrapolation from surrounding context): LOW confidence
+- It's better to extract something with LOW confidence than to miss it entirely
 
 **CRITICAL INSTRUCTIONS:**
-1. ONLY extract content that is EXPLICITLY stated in the document - do not infer or create new content
-2. Provide direct quotes or near-quotes from the document as evidence
-3. Assign confidence scores based on how clearly the element is articulated
-4. Follow best practices: no jargon, specific language, measurable outcomes
-5. If a tier is not present in the document, return empty array for that tier
+1. Read the ENTIRE document carefully before extracting
+2. Look for content under various labels (SWOT, strategic analysis, stakeholder analysis, etc.)
+3. Extract BOTH explicit statements AND implicit mentions
+4. Provide source quotes to justify each extraction
+5. Use confidence scores honestly - LOW confidence is valid and helpful
 
-Extract the following tiers:
+=== TIER 0: CONTEXT LAYER ===
 
-**VISION/MISSION/BELIEF/PASSION** (Tier 1):
-- Identify if document has a Vision, Mission, Belief, or Passion statement
-- Extract the statement and classify its type
-- Confidence: HIGH if explicitly labeled, MEDIUM if inferred from content
+**SOCC ANALYSIS** (Strengths, Opportunities, Considerations, Constraints):
+Look for: SWOT analysis, situational analysis, environmental scan, capability assessment, market analysis, competitive analysis, risk analysis
+- Strengths: Internal capabilities, assets, advantages, competencies
+- Opportunities: External possibilities, market gaps, growth areas, new markets
+- Considerations: Internal challenges, weaknesses, gaps, areas for improvement
+- Constraints: External blockers, threats, regulatory limits, market barriers
+
+**STAKEHOLDERS:**
+Look for: Stakeholder analysis, stakeholder map, audience analysis, customer segments
+- Anyone mentioned as affected by or influencing the strategy
+- Note their interest level (how much they care) and influence level (how much power they have)
+- Capture their alignment (supportive, neutral, opposed)
+- Note their key needs, concerns, and required actions if mentioned
+
+**STRATEGIC TENSIONS:**
+Look for: Trade-offs, balancing acts, "vs" comparisons, either/or choices
+- Competing goods that require deliberate positioning
+- Examples: Growth vs Profitability, Speed vs Quality, Innovation vs Execution
+- Note current and target positions if discussed
+
+=== TIERS 1-9: PYRAMID STRUCTURE ===
+
+**VISION/MISSION/BELIEF/PASSION/PURPOSE/ASPIRATION** (Tier 1):
+Look for: Vision statement, mission statement, purpose statement, "our why", "what we believe"
+- Extract the primary statement and classify its type
+- Should paint a picture of the future, not list capabilities
 
 **VALUES** (Tier 2):
-- Extract organizational values (4-6 max)
+Look for: Core values, guiding principles, what we stand for, beliefs
+- Extract organizational values (ideally 4-6)
 - Each value should have a name and description
-- Confidence based on how explicitly stated
+- Avoid generic values like "excellence" unless specifically defined
 
 **BEHAVIOURS** (Tier 3):
-- Extract observable behaviors that embody the values
-- Should be specific actions, not aspirations
-- Link to values if possible
-- Example: "We challenge assumptions respectfully" (not "Be innovative")
+Look for: Expected behaviors, how we work, culture statements, "we always/never"
+- Extract observable, specific actions
+- Should be actions you can see someone doing
+- Link to values where the connection is clear
 
-**STRATEGIC INTENT** (Tier 4):
-- Extract bold, aspirational outcomes
-- Should be outcome-focused, not activity-focused
-- Will be linked to drivers
+**STRATEGIC INTENTS** (Tier 4):
+Look for: Strategic objectives, desired outcomes, success statements, "what winning looks like"
+- Extract bold, aspirational outcome statements
+- Should describe future state, not activities
+- Note if written from stakeholder/customer perspective (is_stakeholder_voice)
 
 **STRATEGIC DRIVERS** (Tier 5):
-- Extract 3-5 key strategic focus areas (themes/pillars)
-- Should be specific, not generic
-- Confidence based on clarity and specificity
+Look for: Strategic pillars, themes, focus areas, priorities, strategic bets
+- Extract 3-5 key focus areas that drive the strategy
+- Name format: Adjective + Noun (e.g., "Customer Experience", "Operational Excellence")
+- Each should have clear description and rationale
 
 **ENABLERS** (Tier 6):
-- Extract systems, capabilities, resources, or processes that enable strategy
-- Should describe infrastructure or capabilities needed
-- Link to drivers if possible
-- Classify type: System, Capability, Resource, Process, etc.
+Look for: Capabilities needed, systems required, resources, infrastructure, platforms
+- Extract what's needed to make the strategy possible
+- Classify type: System, Capability, Resource, Process, Partnership
+- Link to drivers they support
 
 **ICONIC COMMITMENTS** (Tier 7):
+Look for: Key initiatives, major projects, flagship programs, "we will deliver"
 - Extract specific, measurable deliverables
-- Should have clear timeframes if mentioned
-- Link to drivers and horizons (H1: 0-12m, H2: 12-24m, H3: 24-36m)
+- Classify horizon: H1 (0-12 months), H2 (12-24 months), H3 (24-36 months)
+- Note target dates and owners if mentioned
+- Mark if it's tangible (can touch/see) and measurable
 
 **TEAM OBJECTIVES** (Tier 8):
-- Extract objectives for specific teams or departments
-- Should be concrete, measurable goals
-- Link to commitments if possible
-- Include team name if mentioned
+Look for: Department goals, team targets, functional objectives, OKRs
+- Extract objectives for specific teams or functions
+- Include metrics as an array of specific measures
+- Link to commitments or intents they support
 
 **INDIVIDUAL OBJECTIVES** (Tier 9):
-- Extract objectives for specific individuals or roles
-- Should be specific, actionable goals
-- Link to team objectives if possible
-- Include individual/role name if mentioned
+Look for: Personal goals, individual KPIs, role-specific targets
+- Extract objectives for individuals or roles
+- Include success criteria as an array of specific criteria
+- Link to team objectives they support
 
 **FORMAT:** Respond ONLY with valid JSON (no markdown, no code blocks):
 {{
+  "context": {{
+    "socc_items": [
+      {{
+        "quadrant": "strength|opportunity|consideration|constraint",
+        "title": "Brief title (max 10 words)",
+        "description": "Fuller description of the item",
+        "impact_level": "high|medium|low",
+        "tags": ["relevant", "category", "tags"],
+        "confidence": "HIGH|MEDIUM|LOW",
+        "source_quote": "Direct quote from document"
+      }}
+    ],
+    "stakeholders": [
+      {{
+        "name": "Stakeholder name or group",
+        "interest_level": "high|low",
+        "influence_level": "high|low",
+        "alignment": "supportive|neutral|opposed",
+        "key_needs": ["Need 1", "Need 2"],
+        "concerns": ["Concern 1", "Concern 2"],
+        "required_actions": ["Action 1", "Action 2"],
+        "confidence": "HIGH|MEDIUM|LOW",
+        "source_quote": "Direct quote"
+      }}
+    ],
+    "tensions": [
+      {{
+        "name": "Tension name (e.g., Growth vs Profitability)",
+        "left_pole": "Left side (e.g., Growth)",
+        "right_pole": "Right side (e.g., Profitability)",
+        "current_position": 50,
+        "target_position": 50,
+        "rationale": "Why this position",
+        "implications": "What this means for strategy",
+        "confidence": "HIGH|MEDIUM|LOW",
+        "source_quote": "Direct quote"
+      }}
+    ]
+  }},
   "vision": {{
-    "statement_type": "VISION|MISSION|BELIEF|PASSION",
+    "statement_type": "VISION|MISSION|BELIEF|PASSION|PURPOSE|ASPIRATION",
     "statement": "The actual statement text from document",
     "confidence": "HIGH|MEDIUM|LOW",
     "source_quote": "Direct quote or context from document"
@@ -195,7 +293,7 @@ Extract the following tiers:
   ],
   "behaviours": [
     {{
-      "statement": "Observable behavior statement",
+      "statement": "Observable behavior statement (specific action)",
       "linked_values": ["Value name 1", "Value name 2"],
       "confidence": "HIGH|MEDIUM|LOW",
       "source_quote": "Direct quote"
@@ -203,17 +301,19 @@ Extract the following tiers:
   ],
   "strategic_intents": [
     {{
-      "name": "Intent name",
-      "description": "Bold outcome",
+      "statement": "Bold aspirational outcome statement (not name+description)",
+      "linked_driver": "Driver name if identifiable",
+      "is_stakeholder_voice": true,
       "confidence": "HIGH|MEDIUM|LOW",
       "source_quote": "Direct quote"
     }}
   ],
   "strategic_drivers": [
     {{
-      "name": "Driver name (Adjective + Noun)",
-      "description": "What this means",
-      "rationale": "Why this matters",
+      "name": "Driver name (Adjective + Noun format)",
+      "description": "What this driver means and encompasses",
+      "rationale": "Why this driver was chosen - the strategic logic",
+      "addresses_opportunities": ["Opportunity title 1", "Opportunity title 2"],
       "confidence": "HIGH|MEDIUM|LOW",
       "source_quote": "Direct quote"
     }}
@@ -223,7 +323,7 @@ Extract the following tiers:
       "name": "Enabler name",
       "description": "What this provides/enables",
       "linked_drivers": ["Driver name 1", "Driver name 2"],
-      "enabler_type": "System|Capability|Resource|Process|Other",
+      "enabler_type": "System|Capability|Resource|Process|Partnership|Other",
       "confidence": "HIGH|MEDIUM|LOW",
       "source_quote": "Direct quote"
     }}
@@ -231,9 +331,13 @@ Extract the following tiers:
   "iconic_commitments": [
     {{
       "name": "Commitment name",
-      "description": "Specific deliverable",
+      "description": "Specific deliverable description",
       "linked_driver": "Driver name if identifiable",
-      "horizon": "H1|H2|H3 (if timeframe mentioned)",
+      "horizon": "H1|H2|H3",
+      "target_date": "Q2 2026 or specific date if mentioned",
+      "owner": "Owner name if mentioned",
+      "is_tangible": true,
+      "is_measurable": true,
       "confidence": "HIGH|MEDIUM|LOW",
       "source_quote": "Direct quote"
     }}
@@ -241,10 +345,11 @@ Extract the following tiers:
   "team_objectives": [
     {{
       "name": "Objective name",
-      "description": "Concrete, measurable goal",
+      "description": "Concrete, measurable goal description",
       "team_name": "Team/Department name",
       "linked_commitment": "Commitment name if identifiable",
-      "metrics": "Success metrics if mentioned",
+      "linked_intent": "Intent statement if identifiable",
+      "metrics": ["Metric 1", "Metric 2", "Metric 3"],
       "owner": "Owner name if mentioned",
       "confidence": "HIGH|MEDIUM|LOW",
       "source_quote": "Direct quote"
@@ -253,18 +358,24 @@ Extract the following tiers:
   "individual_objectives": [
     {{
       "name": "Objective name",
-      "description": "Specific, actionable goal",
-      "individual_name": "Person name or role",
+      "description": "Specific, actionable goal description",
+      "individual_name": "Person name or role title",
       "linked_team_objective": "Team objective name if identifiable",
-      "success_criteria": "Success criteria if mentioned",
+      "success_criteria": ["Criterion 1", "Criterion 2", "Criterion 3"],
       "confidence": "HIGH|MEDIUM|LOW",
       "source_quote": "Direct quote"
     }}
   ],
-  "extraction_notes": "Any important observations or caveats"
+  "extraction_summary": {{
+    "document_type": "Strategy document|Annual report|Business plan|Other",
+    "primary_focus": "What the document is mainly about",
+    "extraction_completeness": "HIGH|MEDIUM|LOW",
+    "missing_elements": ["List of expected elements not found"],
+    "notes": "Any important observations or caveats"
+  }}
 }}
 
-**IMPORTANT:** Return ONLY the JSON object. No markdown formatting, no ```json```, just pure JSON."""
+**IMPORTANT:** Return ONLY the JSON object. No markdown formatting, no code blocks, just pure JSON."""
 
         try:
             response = self.client.messages.create(
@@ -380,6 +491,63 @@ Extract the following tiers:
         elements = extracted_elements.get("elements", {})
         issues = []
         warnings = []
+        info = []
+
+        # === TIER 0: CONTEXT VALIDATION ===
+        context = elements.get("context", {})
+        socc_items = context.get("socc_items", [])
+        stakeholders = context.get("stakeholders", [])
+        tensions = context.get("tensions", [])
+
+        # Count SOCC items by quadrant
+        socc_by_quadrant = {
+            "strength": 0,
+            "opportunity": 0,
+            "consideration": 0,
+            "constraint": 0
+        }
+        for item in socc_items:
+            quadrant = item.get("quadrant", "").lower()
+            if quadrant in socc_by_quadrant:
+                socc_by_quadrant[quadrant] += 1
+
+        if len(socc_items) > 0:
+            info.append({
+                "tier": "context",
+                "severity": "info",
+                "message": f"SOCC items found: {socc_by_quadrant['strength']} strengths, {socc_by_quadrant['opportunity']} opportunities, {socc_by_quadrant['consideration']} considerations, {socc_by_quadrant['constraint']} constraints"
+            })
+        else:
+            warnings.append({
+                "tier": "context",
+                "severity": "warning",
+                "message": "No SOCC analysis items found. Consider manually adding strengths, opportunities, considerations, and constraints."
+            })
+
+        if len(stakeholders) > 0:
+            info.append({
+                "tier": "context",
+                "severity": "info",
+                "message": f"{len(stakeholders)} stakeholders identified"
+            })
+
+        if len(tensions) > 0:
+            info.append({
+                "tier": "context",
+                "severity": "info",
+                "message": f"{len(tensions)} strategic tensions identified"
+            })
+
+        # Count low confidence extractions
+        low_confidence_items = []
+        for item in socc_items:
+            if item.get("confidence") == "LOW":
+                low_confidence_items.append(f"SOCC: {item.get('title', 'unknown')}")
+        for item in stakeholders:
+            if item.get("confidence") == "LOW":
+                low_confidence_items.append(f"Stakeholder: {item.get('name', 'unknown')}")
+
+        # === PYRAMID VALIDATION ===
 
         # Validate vision/mission exists
         vision = elements.get("vision")
@@ -388,6 +556,12 @@ Extract the following tiers:
                 "tier": "vision",
                 "severity": "error",
                 "message": "No Vision/Mission/Belief/Passion statement found in document"
+            })
+        elif vision.get("confidence") == "LOW":
+            warnings.append({
+                "tier": "vision",
+                "severity": "warning",
+                "message": "Vision statement has LOW confidence - verify it matches document intent"
             })
 
         # Validate values count
@@ -444,11 +618,43 @@ Extract the following tiers:
         team_objectives = elements.get("team_objectives", [])
         individual_objectives = elements.get("individual_objectives", [])
 
+        # Count low confidence pyramid items
+        for item in values:
+            if item.get("confidence") == "LOW":
+                low_confidence_items.append(f"Value: {item.get('name', 'unknown')}")
+        for item in drivers:
+            if item.get("confidence") == "LOW":
+                low_confidence_items.append(f"Driver: {item.get('name', 'unknown')}")
+        for item in intents:
+            if item.get("confidence") == "LOW":
+                low_confidence_items.append(f"Intent: {item.get('statement', 'unknown')[:30]}...")
+        for item in commitments:
+            if item.get("confidence") == "LOW":
+                low_confidence_items.append(f"Commitment: {item.get('name', 'unknown')}")
+
+        if low_confidence_items:
+            warnings.append({
+                "tier": "general",
+                "severity": "warning",
+                "message": f"{len(low_confidence_items)} items extracted with LOW confidence - review before importing",
+                "low_confidence_items": low_confidence_items[:10]  # Limit to first 10
+            })
+
+        # Get extraction summary
+        extraction_summary = elements.get("extraction_summary", {})
+
         return {
             "valid": len(issues) == 0,
             "issues": issues,
             "warnings": warnings,
+            "info": info,
             "summary": {
+                # Tier 0
+                "socc_items_count": len(socc_items),
+                "socc_by_quadrant": socc_by_quadrant,
+                "stakeholders_count": len(stakeholders),
+                "tensions_count": len(tensions),
+                # Tier 1-9
                 "vision_found": bool(vision and vision.get("statement")),
                 "values_count": len(values),
                 "behaviours_count": len(behaviours),
@@ -457,6 +663,9 @@ Extract the following tiers:
                 "enablers_count": len(enablers),
                 "commitments_count": len(commitments),
                 "team_objectives_count": len(team_objectives),
-                "individual_objectives_count": len(individual_objectives)
+                "individual_objectives_count": len(individual_objectives),
+                # Meta
+                "low_confidence_count": len(low_confidence_items),
+                "extraction_completeness": extraction_summary.get("extraction_completeness", "UNKNOWN")
             }
         }

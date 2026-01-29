@@ -106,7 +106,7 @@ export default function HomePage() {
       const importResults = await documentsApi.batchImportElements(
         sessionId,
         extractedElements,
-        createdBy || "Document Import"
+        { createdBy: createdBy || "Document Import" }
       );
 
       const updatedPyramid = await pyramidApi.get(sessionId);
