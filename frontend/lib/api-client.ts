@@ -667,6 +667,41 @@ export interface DocumentParseResult {
 }
 
 export interface ExtractedElements {
+  // Tier 0: Context Layer
+  context?: {
+    socc_items?: Array<{
+      quadrant: "strength" | "opportunity" | "consideration" | "constraint";
+      title: string;
+      description?: string;
+      impact_level: "high" | "medium" | "low";
+      tags?: string[];
+      confidence: string;
+      source_quote: string;
+    }>;
+    stakeholders?: Array<{
+      name: string;
+      interest_level: "high" | "low";
+      influence_level: "high" | "low";
+      alignment: "supportive" | "neutral" | "opposed";
+      key_needs?: string[];
+      concerns?: string[];
+      required_actions?: string[];
+      confidence: string;
+      source_quote: string;
+    }>;
+    tensions?: Array<{
+      name: string;
+      left_pole: string;
+      right_pole: string;
+      current_position?: number;
+      target_position?: number;
+      rationale: string;
+      implications?: string;
+      confidence: string;
+      source_quote: string;
+    }>;
+  };
+  // Tiers 1-9: Pyramid Structure
   vision?: {
     statement_type: string;
     statement: string;
@@ -686,8 +721,9 @@ export interface ExtractedElements {
     source_quote: string;
   }>;
   strategic_intents?: Array<{
-    name: string;
-    description: string;
+    statement: string;
+    linked_driver?: string;
+    is_stakeholder_voice?: boolean;
     confidence: string;
     source_quote: string;
   }>;
@@ -695,6 +731,7 @@ export interface ExtractedElements {
     name: string;
     description: string;
     rationale: string;
+    addresses_opportunities?: string[];
     confidence: string;
     source_quote: string;
   }>;
@@ -711,6 +748,10 @@ export interface ExtractedElements {
     description: string;
     linked_driver?: string;
     horizon?: string;
+    target_date?: string;
+    owner?: string;
+    is_tangible?: boolean;
+    is_measurable?: boolean;
     confidence: string;
     source_quote: string;
   }>;
@@ -719,7 +760,8 @@ export interface ExtractedElements {
     description: string;
     team_name: string;
     linked_commitment?: string;
-    metrics?: string;
+    linked_intent?: string;
+    metrics?: string[];
     owner?: string;
     confidence: string;
     source_quote: string;
@@ -729,11 +771,17 @@ export interface ExtractedElements {
     description: string;
     individual_name: string;
     linked_team_objective?: string;
-    success_criteria?: string;
+    success_criteria?: string[];
     confidence: string;
     source_quote: string;
   }>;
-  extraction_notes?: string;
+  extraction_summary?: {
+    document_type?: string;
+    primary_focus?: string;
+    extraction_completeness?: string;
+    missing_elements?: string[];
+    notes?: string;
+  };
 }
 
 export interface ImportDocumentsResponse {
@@ -744,8 +792,20 @@ export interface ImportDocumentsResponse {
   validation?: {
     valid: boolean;
     issues: Array<{ tier: string; severity: string; message: string }>;
-    warnings: Array<{ tier: string; severity: string; message: string }>;
+    warnings: Array<{ tier: string; severity: string; message: string; low_confidence_items?: string[] }>;
+    info?: Array<{ tier: string; severity: string; message: string }>;
     summary: {
+      // Tier 0
+      socc_items_count?: number;
+      socc_by_quadrant?: {
+        strength: number;
+        opportunity: number;
+        consideration: number;
+        constraint: number;
+      };
+      stakeholders_count?: number;
+      tensions_count?: number;
+      // Tiers 1-9
       vision_found: boolean;
       values_count: number;
       behaviours_count: number;
@@ -755,6 +815,9 @@ export interface ImportDocumentsResponse {
       commitments_count: number;
       team_objectives_count: number;
       individual_objectives_count: number;
+      // Meta
+      low_confidence_count?: number;
+      extraction_completeness?: string;
     };
   };
   error?: string;
@@ -763,6 +826,13 @@ export interface ImportDocumentsResponse {
 export interface BatchImportResults {
   success: boolean;
   results: {
+    // Tier 0
+    context: {
+      socc_items: any[];
+      stakeholders: any[];
+      tensions: any[];
+    };
+    // Tiers 1-9
     vision: any;
     values: any[];
     behaviours: any[];
@@ -773,8 +843,14 @@ export interface BatchImportResults {
     team_objectives: any[];
     individual_objectives: any[];
     errors: string[];
+    skipped_low_confidence: string[];
   };
   summary: {
+    // Tier 0
+    socc_items_added: number;
+    stakeholders_added: number;
+    tensions_added: number;
+    // Tiers 1-9
     vision_added: boolean;
     values_added: number;
     behaviours_added: number;
@@ -785,6 +861,7 @@ export interface BatchImportResults {
     team_objectives_added: number;
     individual_objectives_added: number;
     errors_count: number;
+    skipped_low_confidence_count: number;
   };
 }
 
@@ -812,12 +889,18 @@ export const documentsApi = {
   async batchImportElements(
     sessionId: string,
     extractedElements: ExtractedElements,
-    createdBy?: string
+    options?: {
+      createdBy?: string;
+      importContext?: boolean;
+      minConfidence?: "HIGH" | "MEDIUM" | "LOW";
+    }
   ): Promise<BatchImportResults> {
     const { data } = await api.post("/api/documents/batch-import", {
       session_id: sessionId,
       extracted_elements: extractedElements,
-      created_by: createdBy || "Document Import",
+      created_by: options?.createdBy || "Document Import",
+      import_context: options?.importContext ?? true,
+      min_confidence: options?.minConfidence,
     });
     return data;
   },
