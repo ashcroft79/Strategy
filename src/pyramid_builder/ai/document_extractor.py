@@ -475,6 +475,58 @@ Look for: Personal goals, individual KPIs, role-specific targets
                 else:
                     text_parts.append(f"{slide_content}\n")
 
+        elif doc_format == "combined":
+            # Combined: blocks from multiple documents with various formats
+            # Block types: "separator", "page" (PDF), "slide" (PPTX), "heading"/"paragraph"/"table_row" (DOCX)
+            for block in blocks:
+                block_type = block.get("type", "")
+
+                if block_type == "separator":
+                    # Document separator (e.g., "===\nDocument: filename.pdf\n===")
+                    text_parts.append(block.get("content", ""))
+
+                elif block_type == "page":
+                    # PDF block: has page number and content string
+                    text_parts.append(f"[Page {block.get('page', '?')}]\n{block.get('content', '')}\n")
+
+                elif block_type == "slide":
+                    # PPTX block: has slide number and content list
+                    slide_num = block.get("slide", "?")
+                    text_parts.append(f"\n=== Slide {slide_num} ===\n")
+                    slide_content = block.get("content", [])
+                    if isinstance(slide_content, list):
+                        for item in slide_content:
+                            content_text = item.get("content", "")
+                            if item.get("type") == "title":
+                                text_parts.append(f"# {content_text}\n")
+                            else:
+                                text_parts.append(f"{content_text}\n")
+                    elif slide_content:
+                        text_parts.append(f"{slide_content}\n")
+
+                elif block_type == "heading":
+                    # DOCX heading block
+                    text_parts.append(f"\n## {block.get('content', '')}\n")
+
+                elif block_type in ("paragraph", "table_row"):
+                    # DOCX paragraph or table row
+                    content = block.get("content", "")
+                    if content:
+                        text_parts.append(f"{content}\n")
+
+                else:
+                    # Fallback: try to extract content from any block with content field
+                    content = block.get("content", "")
+                    if isinstance(content, str) and content:
+                        text_parts.append(f"{content}\n")
+                    elif isinstance(content, list):
+                        # Could be slide content in unexpected format
+                        for item in content:
+                            if isinstance(item, dict):
+                                text_parts.append(f"{item.get('content', '')}\n")
+                            elif isinstance(item, str):
+                                text_parts.append(f"{item}\n")
+
         return "\n".join(text_parts)
 
     def validate_extracted_elements(
