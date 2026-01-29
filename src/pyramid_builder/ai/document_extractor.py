@@ -477,7 +477,7 @@ Look for: Personal goals, individual KPIs, role-specific targets
 
         elif doc_format == "combined":
             # Combined: blocks from multiple documents with various formats
-            # Block types: "separator", "page" (PDF), "slide" (PPTX), "heading"/"paragraph"/"table_row" (DOCX)
+            # Includes separator blocks and original format blocks (pdf pages, docx paragraphs, pptx slides)
             for block in blocks:
                 block_type = block.get("type", "")
 
@@ -485,12 +485,12 @@ Look for: Personal goals, individual KPIs, role-specific targets
                     # Document separator (e.g., "===\nDocument: filename.pdf\n===")
                     text_parts.append(block.get("content", ""))
 
-                elif block_type == "page":
-                    # PDF block: has page number and content string
+                elif block.get("page") is not None:
+                    # PDF block: has page number
                     text_parts.append(f"[Page {block.get('page', '?')}]\n{block.get('content', '')}\n")
 
-                elif block_type == "slide":
-                    # PPTX block: has slide number and content list
+                elif block.get("slide") is not None:
+                    # PPTX block: has slide number
                     slide_num = block.get("slide", "?")
                     text_parts.append(f"\n=== Slide {slide_num} ===\n")
                     slide_content = block.get("content", [])
@@ -501,31 +501,18 @@ Look for: Personal goals, individual KPIs, role-specific targets
                                 text_parts.append(f"# {content_text}\n")
                             else:
                                 text_parts.append(f"{content_text}\n")
-                    elif slide_content:
+                    else:
                         text_parts.append(f"{slide_content}\n")
 
                 elif block_type == "heading":
                     # DOCX heading block
                     text_parts.append(f"\n## {block.get('content', '')}\n")
 
-                elif block_type in ("paragraph", "table_row"):
-                    # DOCX paragraph or table row
+                else:
+                    # DOCX paragraph or other block types
                     content = block.get("content", "")
                     if content:
                         text_parts.append(f"{content}\n")
-
-                else:
-                    # Fallback: try to extract content from any block with content field
-                    content = block.get("content", "")
-                    if isinstance(content, str) and content:
-                        text_parts.append(f"{content}\n")
-                    elif isinstance(content, list):
-                        # Could be slide content in unexpected format
-                        for item in content:
-                            if isinstance(item, dict):
-                                text_parts.append(f"{item.get('content', '')}\n")
-                            elif isinstance(item, str):
-                                text_parts.append(f"{item}\n")
 
         return "\n".join(text_parts)
 
