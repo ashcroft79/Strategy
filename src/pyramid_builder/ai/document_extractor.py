@@ -380,11 +380,20 @@ Look for: Personal goals, individual KPIs, role-specific targets
         try:
             response = self.client.messages.create(
                 model="claude-sonnet-4-20250514",
-                max_tokens=4096,
+                max_tokens=16384,  # Increased from 4096 to handle complex documents
                 messages=[{"role": "user", "content": prompt}]
             )
 
             content = response.content[0].text.strip()
+
+            # Check if response was truncated due to max_tokens
+            if response.stop_reason == "max_tokens":
+                return {
+                    "success": False,
+                    "error": "AI response was truncated due to length limits. The document may be too complex. Try with a shorter document or contact support.",
+                    "raw_response": content[:500] + "..." if len(content) > 500 else content,
+                    "elements": {}
+                }
 
             # Clean up any markdown formatting if present
             if "```json" in content:
