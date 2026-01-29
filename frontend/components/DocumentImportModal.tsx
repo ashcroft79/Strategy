@@ -298,7 +298,34 @@ export function DocumentImportModal({
               {/* Extraction Summary */}
               {importResult.success && importResult.validation && (
                 <div className="space-y-3">
-                  <h3 className="font-medium text-gray-900">Extraction Summary - All 9 Tiers</h3>
+                  {/* Tier 0: Context Layer */}
+                  <h3 className="font-medium text-gray-900">Extraction Summary - Tier 0: Context</h3>
+                  <div className="grid grid-cols-3 gap-2">
+                    {/* SOCC Items */}
+                    <div className="p-2 bg-amber-50 border border-amber-200 rounded-lg text-center">
+                      <div className="text-xl font-bold text-amber-600">
+                        {importResult.validation.summary.socc_items_count || 0}
+                      </div>
+                      <div className="text-xs text-gray-600 mt-1">SOCC Items</div>
+                    </div>
+                    {/* Stakeholders */}
+                    <div className="p-2 bg-amber-50 border border-amber-200 rounded-lg text-center">
+                      <div className="text-xl font-bold text-amber-600">
+                        {importResult.validation.summary.stakeholders_count || 0}
+                      </div>
+                      <div className="text-xs text-gray-600 mt-1">Stakeholders</div>
+                    </div>
+                    {/* Tensions */}
+                    <div className="p-2 bg-amber-50 border border-amber-200 rounded-lg text-center">
+                      <div className="text-xl font-bold text-amber-600">
+                        {importResult.validation.summary.tensions_count || 0}
+                      </div>
+                      <div className="text-xs text-gray-600 mt-1">Tensions</div>
+                    </div>
+                  </div>
+
+                  {/* Tiers 1-9: Pyramid Structure */}
+                  <h3 className="font-medium text-gray-900 mt-4">Tiers 1-9: Pyramid Structure</h3>
                   <div className="grid grid-cols-3 gap-2">
                     {/* T1: Vision */}
                     <div className="p-2 bg-gray-50 rounded-lg text-center">

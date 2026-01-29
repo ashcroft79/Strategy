@@ -475,6 +475,45 @@ Look for: Personal goals, individual KPIs, role-specific targets
                 else:
                     text_parts.append(f"{slide_content}\n")
 
+        elif doc_format == "combined":
+            # Combined: blocks from multiple documents with various formats
+            # Includes separator blocks and original format blocks (pdf pages, docx paragraphs, pptx slides)
+            for block in blocks:
+                block_type = block.get("type", "")
+
+                if block_type == "separator":
+                    # Document separator (e.g., "===\nDocument: filename.pdf\n===")
+                    text_parts.append(block.get("content", ""))
+
+                elif block.get("page") is not None:
+                    # PDF block: has page number
+                    text_parts.append(f"[Page {block.get('page', '?')}]\n{block.get('content', '')}\n")
+
+                elif block.get("slide") is not None:
+                    # PPTX block: has slide number
+                    slide_num = block.get("slide", "?")
+                    text_parts.append(f"\n=== Slide {slide_num} ===\n")
+                    slide_content = block.get("content", [])
+                    if isinstance(slide_content, list):
+                        for item in slide_content:
+                            content_text = item.get("content", "")
+                            if item.get("type") == "title":
+                                text_parts.append(f"# {content_text}\n")
+                            else:
+                                text_parts.append(f"{content_text}\n")
+                    else:
+                        text_parts.append(f"{slide_content}\n")
+
+                elif block_type == "heading":
+                    # DOCX heading block
+                    text_parts.append(f"\n## {block.get('content', '')}\n")
+
+                else:
+                    # DOCX paragraph or other block types
+                    content = block.get("content", "")
+                    if content:
+                        text_parts.append(f"{content}\n")
+
         return "\n".join(text_parts)
 
     def validate_extracted_elements(
