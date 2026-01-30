@@ -26,7 +26,7 @@ import TierHeader from "@/components/ui/TierHeader";
 import TierCard from "@/components/ui/TierCard";
 import PyramidVisualization from "@/components/visualizations/PyramidVisualization";
 import { StepNavigation } from "@/components/ui/StepNavigation";
-import { AICoachSidebar } from "@/components/AICoachSidebar";
+import { AICoachSidebar, SuggestionAction } from "@/components/AICoachSidebar";
 import HelpHub, { HelpButton } from "@/components/HelpHub";
 import TierGuide from "@/components/TierGuide";
 import LearningCenter from "@/components/LearningCenter";
@@ -494,6 +494,90 @@ export default function BuilderPage() {
     setModalItemType('');
     setEditingItemId(null);
     setEditFormData({});
+  };
+
+  // Handle AI coach suggestion application
+  const handleApplySuggestion = (action: SuggestionAction) => {
+    if (!pyramid) return;
+
+    // Map tier types from AI to internal types
+    const tierTypeMap: Record<string, string> = {
+      vision: 'vision',
+      value: 'value',
+      behaviour: 'behaviour',
+      driver: 'driver',
+      intent: 'intent',
+      enabler: 'enabler',
+      commitment: 'commitment',
+      team_objective: 'team_objective',
+      individual_objective: 'individual_objective',
+    };
+
+    const modalType = tierTypeMap[action.tierType] || action.tierType;
+
+    if (action.type === 'edit' && action.entryId) {
+      // Find the existing entry and open edit modal with suggestion applied
+      let existingData: any = null;
+      const entryId = action.entryId;
+
+      if (action.tierType === 'vision') {
+        existingData = pyramid.vision?.statements.find((s: any) => s.id === entryId);
+      } else if (action.tierType === 'value') {
+        existingData = pyramid.values?.find((v: any) => v.id === entryId);
+      } else if (action.tierType === 'behaviour') {
+        existingData = pyramid.behaviours?.find((b: any) => b.id === entryId);
+      } else if (action.tierType === 'driver') {
+        existingData = pyramid.strategic_drivers?.find((d: any) => d.id === entryId);
+      } else if (action.tierType === 'intent') {
+        existingData = pyramid.strategic_intents?.find((i: any) => i.id === entryId);
+      } else if (action.tierType === 'enabler') {
+        existingData = pyramid.enablers?.find((e: any) => e.id === entryId);
+      } else if (action.tierType === 'commitment') {
+        existingData = pyramid.iconic_commitments?.find((c: any) => c.id === entryId);
+      } else if (action.tierType === 'team_objective') {
+        existingData = pyramid.team_objectives?.find((t: any) => t.id === entryId);
+      } else if (action.tierType === 'individual_objective') {
+        existingData = pyramid.individual_objectives?.find((i: any) => i.id === entryId);
+      }
+
+      if (existingData) {
+        // Merge the suggestion into the existing data
+        const updatedData = { ...existingData, [action.fieldName]: action.suggestedText };
+        openEditModal(modalType, action.entryId, updatedData);
+      }
+    } else if (action.type === 'add') {
+      // Open add modal with suggestion pre-filled
+      // First, set the appropriate field value based on tier type
+      if (action.tierType === 'vision') {
+        setVisionStatement(action.suggestedText);
+      } else if (action.tierType === 'value') {
+        if (action.fieldName === 'name') setValueName(action.suggestedText);
+        else if (action.fieldName === 'description') setValueDescription(action.suggestedText);
+      } else if (action.tierType === 'behaviour') {
+        setBehaviourStatement(action.suggestedText);
+      } else if (action.tierType === 'driver') {
+        if (action.fieldName === 'name') setDriverName(action.suggestedText);
+        else if (action.fieldName === 'description') setDriverDescription(action.suggestedText);
+        else if (action.fieldName === 'rationale') setDriverRationale(action.suggestedText);
+      } else if (action.tierType === 'intent') {
+        setIntentStatement(action.suggestedText);
+      } else if (action.tierType === 'enabler') {
+        if (action.fieldName === 'name') setEnablerName(action.suggestedText);
+        else if (action.fieldName === 'description') setEnablerDescription(action.suggestedText);
+      } else if (action.tierType === 'commitment') {
+        if (action.fieldName === 'name') setCommitmentName(action.suggestedText);
+        else if (action.fieldName === 'description') setCommitmentDescription(action.suggestedText);
+      } else if (action.tierType === 'team_objective') {
+        if (action.fieldName === 'name') setTeamObjectiveName(action.suggestedText);
+        else if (action.fieldName === 'description') setTeamObjectiveDescription(action.suggestedText);
+      } else if (action.tierType === 'individual_objective') {
+        if (action.fieldName === 'name') setIndividualObjectiveName(action.suggestedText);
+        else if (action.fieldName === 'description') setIndividualObjectiveDescription(action.suggestedText);
+      }
+
+      // Open the add modal
+      openAddModal(modalType);
+    }
   };
 
   // Navigate to a specific item by ID across all tiers
@@ -4652,7 +4736,7 @@ export default function BuilderPage() {
       )}
 
       {/* AI Coach Sidebar */}
-      <AICoachSidebar />
+      <AICoachSidebar onApplySuggestion={handleApplySuggestion} />
 
       {/* Help Hub Modal */}
       <HelpHub

@@ -455,7 +455,7 @@ Suggest specific, measurable alternatives. Respond in JSON:
                 tier4_lines = [f"### STRATEGIC INTENTS (Tier 4) - {len(self.pyramid.strategic_intents)} intents:"]
                 for intent in self.pyramid.strategic_intents[:5]:
                     driver_name = self._get_driver_name(str(intent.driver_id))
-                    tier4_lines.append(f"  - {intent.statement[:100]} (Driver: {driver_name})")
+                    tier4_lines.append(f"  - (id: {intent.id}) {intent.statement[:100]} (Driver: {driver_name})")
                 if len(self.pyramid.strategic_intents) > 5:
                     tier4_lines.append(f"  ... and {len(self.pyramid.strategic_intents) - 5} more")
                 sections.append("\n".join(tier4_lines))
@@ -466,7 +466,7 @@ Suggest specific, measurable alternatives. Respond in JSON:
                 tier6_lines = [f"### ENABLERS (Tier 6) - {len(self.pyramid.enablers)} enablers:"]
                 for enabler in self.pyramid.enablers[:5]:
                     enabler_type = f" [{enabler.enabler_type}]" if enabler.enabler_type else ""
-                    tier6_lines.append(f"  - {enabler.name}{enabler_type}: {enabler.description[:60]}")
+                    tier6_lines.append(f"  - {enabler.name} (id: {enabler.id}){enabler_type}: {enabler.description[:60]}")
                 if len(self.pyramid.enablers) > 5:
                     tier6_lines.append(f"  ... and {len(self.pyramid.enablers) - 5} more")
                 sections.append("\n".join(tier6_lines))
@@ -482,7 +482,7 @@ Suggest specific, measurable alternatives. Respond in JSON:
                 tier7_lines = [f"### ICONIC COMMITMENTS (Tier 7) - {len(self.pyramid.iconic_commitments)} commitments ({', '.join(horizon_summary)}):"]
                 for c in self.pyramid.iconic_commitments[:5]:
                     driver_name = self._get_driver_name(str(c.primary_driver_id))
-                    tier7_lines.append(f"  - {c.name} [{c.horizon.value}] (Driver: {driver_name})")
+                    tier7_lines.append(f"  - {c.name} (id: {c.id}) [{c.horizon.value}] (Driver: {driver_name})")
                 if len(self.pyramid.iconic_commitments) > 5:
                     tier7_lines.append(f"  ... and {len(self.pyramid.iconic_commitments) - 5} more")
                 sections.append("\n".join(tier7_lines))
