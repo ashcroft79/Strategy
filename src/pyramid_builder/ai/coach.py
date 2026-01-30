@@ -408,12 +408,12 @@ Suggest specific, measurable alternatives. Respond in JSON:
             sections = []
             summary = []
 
-            # Tier 1: Vision/Mission/Belief/Passion (with type labels)
+            # Tier 1: Vision/Mission/Belief/Passion (with type labels and IDs)
             if self.pyramid.vision and self.pyramid.vision.statements:
                 tier1_lines = ["### PURPOSE STATEMENTS (Tier 1):"]
                 for stmt in self.pyramid.vision.get_statements_ordered():
                     stmt_type = stmt.statement_type.value.upper()
-                    tier1_lines.append(f"  [{stmt_type}]: {stmt.statement}")
+                    tier1_lines.append(f"  [{stmt_type}] (id: {stmt.id}): {stmt.statement}")
                 tier1_lines.append("")
                 tier1_lines.append("Note: Each statement type has different criteria:")
                 tier1_lines.append("  - VISION: Future-focused, paints a picture of what could be")
@@ -428,7 +428,7 @@ Suggest specific, measurable alternatives. Respond in JSON:
                 tier2_lines = [f"### VALUES (Tier 2) - {len(self.pyramid.values)} core values:"]
                 for value in self.pyramid.values:
                     desc = f": {value.description[:80]}" if value.description else ""
-                    tier2_lines.append(f"  - {value.name}{desc}")
+                    tier2_lines.append(f"  - {value.name} (id: {value.id}){desc}")
                 sections.append("\n".join(tier2_lines))
                 summary.append(f"Values: {len(self.pyramid.values)}")
 
@@ -436,7 +436,7 @@ Suggest specific, measurable alternatives. Respond in JSON:
             if self.pyramid.behaviours:
                 tier3_lines = [f"### BEHAVIOURS (Tier 3) - {len(self.pyramid.behaviours)} observable behaviours:"]
                 for behaviour in self.pyramid.behaviours[:5]:
-                    tier3_lines.append(f"  - {behaviour.statement}")
+                    tier3_lines.append(f"  - (id: {behaviour.id}) {behaviour.statement}")
                 if len(self.pyramid.behaviours) > 5:
                     tier3_lines.append(f"  ... and {len(self.pyramid.behaviours) - 5} more")
                 sections.append("\n".join(tier3_lines))
@@ -446,7 +446,7 @@ Suggest specific, measurable alternatives. Respond in JSON:
             if self.pyramid.strategic_drivers:
                 tier5_lines = [f"### STRATEGIC DRIVERS (Tier 5) - {len(self.pyramid.strategic_drivers)} drivers:"]
                 for driver in self.pyramid.strategic_drivers:
-                    tier5_lines.append(f"  - {driver.name}: {driver.description[:80]}")
+                    tier5_lines.append(f"  - {driver.name} (id: {driver.id}): {driver.description[:80]}")
                 sections.append("\n".join(tier5_lines))
                 summary.append(f"Drivers: {len(self.pyramid.strategic_drivers)}")
 
@@ -632,7 +632,35 @@ IMPORTANT COACHING APPROACH:
 - When users are building their pyramid, help them connect their strategic choices back to their Context (SOCC) analysis
 - Ask clarifying questions like: "Does this leverage your strength in X?" or "How does this address the constraint around Y?"
 - Remind users that "strategy without context is hope, not strategy"
-- If they haven't completed Context yet, gently encourage them to start with Tier 0 (SOCC) before building the pyramid"""
+- If they haven't completed Context yet, gently encourage them to start with Tier 0 (SOCC) before building the pyramid
+
+ACTIONABLE SUGGESTIONS FORMAT:
+When suggesting specific text improvements or new entries, use this format so users can apply them with one click:
+
+For editing an EXISTING entry (use when you reference a specific entry that exists):
+[[EDIT:tier_type:entry_id:field_name]]
+suggested replacement text here
+[[/EDIT]]
+
+For adding a NEW entry:
+[[ADD:tier_type:field_name]]
+suggested text for new entry
+[[/ADD]]
+
+Valid tier_type values: vision, value, behaviour, driver, intent, enabler, commitment, team_objective, individual_objective
+Valid field_name values: statement, name, description, rationale
+
+Example for editing: "Your driver description could be stronger:
+[[EDIT:driver:abc-123:description]]
+Accelerating market share growth by delivering products that customers love and recommend to others
+[[/EDIT]]"
+
+Example for adding: "Consider adding this strategic intent:
+[[ADD:intent:statement]]
+Customers actively recommend us to peers without prompting, becoming our primary growth engine
+[[/ADD]]"
+
+IMPORTANT: Only use this format when you have a SPECIFIC text suggestion. Don't use it for general advice. The entry_id must match an actual ID from the pyramid state above."""
 
         # Build message history
         messages = []
