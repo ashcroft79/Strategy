@@ -3235,6 +3235,7 @@ export default function BuilderPage() {
                     } else {
                       setVisionStatement(text);
                     }
+                    visionStatementSuggestion.markAsAiGenerated(text);
                     visionStatementSuggestion.dismissSuggestion();
                   }}
                 />
@@ -3327,6 +3328,7 @@ export default function BuilderPage() {
                     } else {
                       setValueName(text);
                     }
+                    valueNameSuggestion.markAsAiGenerated(text);
                     valueNameSuggestion.dismissSuggestion();
                   }}
                 />
@@ -3368,6 +3370,7 @@ export default function BuilderPage() {
                     } else {
                       setValueDescription(text);
                     }
+                    valueDescSuggestion.markAsAiGenerated(text);
                     valueDescSuggestion.dismissSuggestion();
                   }}
                 />
@@ -3451,6 +3454,7 @@ export default function BuilderPage() {
                     } else {
                       setBehaviourStatement(text);
                     }
+                    behaviourStatementSuggestion.markAsAiGenerated(text);
                     behaviourStatementSuggestion.dismissSuggestion();
                   }}
                 />
@@ -3584,6 +3588,7 @@ export default function BuilderPage() {
                       } else {
                         setDriverName(text);
                       }
+                      driverNameSuggestion.markAsAiGenerated(text);
                       driverNameSuggestion.dismissSuggestion();
                     }}
                   />
@@ -3627,6 +3632,7 @@ export default function BuilderPage() {
                       } else {
                         setDriverDescription(text);
                       }
+                      driverDescSuggestion.markAsAiGenerated(text);
                       driverDescSuggestion.dismissSuggestion();
                     }}
                   />
@@ -3669,6 +3675,7 @@ export default function BuilderPage() {
                       } else {
                         setDriverRationale(text);
                       }
+                      driverRationaleSuggestion.markAsAiGenerated(text);
                       driverRationaleSuggestion.dismissSuggestion();
                     }}
                   />
@@ -3845,6 +3852,7 @@ export default function BuilderPage() {
                       } else {
                         setIntentStatement(text);
                       }
+                      intentSuggestion.markAsAiGenerated(text);
                       intentSuggestion.dismissSuggestion();
                     }}
                   />
@@ -3937,6 +3945,7 @@ export default function BuilderPage() {
                 } else {
                   setEnablerName(text);
                 }
+                enablerNameSuggestion.markAsAiGenerated(text);
                 enablerNameSuggestion.dismissSuggestion();
               }}
             />
@@ -3979,6 +3988,7 @@ export default function BuilderPage() {
                 } else {
                   setEnablerDescription(text);
                 }
+                enablerDescSuggestion.markAsAiGenerated(text);
                 enablerDescSuggestion.dismissSuggestion();
               }}
             />
@@ -4132,6 +4142,7 @@ export default function BuilderPage() {
                       } else {
                         setCommitmentName(text);
                       }
+                      commitmentNameSuggestion.markAsAiGenerated(text);
                       commitmentNameSuggestion.dismissSuggestion();
                     }}
                   />
@@ -4175,6 +4186,7 @@ export default function BuilderPage() {
                       } else {
                         setCommitmentDescription(text);
                       }
+                      commitmentDescSuggestion.markAsAiGenerated(text);
                       commitmentDescSuggestion.dismissSuggestion();
                     }}
                   />
@@ -4396,6 +4408,7 @@ export default function BuilderPage() {
                     } else {
                       setTeamObjectiveName(text);
                     }
+                    teamObjectiveNameSuggestion.markAsAiGenerated(text);
                     teamObjectiveNameSuggestion.dismissSuggestion();
                   }}
                 />
@@ -4437,6 +4450,7 @@ export default function BuilderPage() {
                     } else {
                       setTeamObjectiveDescription(text);
                     }
+                    teamObjectiveDescSuggestion.markAsAiGenerated(text);
                     teamObjectiveDescSuggestion.dismissSuggestion();
                   }}
                 />
@@ -4587,6 +4601,7 @@ export default function BuilderPage() {
                     } else {
                       setIndividualObjectiveName(text);
                     }
+                    individualObjectiveNameSuggestion.markAsAiGenerated(text);
                     individualObjectiveNameSuggestion.dismissSuggestion();
                   }}
                 />
@@ -4628,6 +4643,7 @@ export default function BuilderPage() {
                     } else {
                       setIndividualObjectiveDescription(text);
                     }
+                    individualObjectiveDescSuggestion.markAsAiGenerated(text);
                     individualObjectiveDescSuggestion.dismissSuggestion();
                   }}
                 />
