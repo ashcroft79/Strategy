@@ -4,17 +4,159 @@ import { useState, useRef, useEffect } from "react";
 import { aiApi } from "@/lib/api-client";
 import { usePyramidStore } from "@/lib/store";
 import { Button } from "./ui/Button";
-import { MessageCircle, X, Send, Sparkles, Target, Lightbulb } from "lucide-react";
+import { MessageCircle, X, Send, Sparkles, Target, Lightbulb, Plus, Pencil } from "lucide-react";
 
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
 }
 
+// Action block types for AI suggestions
+export interface SuggestionAction {
+  type: "edit" | "add";
+  tierType: string;
+  entryId?: string; // Only for edit actions
+  fieldName: string;
+  suggestedText: string;
+}
+
+export interface AICoachSidebarProps {
+  onApplySuggestion?: (action: SuggestionAction) => void;
+}
+
+// Parse action blocks from AI response
+function parseActionBlocks(text: string): { cleanText: string; actions: SuggestionAction[] } {
+  const actions: SuggestionAction[] = [];
+
+  // Pattern for EDIT blocks: [[EDIT:tier_type:entry_id:field_name]]content[[/EDIT]]
+  const editPattern = /\[\[EDIT:(\w+):([^:]+):(\w+)\]\]\n?([\s\S]*?)\[\[\/EDIT\]\]/g;
+  // Pattern for ADD blocks: [[ADD:tier_type:field_name]]content[[/ADD]]
+  const addPattern = /\[\[ADD:(\w+):(\w+)\]\]\n?([\s\S]*?)\[\[\/ADD\]\]/g;
+
+  let cleanText = text;
+
+  // Extract EDIT blocks
+  let match;
+  while ((match = editPattern.exec(text)) !== null) {
+    actions.push({
+      type: "edit",
+      tierType: match[1],
+      entryId: match[2],
+      fieldName: match[3],
+      suggestedText: match[4].trim(),
+    });
+  }
+
+  // Extract ADD blocks
+  while ((match = addPattern.exec(text)) !== null) {
+    actions.push({
+      type: "add",
+      tierType: match[1],
+      fieldName: match[2],
+      suggestedText: match[3].trim(),
+    });
+  }
+
+  // Remove action blocks from text for clean rendering
+  cleanText = cleanText.replace(editPattern, '').replace(addPattern, '').trim();
+
+  return { cleanText, actions };
+}
+
+// Get human-readable tier name
+function getTierDisplayName(tierType: string): string {
+  const names: Record<string, string> = {
+    vision: "Purpose Statement",
+    value: "Value",
+    behaviour: "Behaviour",
+    driver: "Strategic Driver",
+    intent: "Strategic Intent",
+    enabler: "Enabler",
+    commitment: "Iconic Commitment",
+    team_objective: "Team Objective",
+    individual_objective: "Individual Objective",
+  };
+  return names[tierType] || tierType;
+}
+
+// Get human-readable field name
+function getFieldDisplayName(fieldName: string): string {
+  const names: Record<string, string> = {
+    statement: "statement",
+    name: "name",
+    description: "description",
+    rationale: "rationale",
+  };
+  return names[fieldName] || fieldName;
+}
+
+// Render an action block as a clickable card
+function ActionBlock({
+  action,
+  onApply,
+  actionKey
+}: {
+  action: SuggestionAction;
+  onApply?: (action: SuggestionAction) => void;
+  actionKey: number;
+}) {
+  const tierName = getTierDisplayName(action.tierType);
+  const fieldName = getFieldDisplayName(action.fieldName);
+  const isEdit = action.type === "edit";
+
+  return (
+    <div
+      key={actionKey}
+      className="my-2 p-3 bg-blue-50 border border-blue-200 rounded-lg"
+    >
+      <div className="flex items-center gap-2 text-xs text-blue-600 font-medium mb-2">
+        {isEdit ? (
+          <>
+            <Pencil className="w-3 h-3" />
+            <span>Suggested edit for {tierName} {fieldName}</span>
+          </>
+        ) : (
+          <>
+            <Plus className="w-3 h-3" />
+            <span>Suggested new {tierName}</span>
+          </>
+        )}
+      </div>
+      <div className="text-sm text-gray-800 bg-white p-2 rounded border border-blue-100 mb-2 whitespace-pre-wrap">
+        {action.suggestedText}
+      </div>
+      {onApply && (
+        <button
+          onClick={() => onApply(action)}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition-colors"
+        >
+          {isEdit ? (
+            <>
+              <Pencil className="w-3 h-3" />
+              Apply Edit
+            </>
+          ) : (
+            <>
+              <Plus className="w-3 h-3" />
+              Add This
+            </>
+          )}
+        </button>
+      )}
+    </div>
+  );
+}
+
 // Simple markdown renderer for AI responses
-function renderMarkdown(text: string): React.ReactNode {
+function renderMarkdown(
+  text: string,
+  onApplySuggestion?: (action: SuggestionAction) => void
+): React.ReactNode {
+  // First, parse out any action blocks
+  const { cleanText, actions } = parseActionBlocks(text);
+
   // Split into lines for processing
-  const lines = text.split('\n');
+  const lines = cleanText.split('\n');
   const elements: React.ReactNode[] = [];
   let listItems: string[] = [];
   let listType: 'ul' | 'ol' | null = null;
@@ -77,6 +219,21 @@ function renderMarkdown(text: string): React.ReactNode {
   }
 
   flushList();
+
+  // Append action blocks at the end
+  if (actions.length > 0) {
+    actions.forEach((action, idx) => {
+      elements.push(
+        <ActionBlock
+          key={`action-${idx}`}
+          action={action}
+          onApply={onApplySuggestion}
+          actionKey={idx}
+        />
+      );
+    });
+  }
+
   return <>{elements}</>;
 }
 
@@ -159,7 +316,7 @@ function getPyramidSummary(pyramid: any): string {
   return `Current pyramid has: ${parts.join(", ")}.`;
 }
 
-export function AICoachSidebar() {
+export function AICoachSidebar({ onApplySuggestion }: AICoachSidebarProps) {
   const { sessionId, pyramid } = usePyramidStore();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -410,7 +567,7 @@ Use ✓ for strengths and ⚠ for suggestions. Keep it brief and actionable.`;
               {msg.role === "user" ? (
                 <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
               ) : (
-                <div className="text-sm">{renderMarkdown(msg.content)}</div>
+                <div className="text-sm">{renderMarkdown(msg.content, onApplySuggestion)}</div>
               )}
             </div>
           </div>

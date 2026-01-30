@@ -286,14 +286,7 @@ Generate a high-quality draft {tier} that:
 4. Fits the current pyramid context
 {"5. ADDRESSES THE USER'S SPECIFIC REQUEST ABOVE" if user_guidance else ""}
 
-Respond in JSON format with the draft fields:
-{{
-  "name": "Name/title of the item (if applicable)",
-  "statement": "Full statement text (for vision/mission/belief/passion)",
-  "description": "Detailed description (if applicable)",
-  "rationale": "Why this matters (if applicable)",
-  "additional_fields": {{}}
-}}"""
+{self._get_tier_json_schema(tier)}"""
 
         try:
             response = self.client.messages.create(
@@ -408,12 +401,12 @@ Suggest specific, measurable alternatives. Respond in JSON:
             sections = []
             summary = []
 
-            # Tier 1: Vision/Mission/Belief/Passion (with type labels)
+            # Tier 1: Vision/Mission/Belief/Passion (with type labels and IDs)
             if self.pyramid.vision and self.pyramid.vision.statements:
                 tier1_lines = ["### PURPOSE STATEMENTS (Tier 1):"]
                 for stmt in self.pyramid.vision.get_statements_ordered():
                     stmt_type = stmt.statement_type.value.upper()
-                    tier1_lines.append(f"  [{stmt_type}]: {stmt.statement}")
+                    tier1_lines.append(f"  [{stmt_type}] (id: {stmt.id}): {stmt.statement}")
                 tier1_lines.append("")
                 tier1_lines.append("Note: Each statement type has different criteria:")
                 tier1_lines.append("  - VISION: Future-focused, paints a picture of what could be")
@@ -428,7 +421,7 @@ Suggest specific, measurable alternatives. Respond in JSON:
                 tier2_lines = [f"### VALUES (Tier 2) - {len(self.pyramid.values)} core values:"]
                 for value in self.pyramid.values:
                     desc = f": {value.description[:80]}" if value.description else ""
-                    tier2_lines.append(f"  - {value.name}{desc}")
+                    tier2_lines.append(f"  - {value.name} (id: {value.id}){desc}")
                 sections.append("\n".join(tier2_lines))
                 summary.append(f"Values: {len(self.pyramid.values)}")
 
@@ -436,7 +429,7 @@ Suggest specific, measurable alternatives. Respond in JSON:
             if self.pyramid.behaviours:
                 tier3_lines = [f"### BEHAVIOURS (Tier 3) - {len(self.pyramid.behaviours)} observable behaviours:"]
                 for behaviour in self.pyramid.behaviours[:5]:
-                    tier3_lines.append(f"  - {behaviour.statement}")
+                    tier3_lines.append(f"  - (id: {behaviour.id}) {behaviour.statement}")
                 if len(self.pyramid.behaviours) > 5:
                     tier3_lines.append(f"  ... and {len(self.pyramid.behaviours) - 5} more")
                 sections.append("\n".join(tier3_lines))
@@ -446,7 +439,7 @@ Suggest specific, measurable alternatives. Respond in JSON:
             if self.pyramid.strategic_drivers:
                 tier5_lines = [f"### STRATEGIC DRIVERS (Tier 5) - {len(self.pyramid.strategic_drivers)} drivers:"]
                 for driver in self.pyramid.strategic_drivers:
-                    tier5_lines.append(f"  - {driver.name}: {driver.description[:80]}")
+                    tier5_lines.append(f"  - {driver.name} (id: {driver.id}): {driver.description[:80]}")
                 sections.append("\n".join(tier5_lines))
                 summary.append(f"Drivers: {len(self.pyramid.strategic_drivers)}")
 
@@ -455,7 +448,7 @@ Suggest specific, measurable alternatives. Respond in JSON:
                 tier4_lines = [f"### STRATEGIC INTENTS (Tier 4) - {len(self.pyramid.strategic_intents)} intents:"]
                 for intent in self.pyramid.strategic_intents[:5]:
                     driver_name = self._get_driver_name(str(intent.driver_id))
-                    tier4_lines.append(f"  - {intent.statement[:100]} (Driver: {driver_name})")
+                    tier4_lines.append(f"  - (id: {intent.id}) {intent.statement[:100]} (Driver: {driver_name})")
                 if len(self.pyramid.strategic_intents) > 5:
                     tier4_lines.append(f"  ... and {len(self.pyramid.strategic_intents) - 5} more")
                 sections.append("\n".join(tier4_lines))
@@ -466,7 +459,7 @@ Suggest specific, measurable alternatives. Respond in JSON:
                 tier6_lines = [f"### ENABLERS (Tier 6) - {len(self.pyramid.enablers)} enablers:"]
                 for enabler in self.pyramid.enablers[:5]:
                     enabler_type = f" [{enabler.enabler_type}]" if enabler.enabler_type else ""
-                    tier6_lines.append(f"  - {enabler.name}{enabler_type}: {enabler.description[:60]}")
+                    tier6_lines.append(f"  - {enabler.name} (id: {enabler.id}){enabler_type}: {enabler.description[:60]}")
                 if len(self.pyramid.enablers) > 5:
                     tier6_lines.append(f"  ... and {len(self.pyramid.enablers) - 5} more")
                 sections.append("\n".join(tier6_lines))
@@ -482,7 +475,7 @@ Suggest specific, measurable alternatives. Respond in JSON:
                 tier7_lines = [f"### ICONIC COMMITMENTS (Tier 7) - {len(self.pyramid.iconic_commitments)} commitments ({', '.join(horizon_summary)}):"]
                 for c in self.pyramid.iconic_commitments[:5]:
                     driver_name = self._get_driver_name(str(c.primary_driver_id))
-                    tier7_lines.append(f"  - {c.name} [{c.horizon.value}] (Driver: {driver_name})")
+                    tier7_lines.append(f"  - {c.name} (id: {c.id}) [{c.horizon.value}] (Driver: {driver_name})")
                 if len(self.pyramid.iconic_commitments) > 5:
                     tier7_lines.append(f"  ... and {len(self.pyramid.iconic_commitments) - 5} more")
                 sections.append("\n".join(tier7_lines))
@@ -632,7 +625,43 @@ IMPORTANT COACHING APPROACH:
 - When users are building their pyramid, help them connect their strategic choices back to their Context (SOCC) analysis
 - Ask clarifying questions like: "Does this leverage your strength in X?" or "How does this address the constraint around Y?"
 - Remind users that "strategy without context is hope, not strategy"
-- If they haven't completed Context yet, gently encourage them to start with Tier 0 (SOCC) before building the pyramid"""
+- If they haven't completed Context yet, gently encourage them to start with Tier 0 (SOCC) before building the pyramid
+
+ACTIONABLE SUGGESTIONS FORMAT:
+When suggesting specific text improvements or new entries, use this format so users can apply them with one click:
+
+For editing an EXISTING entry (use when you reference a specific entry that exists):
+[[EDIT:tier_type:entry_id:field_name]]
+suggested replacement text here
+[[/EDIT]]
+
+For adding a NEW entry:
+[[ADD:tier_type:field_name]]
+suggested text for new entry
+[[/ADD]]
+
+Valid tier_type and field_name combinations:
+- vision: statement
+- value: name, description
+- behaviour: statement
+- driver: name, description, rationale
+- intent: statement
+- enabler: name, description (NO rationale field)
+- commitment: name, description
+- team_objective: name, description
+- individual_objective: name, description
+
+Example for editing: "Your driver description could be stronger:
+[[EDIT:driver:abc-123:description]]
+Accelerating market share growth by delivering products that customers love and recommend to others
+[[/EDIT]]"
+
+Example for adding: "Consider adding this strategic intent:
+[[ADD:intent:statement]]
+Customers actively recommend us to peers without prompting, becoming our primary growth engine
+[[/ADD]]"
+
+IMPORTANT: Only use this format when you have a SPECIFIC text suggestion. Don't use it for general advice. The entry_id must match an actual ID from the pyramid state above."""
 
         # Build message history
         messages = []
@@ -786,3 +815,58 @@ Individual Objective Best Practices:
             """,
         }
         return guidance.get(tier, "")
+
+    def _get_tier_json_schema(self, tier: str) -> str:
+        """Get tier-specific JSON schema for draft generation."""
+        schemas = {
+            "vision": """Respond in JSON format with ONLY these fields:
+{
+  "statement": "The full vision/mission/belief/passion statement text"
+}""",
+            "value": """Respond in JSON format with ONLY these fields:
+{
+  "name": "Value name (1-3 words)",
+  "description": "What this value means in practice"
+}""",
+            "behaviour": """Respond in JSON format with ONLY these fields:
+{
+  "statement": "Observable behaviour statement starting with 'We...'"
+}""",
+            "strategic_driver": """Respond in JSON format with ONLY these fields:
+{
+  "name": "Driver name (Adjective + Noun, 1-3 words)",
+  "description": "What this driver means and why it matters",
+  "rationale": "Strategic choice - why this, why now?"
+}""",
+            "strategic_intent": """Respond in JSON format with ONLY these fields:
+{
+  "statement": "Bold, aspirational outcome statement"
+}""",
+            "enabler": """Respond in JSON format with ONLY these fields:
+{
+  "name": "Enabler name (clear, specific capability)",
+  "description": "What this enabler provides and why it's needed"
+}""",
+            "iconic_commitment": """Respond in JSON format with ONLY these fields:
+{
+  "name": "Commitment name (specific, measurable)",
+  "description": "Success criteria and what will be delivered"
+}""",
+            "team_objective": """Respond in JSON format with ONLY these fields:
+{
+  "name": "Objective name (specific, measurable)",
+  "description": "What will be achieved and how it contributes"
+}""",
+            "individual_objective": """Respond in JSON format with ONLY these fields:
+{
+  "name": "Objective name (specific, actionable)",
+  "description": "What will be achieved and its impact"
+}""",
+        }
+        # Default schema for unknown tiers
+        default_schema = """Respond in JSON format with the applicable fields:
+{
+  "name": "Name/title of the item",
+  "description": "Detailed description"
+}"""
+        return schemas.get(tier, default_schema)
