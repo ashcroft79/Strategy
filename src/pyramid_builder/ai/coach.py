@@ -286,14 +286,7 @@ Generate a high-quality draft {tier} that:
 4. Fits the current pyramid context
 {"5. ADDRESSES THE USER'S SPECIFIC REQUEST ABOVE" if user_guidance else ""}
 
-Respond in JSON format with the draft fields:
-{{
-  "name": "Name/title of the item (if applicable)",
-  "statement": "Full statement text (for vision/mission/belief/passion)",
-  "description": "Detailed description (if applicable)",
-  "rationale": "Why this matters (if applicable)",
-  "additional_fields": {{}}
-}}"""
+{self._get_tier_json_schema(tier)}"""
 
         try:
             response = self.client.messages.create(
@@ -647,8 +640,16 @@ For adding a NEW entry:
 suggested text for new entry
 [[/ADD]]
 
-Valid tier_type values: vision, value, behaviour, driver, intent, enabler, commitment, team_objective, individual_objective
-Valid field_name values: statement, name, description, rationale
+Valid tier_type and field_name combinations:
+- vision: statement
+- value: name, description
+- behaviour: statement
+- driver: name, description, rationale
+- intent: statement
+- enabler: name, description (NO rationale field)
+- commitment: name, description
+- team_objective: name, description
+- individual_objective: name, description
 
 Example for editing: "Your driver description could be stronger:
 [[EDIT:driver:abc-123:description]]
@@ -814,3 +815,58 @@ Individual Objective Best Practices:
             """,
         }
         return guidance.get(tier, "")
+
+    def _get_tier_json_schema(self, tier: str) -> str:
+        """Get tier-specific JSON schema for draft generation."""
+        schemas = {
+            "vision": """Respond in JSON format with ONLY these fields:
+{
+  "statement": "The full vision/mission/belief/passion statement text"
+}""",
+            "value": """Respond in JSON format with ONLY these fields:
+{
+  "name": "Value name (1-3 words)",
+  "description": "What this value means in practice"
+}""",
+            "behaviour": """Respond in JSON format with ONLY these fields:
+{
+  "statement": "Observable behaviour statement starting with 'We...'"
+}""",
+            "strategic_driver": """Respond in JSON format with ONLY these fields:
+{
+  "name": "Driver name (Adjective + Noun, 1-3 words)",
+  "description": "What this driver means and why it matters",
+  "rationale": "Strategic choice - why this, why now?"
+}""",
+            "strategic_intent": """Respond in JSON format with ONLY these fields:
+{
+  "statement": "Bold, aspirational outcome statement"
+}""",
+            "enabler": """Respond in JSON format with ONLY these fields:
+{
+  "name": "Enabler name (clear, specific capability)",
+  "description": "What this enabler provides and why it's needed"
+}""",
+            "iconic_commitment": """Respond in JSON format with ONLY these fields:
+{
+  "name": "Commitment name (specific, measurable)",
+  "description": "Success criteria and what will be delivered"
+}""",
+            "team_objective": """Respond in JSON format with ONLY these fields:
+{
+  "name": "Objective name (specific, measurable)",
+  "description": "What will be achieved and how it contributes"
+}""",
+            "individual_objective": """Respond in JSON format with ONLY these fields:
+{
+  "name": "Objective name (specific, actionable)",
+  "description": "What will be achieved and its impact"
+}""",
+        }
+        # Default schema for unknown tiers
+        default_schema = """Respond in JSON format with the applicable fields:
+{
+  "name": "Name/title of the item",
+  "description": "Detailed description"
+}"""
+        return schemas.get(tier, default_schema)
