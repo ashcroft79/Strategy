@@ -16,9 +16,13 @@ import {
   DEFAULT_EXPORT_SELECTION,
   cloneSelection,
   getEnabledHorizons,
+  getEnabledTiers,
   EXECUTIVE_PRESET,
   LEADERSHIP_PRESET,
+  DETAILED_PRESET,
   TEAM_PRESET,
+  AudiencePreset,
+  PRESET_DESCRIPTIONS,
 } from "@/types/export-selection";
 
 type LayoutType = "portrait" | "landscape" | "compact";
@@ -65,11 +69,19 @@ function OnePageVisualizationContent() {
   const { pyramid } = usePyramidStore();
   const [layout, setLayout] = useState<LayoutType>("portrait");
   const [showTierSelector, setShowTierSelector] = useState(false);
+  const [selectedPreset, setSelectedPreset] = useState<AudiencePreset>(() => {
+    const preset = searchParams.get("preset");
+    if (preset === "executive" || preset === "leadership" || preset === "detailed" || preset === "team") {
+      return preset;
+    }
+    return "leadership";
+  });
   const [selection, setSelection] = useState<ExportElementSelection>(() => {
     // Check for preset from URL params
     const preset = searchParams.get("preset");
     if (preset === "executive") return cloneSelection(EXECUTIVE_PRESET);
     if (preset === "leadership") return cloneSelection(LEADERSHIP_PRESET);
+    if (preset === "detailed") return cloneSelection(DETAILED_PRESET);
     if (preset === "team") return cloneSelection(TEAM_PRESET);
     return cloneSelection(DEFAULT_EXPORT_SELECTION);
   });
@@ -97,12 +109,17 @@ function OnePageVisualizationContent() {
   };
 
   // Quick presets
-  const applyPreset = (presetName: string) => {
+  const applyPreset = (presetName: AudiencePreset) => {
+    setSelectedPreset(presetName);
     if (presetName === "executive") setSelection(cloneSelection(EXECUTIVE_PRESET));
     else if (presetName === "leadership") setSelection(cloneSelection(LEADERSHIP_PRESET));
+    else if (presetName === "detailed") setSelection(cloneSelection(DETAILED_PRESET));
     else if (presetName === "team") setSelection(cloneSelection(TEAM_PRESET));
     else setSelection(cloneSelection(DEFAULT_EXPORT_SELECTION));
   };
+
+  // Get enabled tiers for display
+  const enabledTiers = getEnabledTiers(selection);
 
   // Toggle tier in selection
   const toggleTier = (tier: keyof TierSelection) => {
@@ -212,87 +229,110 @@ function OnePageVisualizationContent() {
                   <ChevronDown className={`w-4 h-4 transition-transform ${showTierSelector ? 'rotate-180' : ''}`} />
                 </button>
 
-                {/* Tier Selector Dropdown */}
+                {/* Tier Selector Dropdown - Matching Exports Page Format */}
                 {showTierSelector && (
-                  <div className="absolute top-full right-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg p-3 w-72 z-50">
-                    {/* Quick Presets */}
-                    <div className="text-xs font-bold text-gray-700 mb-2 uppercase">Quick Presets</div>
-                    <div className="flex gap-1 mb-3">
-                      <button
-                        onClick={() => applyPreset("executive")}
-                        className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded transition-colors"
-                      >
-                        Executive
-                      </button>
-                      <button
-                        onClick={() => applyPreset("leadership")}
-                        className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded transition-colors"
-                      >
-                        Leadership
-                      </button>
-                      <button
-                        onClick={() => applyPreset("team")}
-                        className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded transition-colors"
-                      >
-                        Team
-                      </button>
+                  <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl p-4 w-80 z-50">
+                    {/* Audience Preset Section */}
+                    <div className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Audience Preset</div>
+                    <div className="grid grid-cols-2 gap-2 mb-3">
+                      {(["executive", "leadership", "detailed", "team"] as AudiencePreset[]).map((preset) => (
+                        <button
+                          key={preset}
+                          onClick={() => applyPreset(preset)}
+                          className={`p-2 rounded-lg border-2 text-left transition-all ${
+                            selectedPreset === preset
+                              ? "border-blue-500 bg-blue-50"
+                              : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                          }`}
+                        >
+                          <div className="font-semibold text-gray-800 capitalize text-sm">{preset}</div>
+                          <div className="text-xs text-gray-500 mt-0.5">
+                            {preset === "executive" && "High-level"}
+                            {preset === "leadership" && "Comprehensive"}
+                            {preset === "detailed" && "Full detail"}
+                            {preset === "team" && "Team focus"}
+                          </div>
+                        </button>
+                      ))}
                     </div>
 
-                    <div className="border-t border-gray-200 pt-3 mb-2">
-                      <div className="text-xs font-bold text-gray-700 mb-2 uppercase">Tiers</div>
+                    {/* Preset Description */}
+                    <div className="p-2 bg-gray-50 rounded-lg text-xs text-gray-600 mb-3">
+                      <span className="font-medium text-gray-700 capitalize">{selectedPreset}:</span>{" "}
+                      {PRESET_DESCRIPTIONS[selectedPreset]?.slice(0, 80)}...
                     </div>
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+
+                    {/* Enabled Tiers Pills */}
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {enabledTiers.map((tier) => (
+                        <span
+                          key={tier}
+                          className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full"
+                        >
+                          {tier.replace(/([A-Z])/g, ' $1').trim()}
+                        </span>
+                      ))}
+                      {enabledTiers.length === 0 && (
+                        <span className="text-gray-400 text-xs">No tiers selected</span>
+                      )}
+                    </div>
+
+                    {/* Tiers Section */}
+                    <div className="border-t border-gray-200 pt-3 mb-2">
+                      <div className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Customize Tiers</div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1.5 rounded transition-colors">
                         <input
                           type="checkbox"
                           checked={selectedTiers.vision}
                           onChange={() => toggleTier("vision")}
-                          className="w-4 h-4 text-blue-600 rounded"
+                          className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
                         />
                         <span className="text-sm text-gray-700">Vision/Mission</span>
                       </label>
-                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1.5 rounded transition-colors">
                         <input
                           type="checkbox"
                           checked={selectedTiers.values}
                           onChange={() => toggleTier("values")}
-                          className="w-4 h-4 text-blue-600 rounded"
+                          className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
                         />
                         <span className="text-sm text-gray-700">Values & Behaviours</span>
                       </label>
-                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1.5 rounded transition-colors">
                         <input
                           type="checkbox"
                           checked={selectedTiers.drivers}
                           onChange={() => toggleTier("drivers")}
-                          className="w-4 h-4 text-blue-600 rounded"
+                          className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
                         />
                         <span className="text-sm text-gray-700">Drivers, Intents & Commitments</span>
                       </label>
-                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1.5 rounded transition-colors">
                         <input
                           type="checkbox"
                           checked={selectedTiers.enablers}
                           onChange={() => toggleTier("enablers")}
-                          className="w-4 h-4 text-blue-600 rounded"
+                          className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
                         />
                         <span className="text-sm text-gray-700">Enablers</span>
                       </label>
-                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1.5 rounded transition-colors">
                         <input
                           type="checkbox"
                           checked={selectedTiers.teamObjectives}
                           onChange={() => toggleTier("teamObjectives")}
-                          className="w-4 h-4 text-blue-600 rounded"
+                          className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
                         />
                         <span className="text-sm text-gray-700">Team Objectives</span>
                       </label>
-                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1.5 rounded transition-colors">
                         <input
                           type="checkbox"
                           checked={selectedTiers.individualObjectives}
                           onChange={() => toggleTier("individualObjectives")}
-                          className="w-4 h-4 text-blue-600 rounded"
+                          className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
                         />
                         <span className="text-sm text-gray-700">Individual Objectives</span>
                       </label>
@@ -302,33 +342,39 @@ function OnePageVisualizationContent() {
                     {selectedTiers.drivers && (
                       <>
                         <div className="border-t border-gray-200 pt-3 mt-3 mb-2">
-                          <div className="text-xs font-bold text-gray-700 mb-2 uppercase">Horizons</div>
+                          <div className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Horizons</div>
                         </div>
                         <div className="flex gap-2">
-                          <label className="flex items-center gap-1.5 cursor-pointer hover:bg-green-50 px-2 py-1 rounded border border-gray-200">
+                          <label className={`flex items-center gap-1.5 cursor-pointer px-3 py-1.5 rounded-lg border-2 transition-all ${
+                            selectedTiers.horizons.H1 ? "border-green-500 bg-green-50" : "border-gray-200 hover:border-gray-300"
+                          }`}>
                             <input
                               type="checkbox"
                               checked={selectedTiers.horizons.H1}
                               onChange={() => toggleHorizon("H1")}
-                              className="w-3 h-3 text-green-600 rounded"
+                              className="w-3.5 h-3.5 text-green-600 rounded border-gray-300 focus:ring-green-500"
                             />
                             <span className="text-xs text-green-700 font-medium">H1</span>
                           </label>
-                          <label className="flex items-center gap-1.5 cursor-pointer hover:bg-blue-50 px-2 py-1 rounded border border-gray-200">
+                          <label className={`flex items-center gap-1.5 cursor-pointer px-3 py-1.5 rounded-lg border-2 transition-all ${
+                            selectedTiers.horizons.H2 ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"
+                          }`}>
                             <input
                               type="checkbox"
                               checked={selectedTiers.horizons.H2}
                               onChange={() => toggleHorizon("H2")}
-                              className="w-3 h-3 text-blue-600 rounded"
+                              className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
                             />
                             <span className="text-xs text-blue-700 font-medium">H2</span>
                           </label>
-                          <label className="flex items-center gap-1.5 cursor-pointer hover:bg-orange-50 px-2 py-1 rounded border border-gray-200">
+                          <label className={`flex items-center gap-1.5 cursor-pointer px-3 py-1.5 rounded-lg border-2 transition-all ${
+                            selectedTiers.horizons.H3 ? "border-orange-500 bg-orange-50" : "border-gray-200 hover:border-gray-300"
+                          }`}>
                             <input
                               type="checkbox"
                               checked={selectedTiers.horizons.H3}
                               onChange={() => toggleHorizon("H3")}
-                              className="w-3 h-3 text-orange-600 rounded"
+                              className="w-3.5 h-3.5 text-orange-600 rounded border-gray-300 focus:ring-orange-500"
                             />
                             <span className="text-xs text-orange-700 font-medium">H3</span>
                           </label>
