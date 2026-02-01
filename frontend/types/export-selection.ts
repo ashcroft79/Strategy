@@ -180,6 +180,8 @@ export interface SupplementarySelection {
   coverPage: boolean;
   /** Include table of contents (Word/Markdown) */
   tableOfContents: boolean;
+  /** Include visual diagrams (Mermaid charts in Markdown) */
+  diagrams: boolean;
 }
 
 /**
@@ -364,6 +366,7 @@ export const DEFAULT_SUPPLEMENTARY_SELECTION: SupplementarySelection = {
   metadata: true,
   coverPage: true,
   tableOfContents: true,
+  diagrams: true,
 };
 
 /**
@@ -456,6 +459,7 @@ export const EXECUTIVE_PRESET: ExportElementSelection = {
     metadata: true,
     coverPage: true,
     tableOfContents: false,
+    diagrams: true,
   },
 };
 
@@ -524,6 +528,7 @@ export const DETAILED_PRESET: ExportElementSelection = {
     metadata: true,
     coverPage: true,
     tableOfContents: true,
+    diagrams: true,
   },
 };
 
@@ -597,6 +602,7 @@ export const TEAM_PRESET: ExportElementSelection = {
     metadata: true,
     coverPage: false,
     tableOfContents: false,
+    diagrams: false,
   },
 };
 

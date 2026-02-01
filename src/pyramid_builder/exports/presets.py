@@ -92,6 +92,7 @@ def create_executive_preset() -> ExportElementSelection:
             metadata=True,
             cover_page=True,
             table_of_contents=False,
+            diagrams=True,
         ),
     )
 
@@ -170,6 +171,7 @@ def create_leadership_preset() -> ExportElementSelection:
             metadata=True,
             cover_page=True,
             table_of_contents=True,
+            diagrams=True,
         ),
     )
 
@@ -248,6 +250,7 @@ def create_detailed_preset() -> ExportElementSelection:
             metadata=True,
             cover_page=True,
             table_of_contents=True,
+            diagrams=True,
         ),
     )
 
@@ -326,6 +329,7 @@ def create_team_preset() -> ExportElementSelection:
             metadata=True,
             cover_page=False,
             table_of_contents=False,
+            diagrams=False,
         ),
     )
 

@@ -268,6 +268,10 @@ class SupplementarySelection(BaseModel):
         default=True,
         description="Include table of contents (Word/Markdown)"
     )
+    diagrams: bool = Field(
+        default=True,
+        description="Include visual diagrams (Mermaid charts in Markdown)"
+    )
 
 
 class ExportElementSelection(BaseModel):

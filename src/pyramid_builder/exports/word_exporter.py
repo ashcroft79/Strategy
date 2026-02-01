@@ -10,9 +10,12 @@ from pathlib import Path
 from datetime import datetime
 
 from docx import Document
-from docx.shared import Inches, Pt, RGBColor
+from docx.shared import Inches, Pt, RGBColor, Twips
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.style import WD_STYLE_TYPE
+from docx.enum.table import WD_TABLE_ALIGNMENT
+from docx.oxml.ns import qn
+from docx.oxml import OxmlElement
 
 from ..models.pyramid import StrategyPyramid
 from .element_selection import ExportElementSelection
@@ -134,6 +137,10 @@ class WordExporter:
         if not self.filter or not self.selection:
             return
 
+        # Add table of contents if supplementary includes it
+        if self.selection.supplementary.metadata:
+            self._add_table_of_contents()
+
         # Determine which sections to include based on selection
         sel = self.selection
 
@@ -164,6 +171,9 @@ class WordExporter:
             self._add_tier_header("Strategy", "drivers", "How we will succeed")
 
             if has_drivers:
+                # Add driver overview grid first for visual summary
+                self._add_drivers_overview_grid()
+                self.doc.add_paragraph()  # Spacing
                 self._add_drivers_filtered()
 
             if has_enablers:
@@ -571,6 +581,138 @@ class WordExporter:
 
         # Page break
         self.doc.add_page_break()
+
+    def _add_table_of_contents(self):
+        """Add a table of contents to the document."""
+        self.doc.add_heading('Contents', level=1)
+
+        # Create a paragraph for the TOC field
+        paragraph = self.doc.add_paragraph()
+        run = paragraph.add_run()
+
+        # Add the TOC field code
+        fldChar1 = OxmlElement('w:fldChar')
+        fldChar1.set(qn('w:fldCharType'), 'begin')
+
+        instrText = OxmlElement('w:instrText')
+        instrText.set(qn('xml:space'), 'preserve')
+        instrText.text = 'TOC \\o "1-3" \\h \\z \\u'
+
+        fldChar2 = OxmlElement('w:fldChar')
+        fldChar2.set(qn('w:fldCharType'), 'separate')
+
+        fldChar3 = OxmlElement('w:fldChar')
+        fldChar3.set(qn('w:fldCharType'), 'end')
+
+        run._r.append(fldChar1)
+        run._r.append(instrText)
+        run._r.append(fldChar2)
+
+        # Add placeholder text (will be replaced when doc is opened in Word)
+        placeholder = self.doc.add_paragraph()
+        placeholder.add_run("Right-click and select 'Update Field' to update this table of contents")
+        placeholder.runs[0].font.italic = True
+        placeholder.runs[0].font.color.rgb = RGBColor(150, 150, 150)
+
+        run._r.append(fldChar3)
+
+        self.doc.add_paragraph()
+        self.doc.add_page_break()
+
+    def _add_drivers_overview_grid(self):
+        """Add a 3-column grid view of strategic drivers with card-style layout."""
+        drivers = self.filter.get_drivers() if self.filter else self.pyramid.strategic_drivers
+        if not drivers:
+            return
+
+        self.doc.add_heading('Strategic Drivers Overview', level=2)
+        p_intro = self.doc.add_paragraph('Our key strategic priorities at a glance')
+        p_intro.runs[0].italic = True
+        p_intro.runs[0].font.color.rgb = RGBColor(100, 100, 100)
+        p_intro.space_after = Pt(16)
+
+        # Calculate grid layout (3 columns)
+        num_drivers = len(drivers)
+        num_rows = (num_drivers + 2) // 3  # Ceiling division
+
+        # Create table for grid layout
+        table = self.doc.add_table(rows=num_rows, cols=3)
+        table.alignment = WD_TABLE_ALIGNMENT.CENTER
+
+        # Set column widths
+        for row in table.rows:
+            for cell in row.cells:
+                cell.width = Inches(2.0)
+
+        drivers_color = self._get_tier_color("drivers")
+
+        for idx, driver in enumerate(drivers):
+            row = idx // 3
+            col = idx % 3
+
+            cell = table.rows[row].cells[col]
+
+            # Clear the cell
+            cell.text = ""
+
+            # Add driver name
+            p_name = cell.paragraphs[0]
+            run_name = p_name.add_run(driver.name)
+            run_name.bold = True
+            run_name.font.size = Pt(11)
+            run_name.font.color.rgb = drivers_color
+            p_name.space_after = Pt(4)
+
+            # Add description (truncated)
+            p_desc = cell.add_paragraph()
+            desc_text = driver.description[:100] + "..." if len(driver.description) > 100 else driver.description
+            run_desc = p_desc.add_run(desc_text)
+            run_desc.font.size = Pt(9)
+            run_desc.font.color.rgb = RGBColor(80, 80, 80)
+            p_desc.space_after = Pt(8)
+
+            # Count commitments for this driver
+            if self.filter:
+                commitments = [c for c in self.filter.get_commitments() if c.primary_driver_id == driver.id]
+            else:
+                commitments = self.pyramid.get_commitments_by_driver(driver.id, primary_only=True)
+
+            h1_count = len([c for c in commitments if c.horizon.value == "H1"])
+            h2_count = len([c for c in commitments if c.horizon.value == "H2"])
+            h3_count = len([c for c in commitments if c.horizon.value == "H3"])
+
+            # Add commitment counts
+            if h1_count or h2_count or h3_count:
+                p_counts = cell.add_paragraph()
+                if h1_count:
+                    run = p_counts.add_run(f"H1:{h1_count} ")
+                    run.font.size = Pt(8)
+                    run.font.color.rgb = self._get_horizon_color("H1")
+                if h2_count:
+                    run = p_counts.add_run(f"H2:{h2_count} ")
+                    run.font.size = Pt(8)
+                    run.font.color.rgb = self._get_horizon_color("H2")
+                if h3_count:
+                    run = p_counts.add_run(f"H3:{h3_count}")
+                    run.font.size = Pt(8)
+                    run.font.color.rgb = self._get_horizon_color("H3")
+
+            # Add cell shading (light background)
+            shading = OxmlElement('w:shd')
+            shading.set(qn('w:fill'), 'F5F5F5')
+            cell._tc.get_or_add_tcPr().append(shading)
+
+            # Add cell padding
+            cell_props = cell._tc.get_or_add_tcPr()
+            margins = OxmlElement('w:tcMar')
+            for margin_name in ['top', 'left', 'bottom', 'right']:
+                margin = OxmlElement(f'w:{margin_name}')
+                margin.set(qn('w:w'), '120')
+                margin.set(qn('w:type'), 'dxa')
+                margins.append(margin)
+            cell_props.append(margins)
+
+        self.doc.add_paragraph()  # Spacing after grid
 
     def _generate_executive_summary(self):
         """Generate 1-page executive summary."""

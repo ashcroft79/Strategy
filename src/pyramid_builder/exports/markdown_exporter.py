@@ -147,6 +147,15 @@ class MarkdownExporter:
             lines.append("")
             lines.extend(self._format_distribution_analysis())
 
+        # Visual diagrams section (Mermaid)
+        if sel.supplementary.diagrams:
+            lines.append("---")
+            lines.append("")
+            lines.append("## Visual Diagrams")
+            lines.append("")
+            lines.extend(self._generate_strategy_hierarchy_diagram())
+            lines.extend(self._generate_roadmap_diagram())
+
         return "\n".join(lines)
 
     def _format_vision_statements_filtered(self) -> List[str]:
@@ -455,6 +464,165 @@ class MarkdownExporter:
             percentage = (count / total * 100) if total > 0 else 0
             lines.append(f"| {driver_name} | {count} | {percentage:.0f}% |")
 
+        lines.append("")
+        return lines
+
+    # =========================================================================
+    # MERMAID DIAGRAM GENERATION
+    # =========================================================================
+
+    def _generate_strategy_hierarchy_diagram(self) -> List[str]:
+        """
+        Generate a Mermaid flowchart showing the strategy hierarchy.
+
+        Creates a visual representation of Vision → Drivers → Commitments flow.
+        """
+        lines = []
+
+        drivers = self.filter.get_drivers() if self.filter else self.pyramid.strategic_drivers
+        commitments = self.filter.get_commitments() if self.filter else self.pyramid.iconic_commitments
+
+        if not drivers:
+            return lines
+
+        lines.append("### Strategy Hierarchy")
+        lines.append("")
+        lines.append("```mermaid")
+        lines.append("flowchart TD")
+        lines.append("    classDef vision fill:#8e44ad,stroke:#6c3483,color:white")
+        lines.append("    classDef driver fill:#c0392b,stroke:#922b21,color:white")
+        lines.append("    classDef h1 fill:#27ae60,stroke:#1e8449,color:white")
+        lines.append("    classDef h2 fill:#3498db,stroke:#2980b9,color:white")
+        lines.append("    classDef h3 fill:#e67e22,stroke:#d35400,color:white")
+        lines.append("")
+
+        # Vision node
+        vision_text = "Vision"
+        if self.pyramid.vision and self.pyramid.vision.statements:
+            for stmt in self.pyramid.vision.statements:
+                if stmt.statement_type.value == "vision":
+                    vision_text = stmt.statement[:30] + "..." if len(stmt.statement) > 30 else stmt.statement
+                    break
+
+        # Escape special characters for Mermaid
+        vision_text = vision_text.replace('"', "'")
+        lines.append(f'    V["🎯 {vision_text}"]:::vision')
+        lines.append("")
+
+        # Driver nodes
+        for i, driver in enumerate(drivers[:4]):  # Max 4 drivers for readability
+            driver_id = f"D{i}"
+            driver_name = driver.name.replace('"', "'")
+            lines.append(f'    {driver_id}["📍 {driver_name}"]:::driver')
+            lines.append(f"    V --> {driver_id}")
+
+            # Commitments for this driver
+            driver_commitments = [c for c in commitments if c.primary_driver_id == driver.id]
+
+            for j, commitment in enumerate(driver_commitments[:3]):  # Max 3 per driver
+                commit_id = f"C{i}_{j}"
+                commit_name = commitment.name[:25].replace('"', "'")
+                if len(commitment.name) > 25:
+                    commit_name += "..."
+                horizon = commitment.horizon.value
+                lines.append(f'    {commit_id}["{horizon}: {commit_name}"]:::{horizon.lower()}')
+                lines.append(f"    {driver_id} --> {commit_id}")
+
+            lines.append("")
+
+        lines.append("```")
+        lines.append("")
+        return lines
+
+    def _generate_roadmap_diagram(self) -> List[str]:
+        """
+        Generate a Mermaid Gantt chart showing the horizon roadmap.
+
+        Creates a visual timeline of commitments across H1, H2, H3.
+        """
+        lines = []
+
+        commitments = self.filter.get_commitments() if self.filter else self.pyramid.iconic_commitments
+
+        if not commitments:
+            return lines
+
+        lines.append("### Strategic Roadmap")
+        lines.append("")
+        lines.append("```mermaid")
+        lines.append("gantt")
+        lines.append("    title Strategic Commitments Timeline")
+        lines.append("    dateFormat  YYYY-MM")
+        lines.append("    axisFormat  %b %Y")
+        lines.append("")
+
+        # Group commitments by horizon
+        h1_commitments = [c for c in commitments if c.horizon.value == "H1"]
+        h2_commitments = [c for c in commitments if c.horizon.value == "H2"]
+        h3_commitments = [c for c in commitments if c.horizon.value == "H3"]
+
+        # Use relative dates based on current year
+        current_year = datetime.now().year
+
+        if h1_commitments:
+            lines.append("    section Horizon 1 (0-12mo)")
+            for commitment in h1_commitments[:5]:  # Max 5 per horizon
+                name = commitment.name[:30].replace(":", "-")
+                lines.append(f"    {name} :h1_{commitment.id[:8]}, {current_year}-01, 12M")
+
+        if h2_commitments:
+            lines.append("    section Horizon 2 (12-24mo)")
+            for commitment in h2_commitments[:5]:
+                name = commitment.name[:30].replace(":", "-")
+                lines.append(f"    {name} :h2_{commitment.id[:8]}, {current_year + 1}-01, 12M")
+
+        if h3_commitments:
+            lines.append("    section Horizon 3 (24-36mo)")
+            for commitment in h3_commitments[:5]:
+                name = commitment.name[:30].replace(":", "-")
+                lines.append(f"    {name} :h3_{commitment.id[:8]}, {current_year + 2}-01, 12M")
+
+        lines.append("```")
+        lines.append("")
+        return lines
+
+    def _generate_driver_relationship_diagram(self) -> List[str]:
+        """
+        Generate a Mermaid diagram showing driver-to-commitment relationships.
+
+        Creates a visual showing how commitments support drivers.
+        """
+        lines = []
+
+        drivers = self.filter.get_drivers() if self.filter else self.pyramid.strategic_drivers
+        commitments = self.filter.get_commitments() if self.filter else self.pyramid.iconic_commitments
+
+        if not drivers or not commitments:
+            return lines
+
+        lines.append("### Commitment Alignment")
+        lines.append("")
+        lines.append("```mermaid")
+        lines.append("graph LR")
+        lines.append("    classDef driver fill:#c0392b,stroke:#922b21,color:white")
+        lines.append("    classDef commitment fill:#2980b9,stroke:#2573a7,color:white")
+        lines.append("")
+
+        # Create driver subgraphs
+        for i, driver in enumerate(drivers[:4]):
+            driver_id = f"D{i}"
+            driver_name = driver.name[:20].replace('"', "'")
+            lines.append(f'    {driver_id}["{driver_name}"]:::driver')
+
+            driver_commitments = [c for c in commitments if c.primary_driver_id == driver.id]
+            for j, commitment in enumerate(driver_commitments[:4]):
+                commit_id = f"C{i}_{j}"
+                commit_name = commitment.name[:20].replace('"', "'")
+                horizon = commitment.horizon.value
+                lines.append(f'    {commit_id}["{horizon}: {commit_name}"]:::commitment')
+                lines.append(f"    {driver_id} --> {commit_id}")
+
+        lines.append("```")
         lines.append("")
         return lines
 

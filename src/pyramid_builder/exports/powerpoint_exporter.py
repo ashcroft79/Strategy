@@ -9,8 +9,9 @@ from typing import Optional
 from pathlib import Path
 
 from pptx import Presentation
-from pptx.util import Inches, Pt
+from pptx.util import Inches, Pt, Emu
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
+from pptx.enum.shapes import MSO_SHAPE
 from pptx.dml.color import RGBColor
 
 from ..models.pyramid import StrategyPyramid
@@ -163,6 +164,9 @@ class PowerPointExporter:
 
         sel = self.selection
 
+        # Add Strategy at a Glance slide first (hierarchy diagram)
+        self._add_strategy_hierarchy_slide()
+
         # Section 1: Foundation & Purpose
         has_foundation = sel.foundation.enabled
         has_values = sel.values.enabled
@@ -206,6 +210,8 @@ class PowerPointExporter:
                 "Execution", "Our iconic commitments", "commitments"
             )
             self._add_commitments_slides_filtered()
+            # Add horizon roadmap at the end of commitments
+            self._add_horizon_roadmap_slide()
 
         # Section 4: Team Cascade
         has_team = sel.team_objectives.enabled
@@ -560,6 +566,299 @@ class PowerPointExporter:
                         run_criteria.text = f"✓ {criterion}"
                         run_criteria.font.size = Pt(12)
                         p_criteria.level = 1
+
+    # =========================================================================
+    # DIAGRAM SLIDES
+    # =========================================================================
+
+    def _add_strategy_hierarchy_slide(self):
+        """Add Strategy at a Glance slide with visual hierarchy diagram."""
+        if not self.filter:
+            return
+
+        # Get elements
+        drivers = self.filter.get_drivers()
+        commitments = self.filter.get_commitments()
+
+        if not drivers:
+            return
+
+        # Create a blank slide
+        blank_layout = self.prs.slide_layouts[6]  # Blank layout
+        slide = self.prs.slides.add_slide(blank_layout)
+
+        # Add title
+        title_shape = slide.shapes.add_textbox(
+            Inches(0.5), Inches(0.3), Inches(9), Inches(0.7)
+        )
+        title_tf = title_shape.text_frame
+        title_p = title_tf.paragraphs[0]
+        title_p.text = "Strategy at a Glance"
+        title_p.font.size = Pt(32)
+        title_p.font.bold = True
+        title_p.font.color.rgb = self.primary_color
+
+        # Draw Vision box at top center
+        vision_text = "Vision"
+        if self.pyramid.vision and self.pyramid.vision.statements:
+            for stmt in self.pyramid.vision.statements:
+                if stmt.statement_type.value == "vision":
+                    vision_text = stmt.statement[:50] + "..." if len(stmt.statement) > 50 else stmt.statement
+                    break
+
+        vision_box = slide.shapes.add_shape(
+            MSO_SHAPE.ROUNDED_RECTANGLE,
+            Inches(3.5), Inches(1.2), Inches(3), Inches(0.8)
+        )
+        vision_box.fill.solid()
+        vision_box.fill.fore_color.rgb = self._get_tier_color("foundation")
+        vision_box.line.color.rgb = self._get_tier_color("foundation")
+
+        vision_tf = vision_box.text_frame
+        vision_tf.word_wrap = True
+        vision_p = vision_tf.paragraphs[0]
+        vision_p.text = "VISION"
+        vision_p.font.size = Pt(14)
+        vision_p.font.bold = True
+        vision_p.font.color.rgb = RGBColor(255, 255, 255)
+        vision_p.alignment = PP_ALIGN.CENTER
+
+        # Calculate positions for drivers
+        num_drivers = min(len(drivers), 4)  # Max 4 drivers for layout
+        if num_drivers == 0:
+            return
+
+        driver_width = 2.0
+        total_width = num_drivers * driver_width + (num_drivers - 1) * 0.3
+        start_x = (10 - total_width) / 2
+
+        driver_y = 2.5
+        drivers_color = self._get_tier_color("drivers")
+
+        # Draw connecting lines from vision to drivers
+        vision_center_x = Inches(5)
+        vision_bottom_y = Inches(2.0)
+
+        for i, driver in enumerate(drivers[:num_drivers]):
+            driver_x = start_x + i * (driver_width + 0.3)
+            driver_center_x = Inches(driver_x + driver_width / 2)
+
+            # Draw line from vision to driver
+            connector = slide.shapes.add_connector(
+                1,  # Straight connector
+                vision_center_x, vision_bottom_y,
+                driver_center_x, Inches(driver_y)
+            )
+            connector.line.color.rgb = RGBColor(180, 180, 180)
+            connector.line.width = Pt(1.5)
+
+            # Draw driver box
+            driver_box = slide.shapes.add_shape(
+                MSO_SHAPE.ROUNDED_RECTANGLE,
+                Inches(driver_x), Inches(driver_y), Inches(driver_width), Inches(1.2)
+            )
+            driver_box.fill.solid()
+            driver_box.fill.fore_color.rgb = drivers_color
+            driver_box.line.color.rgb = drivers_color
+
+            driver_tf = driver_box.text_frame
+            driver_tf.word_wrap = True
+            driver_p = driver_tf.paragraphs[0]
+            driver_p.text = driver.name
+            driver_p.font.size = Pt(11)
+            driver_p.font.bold = True
+            driver_p.font.color.rgb = RGBColor(255, 255, 255)
+            driver_p.alignment = PP_ALIGN.CENTER
+
+            # Count commitments per driver
+            driver_commitments = [c for c in commitments if c.primary_driver_id == driver.id]
+            h1_count = len([c for c in driver_commitments if c.horizon.value == "H1"])
+            h2_count = len([c for c in driver_commitments if c.horizon.value == "H2"])
+            h3_count = len([c for c in driver_commitments if c.horizon.value == "H3"])
+
+            # Show commitment counts below driver
+            if driver_commitments:
+                count_box = slide.shapes.add_textbox(
+                    Inches(driver_x), Inches(driver_y + 1.3), Inches(driver_width), Inches(0.6)
+                )
+                count_tf = count_box.text_frame
+                count_tf.word_wrap = True
+                count_p = count_tf.paragraphs[0]
+                count_p.alignment = PP_ALIGN.CENTER
+
+                # Add colored horizon counts
+                if h1_count > 0:
+                    run = count_p.add_run()
+                    run.text = f"H1:{h1_count} "
+                    run.font.size = Pt(9)
+                    run.font.color.rgb = self._get_horizon_color("H1")
+
+                if h2_count > 0:
+                    run = count_p.add_run()
+                    run.text = f"H2:{h2_count} "
+                    run.font.size = Pt(9)
+                    run.font.color.rgb = self._get_horizon_color("H2")
+
+                if h3_count > 0:
+                    run = count_p.add_run()
+                    run.text = f"H3:{h3_count}"
+                    run.font.size = Pt(9)
+                    run.font.color.rgb = self._get_horizon_color("H3")
+
+        # Add legend at bottom
+        legend_y = 6.5
+        legend_items = [
+            ("H1 (0-12mo)", self._get_horizon_color("H1")),
+            ("H2 (12-24mo)", self._get_horizon_color("H2")),
+            ("H3 (24-36mo)", self._get_horizon_color("H3")),
+        ]
+
+        for i, (label, color) in enumerate(legend_items):
+            x_pos = 3 + i * 1.5
+            legend_box = slide.shapes.add_shape(
+                MSO_SHAPE.RECTANGLE,
+                Inches(x_pos), Inches(legend_y), Inches(0.2), Inches(0.2)
+            )
+            legend_box.fill.solid()
+            legend_box.fill.fore_color.rgb = color
+            legend_box.line.fill.background()
+
+            label_box = slide.shapes.add_textbox(
+                Inches(x_pos + 0.25), Inches(legend_y - 0.05), Inches(1.2), Inches(0.3)
+            )
+            label_tf = label_box.text_frame
+            label_p = label_tf.paragraphs[0]
+            label_p.text = label
+            label_p.font.size = Pt(10)
+            label_p.font.color.rgb = self.secondary_color
+
+    def _add_horizon_roadmap_slide(self):
+        """Add Horizon Roadmap slide showing commitments across time."""
+        if not self.filter:
+            return
+
+        commitments = self.filter.get_commitments()
+        if not commitments:
+            return
+
+        # Create blank slide
+        blank_layout = self.prs.slide_layouts[6]
+        slide = self.prs.slides.add_slide(blank_layout)
+
+        # Add title
+        title_shape = slide.shapes.add_textbox(
+            Inches(0.5), Inches(0.3), Inches(9), Inches(0.7)
+        )
+        title_tf = title_shape.text_frame
+        title_p = title_tf.paragraphs[0]
+        title_p.text = "Strategic Roadmap"
+        title_p.font.size = Pt(32)
+        title_p.font.bold = True
+        title_p.font.color.rgb = self.primary_color
+
+        # Timeline parameters
+        timeline_y = Inches(1.5)
+        timeline_start_x = Inches(1)
+        timeline_end_x = Inches(9)
+        timeline_width = timeline_end_x - timeline_start_x
+
+        # Draw horizontal timeline
+        timeline = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            timeline_start_x, timeline_y, timeline_width, Pt(4)
+        )
+        timeline.fill.solid()
+        timeline.fill.fore_color.rgb = RGBColor(200, 200, 200)
+        timeline.line.fill.background()
+
+        # Define horizon sections
+        horizons = [
+            ("H1", "Now - 12 months", self._get_horizon_color("H1"), 0, 0.33),
+            ("H2", "12 - 24 months", self._get_horizon_color("H2"), 0.33, 0.67),
+            ("H3", "24 - 36 months", self._get_horizon_color("H3"), 0.67, 1.0),
+        ]
+
+        enabled_horizons = self.filter.get_enabled_horizons()
+        content_y = 2.0
+
+        for horizon_id, horizon_label, color, start_pct, end_pct in horizons:
+            if horizon_id not in enabled_horizons:
+                continue
+
+            # Calculate x positions
+            section_start = timeline_start_x + Emu(int(timeline_width * start_pct))
+            section_width = Emu(int(timeline_width * (end_pct - start_pct)))
+            section_center = section_start + section_width / 2
+
+            # Draw horizon marker on timeline
+            marker = slide.shapes.add_shape(
+                MSO_SHAPE.OVAL,
+                section_center - Inches(0.15), timeline_y - Inches(0.1),
+                Inches(0.3), Inches(0.3)
+            )
+            marker.fill.solid()
+            marker.fill.fore_color.rgb = color
+            marker.line.color.rgb = color
+
+            # Horizon label
+            label_box = slide.shapes.add_textbox(
+                section_start, timeline_y + Inches(0.3),
+                section_width, Inches(0.5)
+            )
+            label_tf = label_box.text_frame
+            label_p = label_tf.paragraphs[0]
+            label_p.text = f"{horizon_id}\n{horizon_label}"
+            label_p.font.size = Pt(10)
+            label_p.font.bold = True
+            label_p.font.color.rgb = color
+            label_p.alignment = PP_ALIGN.CENTER
+
+            # Get commitments for this horizon
+            horizon_commitments = [c for c in commitments if c.horizon.value == horizon_id]
+
+            # Draw commitment cards
+            card_y = content_y + 0.8
+            card_width = 2.5
+            card_height = 0.7
+            cards_per_row = 3
+            card_spacing = 0.15
+
+            for idx, commitment in enumerate(horizon_commitments[:6]):  # Max 6 per horizon
+                row = idx // cards_per_row
+                col = idx % cards_per_row
+                card_x = 0.5 + col * (card_width + card_spacing)
+                card_y_pos = card_y + (content_y - 2.0) * (horizons.index((horizon_id, horizon_label, color, start_pct, end_pct))) + row * (card_height + card_spacing)
+
+                # Draw card
+                card = slide.shapes.add_shape(
+                    MSO_SHAPE.ROUNDED_RECTANGLE,
+                    Inches(card_x), Inches(card_y_pos),
+                    Inches(card_width), Inches(card_height)
+                )
+                card.fill.solid()
+                card.fill.fore_color.rgb = RGBColor(
+                    min(255, color.red + 180),
+                    min(255, color.green + 180),
+                    min(255, color.blue + 180)
+                )
+                card.line.color.rgb = color
+                card.line.width = Pt(1.5)
+
+                card_tf = card.text_frame
+                card_tf.word_wrap = True
+                card_p = card_tf.paragraphs[0]
+                card_p.text = commitment.name[:35] + ("..." if len(commitment.name) > 35 else "")
+                card_p.font.size = Pt(9)
+                card_p.font.bold = True
+                card_p.font.color.rgb = color
+
+                if commitment.target_date:
+                    card_p2 = card_tf.add_paragraph()
+                    card_p2.text = f"Target: {commitment.target_date}"
+                    card_p2.font.size = Pt(8)
+                    card_p2.font.color.rgb = self.secondary_color
+
+            content_y += 2.2  # Move down for next horizon
 
     # =========================================================================
     # ORIGINAL EXPORT METHODS (for backward compatibility)
