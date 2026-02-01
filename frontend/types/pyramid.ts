@@ -186,11 +186,52 @@ export interface LoadPyramidRequest {
   pyramid_data: StrategyPyramid;
 }
 
+import type { ExportElementSelection, AudiencePreset } from "./export-selection";
+
+/**
+ * Export request supporting both preset and custom selection modes.
+ *
+ * Preset mode (default): Use `audience` to select a predefined configuration
+ * Custom mode: Set `mode="custom"` and provide a `selection` object
+ */
 export interface ExportRequest {
-  audience: "executive" | "leadership" | "detailed" | "team";
-  include_metadata: boolean;
-  include_cover_page: boolean;
-  include_distribution: boolean;
+  /** Selection mode: "preset" uses audience presets, "custom" uses selection object */
+  mode?: "preset" | "custom";
+
+  /** Audience preset (used when mode="preset", default) */
+  audience?: AudiencePreset;
+
+  /** Custom selection (used when mode="custom") */
+  selection?: ExportElementSelection;
+
+  /** Legacy: Include metadata in export */
+  include_metadata?: boolean;
+
+  /** Legacy: Include cover page (Word/PowerPoint) */
+  include_cover_page?: boolean;
+
+  /** Legacy: Include distribution analysis */
+  include_distribution?: boolean;
+}
+
+/**
+ * Preview response showing what will be included in export
+ */
+export interface ExportPreviewResponse {
+  summary: {
+    foundation: { enabled: boolean; count: number };
+    values: { enabled: boolean; count: number };
+    behaviours: { enabled: boolean; count: number };
+    drivers: { enabled: boolean; count: number };
+    intents: { enabled: boolean; count: number };
+    enablers: { enabled: boolean; count: number };
+    commitments: { enabled: boolean; count: number; by_horizon: Record<string, number> };
+    team_objectives: { enabled: boolean; count: number };
+    individual_objectives: { enabled: boolean; count: number };
+  };
+  total_elements: number;
+  enabled_tiers: string[];
+  enabled_horizons: string[];
 }
 
 // Summary

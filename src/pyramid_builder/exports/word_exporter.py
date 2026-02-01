@@ -2,6 +2,7 @@
 Word (DOCX) export functionality for strategic pyramids.
 
 Generates professional Word documents with formatting, tables, and structure.
+Supports fine-grained element selection via ExportElementSelection.
 """
 
 from typing import Optional
@@ -9,26 +10,42 @@ from pathlib import Path
 from datetime import datetime
 
 from docx import Document
-from docx.shared import Inches, Pt, RGBColor
+from docx.shared import Inches, Pt, RGBColor, Twips
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.style import WD_STYLE_TYPE
+from docx.enum.table import WD_TABLE_ALIGNMENT
+from docx.oxml.ns import qn
+from docx.oxml import OxmlElement
 
 from ..models.pyramid import StrategyPyramid
+from .element_selection import ExportElementSelection
+from .selection_filter import SelectionFilter
+from .design_system import DesignColors
 
 
 class WordExporter:
     """Export pyramids to Word (DOCX) format with professional formatting."""
 
-    def __init__(self, pyramid: StrategyPyramid):
+    def __init__(
+        self,
+        pyramid: StrategyPyramid,
+        selection: Optional[ExportElementSelection] = None,
+    ):
         """
         Initialize exporter.
 
         Args:
             pyramid: StrategyPyramid to export
+            selection: Optional element selection for fine-grained control
         """
         self.pyramid = pyramid
+        self.selection = selection
+        self.filter = SelectionFilter(pyramid, selection) if selection else None
         self.doc = Document()
         self._setup_styles()
+
+        # Design system colors
+        self.colors = DesignColors
 
     def _setup_styles(self):
         """Set up custom styles for the document."""
@@ -41,10 +58,20 @@ class WordExporter:
             tier_font = tier_style.font
             tier_font.size = Pt(14)
             tier_font.bold = True
-            tier_font.color.rgb = RGBColor(31, 119, 180)  # Blue color
+            tier_font.color.rgb = RGBColor(*self.colors.PRIMARY.to_tuple())
         except:
             # Style might already exist
             pass
+
+    def _get_tier_color(self, tier: str) -> RGBColor:
+        """Get the color for a specific tier from the design system."""
+        color = self.colors.get_tier_color(tier)
+        return RGBColor(*color.to_tuple())
+
+    def _get_horizon_color(self, horizon: str) -> RGBColor:
+        """Get the color for a specific horizon from the design system."""
+        color = self.colors.get_horizon_color(horizon)
+        return RGBColor(*color.to_tuple())
 
     def _add_vision_statements(self, heading_level=2):
         """Add vision statements to the document (handles new multi-statement structure)."""
@@ -89,7 +116,10 @@ class WordExporter:
         if include_cover_page:
             self._add_cover_page()
 
-        if audience == "executive":
+        # Use selection-based export if selection is provided
+        if self.selection and self.filter:
+            self._generate_from_selection()
+        elif audience == "executive":
             self._generate_executive_summary()
         elif audience == "team":
             self._generate_team_cascade()
@@ -102,40 +132,587 @@ class WordExporter:
         self.doc.save(str(filepath_obj))
         return filepath_obj
 
+    def _generate_from_selection(self):
+        """Generate document based on fine-grained selection."""
+        if not self.filter or not self.selection:
+            return
+
+        # Add table of contents if supplementary includes it
+        if self.selection.supplementary.metadata:
+            self._add_table_of_contents()
+
+        # Determine which sections to include based on selection
+        sel = self.selection
+
+        # Section 1: Foundation & Purpose
+        has_foundation = sel.foundation.enabled
+        has_values = sel.values.enabled
+        has_behaviours = sel.behaviours.enabled
+
+        if has_foundation or has_values or has_behaviours:
+            self._add_tier_header("Purpose", "foundation", "Why we exist and what matters to us")
+
+            if has_foundation:
+                self._add_vision_statements_filtered()
+
+            if has_values:
+                self._add_values_filtered()
+
+            if has_behaviours:
+                self._add_behaviours_filtered()
+
+        # Section 2: Strategy
+        has_drivers = sel.drivers.enabled
+        has_intents = sel.intents.enabled
+        has_enablers = sel.enablers.enabled
+
+        if has_drivers or has_intents or has_enablers:
+            self.doc.add_page_break()
+            self._add_tier_header("Strategy", "drivers", "How we will succeed")
+
+            if has_drivers:
+                # Add driver overview grid first for visual summary
+                self._add_drivers_overview_grid()
+                self.doc.add_paragraph()  # Spacing
+                self._add_drivers_filtered()
+
+            if has_enablers:
+                self._add_enablers_filtered()
+
+        # Section 3: Execution
+        has_commitments = sel.commitments.enabled
+
+        if has_commitments:
+            self.doc.add_page_break()
+            self._add_tier_header("Execution", "commitments", "Our iconic commitments")
+            self._add_commitments_filtered()
+
+        # Section 4: Team Cascade
+        has_team = sel.team_objectives.enabled
+        has_individual = sel.individual_objectives.enabled
+
+        if has_team or has_individual:
+            self.doc.add_page_break()
+            self._add_tier_header("Team Cascade", "team_objectives", "Translating strategy to teams")
+
+            if has_team:
+                self._add_team_objectives_filtered()
+
+            if has_individual:
+                self._add_individual_objectives_filtered()
+
+    def _add_tier_header(self, title: str, tier: str, subtitle: str = ""):
+        """Add a styled tier header with design system colors."""
+        color = self._get_tier_color(tier)
+
+        heading = self.doc.add_heading(title, level=1)
+        for run in heading.runs:
+            run.font.color.rgb = color
+
+        if subtitle:
+            p = self.doc.add_paragraph()
+            run = p.add_run(subtitle)
+            run.italic = True
+            run.font.color.rgb = RGBColor(100, 100, 100)
+            p.space_after = Pt(12)
+
+    def _add_vision_statements_filtered(self):
+        """Add filtered vision statements."""
+        statements = self.filter.get_vision_statements()
+        if not statements:
+            return
+
+        self.doc.add_heading('Our Purpose', level=2)
+
+        for stmt in statements:
+            p = self.doc.add_paragraph()
+            run = p.add_run(f"{stmt.statement_type.value.title()}")
+            run.bold = True
+            run.font.size = Pt(12)
+            run.font.color.rgb = self._get_tier_color("foundation")
+
+            p2 = self.doc.add_paragraph()
+            run_content = p2.add_run(stmt.statement)
+            run_content.italic = True
+            run_content.font.size = Pt(11)
+            p2.paragraph_format.left_indent = Inches(0.25)
+            p2.space_after = Pt(12)
+
+    def _add_values_filtered(self):
+        """Add filtered values."""
+        values = self.filter.get_values()
+        if not values:
+            return
+
+        self.doc.add_heading('Our Values', level=2)
+        include_descriptions = self.selection.values.include_descriptions
+
+        for value in values:
+            p = self.doc.add_paragraph()
+            run = p.add_run(value.name)
+            run.bold = True
+            run.font.size = Pt(11)
+            run.font.color.rgb = self._get_tier_color("values")
+
+            if include_descriptions and value.description:
+                p2 = self.doc.add_paragraph()
+                p2.add_run(value.description)
+                p2.paragraph_format.left_indent = Inches(0.25)
+                p2.space_after = Pt(8)
+
+    def _add_behaviours_filtered(self):
+        """Add filtered behaviours."""
+        behaviours = self.filter.get_behaviours()
+        if not behaviours:
+            return
+
+        self.doc.add_heading('Our Behaviours', level=2)
+
+        for behaviour in behaviours:
+            p = self.doc.add_paragraph(style='List Bullet')
+            run = p.add_run(behaviour.statement)
+            run.font.color.rgb = self._get_tier_color("behaviours")
+
+    def _add_drivers_filtered(self):
+        """Add filtered strategic drivers with their intents."""
+        drivers = self.filter.get_drivers()
+        if not drivers:
+            return
+
+        self.doc.add_heading('Strategic Drivers', level=2)
+        include_descriptions = self.selection.drivers.include_descriptions
+        include_intents = self.selection.intents.enabled
+
+        for driver in drivers:
+            # Driver heading with color
+            heading = self.doc.add_heading(driver.name, level=3)
+            for run in heading.runs:
+                run.font.color.rgb = self._get_tier_color("drivers")
+
+            if include_descriptions:
+                self.doc.add_paragraph(driver.description)
+
+            # Show intents for this driver if enabled
+            if include_intents:
+                intents = self.filter.get_intents_for_driver(driver.id)
+                if intents:
+                    p = self.doc.add_paragraph()
+                    run = p.add_run('What success looks like:')
+                    run.bold = True
+                    run.font.color.rgb = self._get_tier_color("intents")
+
+                    for intent in intents:
+                        p = self.doc.add_paragraph(style='List Bullet')
+                        run = p.add_run(intent.statement)
+                        run.italic = True
+
+    def _add_enablers_filtered(self):
+        """Add filtered enablers."""
+        enablers = self.filter.get_enablers()
+        if not enablers:
+            return
+
+        self.doc.add_heading('Enablers', level=2)
+        p_intro = self.doc.add_paragraph('What makes our strategy possible')
+        p_intro.runs[0].italic = True
+        p_intro.runs[0].font.color.rgb = RGBColor(100, 100, 100)
+        p_intro.space_after = Pt(12)
+
+        include_descriptions = self.selection.enablers.include_descriptions
+
+        for enabler in enablers:
+            p = self.doc.add_paragraph()
+            run = p.add_run(enabler.name)
+            run.bold = True
+            run.font.size = Pt(11)
+            run.font.color.rgb = self._get_tier_color("enablers")
+
+            if enabler.enabler_type:
+                run_type = p.add_run(f"  ")
+                run_type = p.add_run(enabler.enabler_type)
+                run_type.italic = True
+                run_type.font.size = Pt(10)
+                run_type.font.color.rgb = RGBColor(100, 100, 100)
+
+            if include_descriptions:
+                p2 = self.doc.add_paragraph()
+                p2.add_run(enabler.description)
+                p2.paragraph_format.left_indent = Inches(0.25)
+                p2.space_after = Pt(8)
+
+    def _add_commitments_filtered(self):
+        """Add filtered commitments grouped by horizon with colored tables."""
+        commitments = self.filter.get_commitments()
+        if not commitments:
+            return
+
+        include_descriptions = self.selection.commitments.include_descriptions
+        enabled_horizons = self.filter.get_enabled_horizons()
+
+        # Group by horizon
+        for horizon in ["H1", "H2", "H3"]:
+            if horizon not in enabled_horizons:
+                continue
+
+            horizon_commitments = [c for c in commitments if c.horizon.value == horizon]
+            if not horizon_commitments:
+                continue
+
+            horizon_name = {
+                "H1": "Horizon 1 (0-12 months)",
+                "H2": "Horizon 2 (12-24 months)",
+                "H3": "Horizon 3 (24-36 months)"
+            }[horizon]
+
+            # Add horizon header with color
+            heading = self.doc.add_heading(horizon_name, level=2)
+            horizon_color = self._get_horizon_color(horizon)
+            for run in heading.runs:
+                run.font.color.rgb = horizon_color
+
+            for commitment in horizon_commitments:
+                # Commitment heading
+                heading = self.doc.add_heading(commitment.name, level=3)
+
+                # Get primary driver name
+                driver = self.pyramid.get_driver_by_id(commitment.primary_driver_id)
+                driver_name = driver.name if driver else "Not specified"
+
+                # Create details table with horizon-colored first column
+                num_rows = 1
+                if commitment.target_date:
+                    num_rows += 1
+                if commitment.owner:
+                    num_rows += 1
+
+                details_table = self.doc.add_table(rows=num_rows, cols=2)
+                details_table.style = 'Light Grid Accent 1'
+
+                row_idx = 0
+                details_table.rows[row_idx].cells[0].text = "Primary Driver"
+                details_table.rows[row_idx].cells[1].text = driver_name
+
+                if commitment.target_date:
+                    row_idx += 1
+                    details_table.rows[row_idx].cells[0].text = "Target Date"
+                    details_table.rows[row_idx].cells[1].text = commitment.target_date
+
+                if commitment.owner:
+                    row_idx += 1
+                    details_table.rows[row_idx].cells[0].text = "Owner"
+                    details_table.rows[row_idx].cells[1].text = commitment.owner
+
+                # Style the table - bold labels and apply horizon color
+                for row in details_table.rows:
+                    if row.cells[0].paragraphs[0].runs:
+                        run = row.cells[0].paragraphs[0].runs[0]
+                        run.font.bold = True
+                        run.font.color.rgb = horizon_color
+
+                self.doc.add_paragraph()
+
+                if include_descriptions:
+                    self.doc.add_paragraph(commitment.description)
+
+                # Show secondary alignments
+                if commitment.secondary_alignments:
+                    secondary_drivers = []
+                    for alignment in commitment.secondary_alignments:
+                        sec_driver = self.pyramid.get_driver_by_id(alignment.target_id)
+                        if sec_driver:
+                            secondary_drivers.append(sec_driver.name)
+                    if secondary_drivers:
+                        p = self.doc.add_paragraph()
+                        p.add_run("Also contributes to: ").italic = True
+                        p.add_run(", ".join(secondary_drivers)).italic = True
+
+                self.doc.add_paragraph()  # Spacing
+
+    def _add_team_objectives_filtered(self):
+        """Add filtered team objectives."""
+        team_objectives = self.filter.get_team_objectives()
+        if not team_objectives:
+            return
+
+        self.doc.add_heading('Team Objectives', level=2)
+        include_descriptions = self.selection.team_objectives.include_descriptions
+
+        # Group by team
+        teams = {}
+        for obj in team_objectives:
+            if obj.team_name not in teams:
+                teams[obj.team_name] = []
+            teams[obj.team_name].append(obj)
+
+        for team_name, objectives in teams.items():
+            heading = self.doc.add_heading(team_name, level=3)
+            for run in heading.runs:
+                run.font.color.rgb = self._get_tier_color("team_objectives")
+
+            for obj in objectives:
+                p = self.doc.add_paragraph()
+                run = p.add_run(obj.name)
+                run.bold = True
+
+                if include_descriptions:
+                    p2 = self.doc.add_paragraph()
+                    p2.add_run(obj.description)
+                    p2.paragraph_format.left_indent = Inches(0.25)
+
+                if obj.metrics:
+                    p_metrics = self.doc.add_paragraph()
+                    p_metrics.paragraph_format.left_indent = Inches(0.25)
+                    run = p_metrics.add_run('Metrics: ')
+                    run.bold = True
+                    p_metrics.add_run(', '.join(obj.metrics))
+
+                self.doc.add_paragraph()  # Spacing
+
+    def _add_individual_objectives_filtered(self):
+        """Add filtered individual objectives."""
+        individual_objectives = self.filter.get_individual_objectives()
+        if not individual_objectives:
+            return
+
+        self.doc.add_heading('Individual Objectives', level=2)
+        include_descriptions = self.selection.individual_objectives.include_descriptions
+
+        # Group by individual
+        individuals = {}
+        for obj in individual_objectives:
+            if obj.individual_name not in individuals:
+                individuals[obj.individual_name] = []
+            individuals[obj.individual_name].append(obj)
+
+        for individual_name, objectives in individuals.items():
+            heading = self.doc.add_heading(individual_name, level=3)
+            for run in heading.runs:
+                run.font.color.rgb = self._get_tier_color("individual_objectives")
+
+            for obj in objectives:
+                p = self.doc.add_paragraph()
+                run = p.add_run(obj.name)
+                run.bold = True
+
+                if include_descriptions:
+                    p2 = self.doc.add_paragraph()
+                    p2.add_run(obj.description)
+                    p2.paragraph_format.left_indent = Inches(0.25)
+
+                if obj.success_criteria:
+                    p_criteria = self.doc.add_paragraph()
+                    p_criteria.paragraph_format.left_indent = Inches(0.25)
+                    run = p_criteria.add_run('Success Criteria: ')
+                    run.bold = True
+                    for criterion in obj.success_criteria:
+                        self.doc.add_paragraph(criterion, style='List Bullet')
+
+                self.doc.add_paragraph()  # Spacing
+
     def _add_cover_page(self):
-        """Add a professional cover page."""
-        # Title
+        """Add a professional cover page with design system styling."""
+        # Add some spacing at top
+        for _ in range(3):
+            self.doc.add_paragraph()
+
+        # Title with primary color
         title = self.doc.add_heading(self.pyramid.metadata.project_name, level=0)
         title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        for run in title.runs:
+            run.font.color.rgb = RGBColor(*self.colors.PRIMARY.to_tuple())
+            run.font.size = Pt(36)
 
-        # Subtitle
-        subtitle = self.doc.add_paragraph(self.pyramid.metadata.organization)
+        # Subtitle - organization name
+        subtitle = self.doc.add_paragraph()
         subtitle.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        subtitle.runs[0].font.size = Pt(16)
-        subtitle.runs[0].font.color.rgb = RGBColor(100, 100, 100)
+        run = subtitle.add_run(self.pyramid.metadata.organization)
+        run.font.size = Pt(18)
+        run.font.color.rgb = RGBColor(*self.colors.SECONDARY.to_tuple())
+
+        # Document type label
+        doc_type = self.doc.add_paragraph()
+        doc_type.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run = doc_type.add_run("Strategic Pyramid")
+        run.font.size = Pt(14)
+        run.font.color.rgb = RGBColor(100, 100, 100)
+        run.italic = True
 
         # Spacer
-        self.doc.add_paragraph()
-        self.doc.add_paragraph()
+        for _ in range(4):
+            self.doc.add_paragraph()
 
-        # Metadata
+        # Metadata section with styled table
         meta_table = self.doc.add_table(rows=4, cols=2)
         meta_table.style = 'Light Grid Accent 1'
 
-        meta_table.rows[0].cells[0].text = "Created by"
-        meta_table.rows[0].cells[1].text = self.pyramid.metadata.created_by
+        # Set column widths
+        for row in meta_table.rows:
+            row.cells[0].width = Inches(1.5)
+            row.cells[1].width = Inches(3.5)
 
-        meta_table.rows[1].cells[0].text = "Version"
-        meta_table.rows[1].cells[1].text = self.pyramid.metadata.version
+        meta_data = [
+            ("Created by", self.pyramid.metadata.created_by),
+            ("Version", self.pyramid.metadata.version),
+            ("Created", self.pyramid.metadata.created_at.strftime('%d %B %Y')),
+            ("Last Modified", self.pyramid.metadata.last_modified.strftime('%d %B %Y at %H:%M')),
+        ]
 
-        meta_table.rows[2].cells[0].text = "Created"
-        meta_table.rows[2].cells[1].text = self.pyramid.metadata.created_at.strftime('%d %B %Y')
+        for idx, (label, value) in enumerate(meta_data):
+            cell_label = meta_table.rows[idx].cells[0]
+            cell_value = meta_table.rows[idx].cells[1]
 
-        meta_table.rows[3].cells[0].text = "Last Modified"
-        meta_table.rows[3].cells[1].text = self.pyramid.metadata.last_modified.strftime('%d %B %Y at %H:%M')
+            cell_label.text = label
+            cell_value.text = value
+
+            # Style the label cell
+            if cell_label.paragraphs[0].runs:
+                run = cell_label.paragraphs[0].runs[0]
+                run.font.bold = True
+                run.font.color.rgb = RGBColor(*self.colors.PRIMARY.to_tuple())
+
+        # Add export info at bottom
+        self.doc.add_paragraph()
+        export_info = self.doc.add_paragraph()
+        export_info.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run = export_info.add_run(f"Exported on {datetime.now().strftime('%d %B %Y')}")
+        run.font.size = Pt(10)
+        run.font.color.rgb = RGBColor(150, 150, 150)
+        run.italic = True
 
         # Page break
         self.doc.add_page_break()
+
+    def _add_table_of_contents(self):
+        """Add a table of contents to the document."""
+        self.doc.add_heading('Contents', level=1)
+
+        # Create a paragraph for the TOC field
+        paragraph = self.doc.add_paragraph()
+        run = paragraph.add_run()
+
+        # Add the TOC field code
+        fldChar1 = OxmlElement('w:fldChar')
+        fldChar1.set(qn('w:fldCharType'), 'begin')
+
+        instrText = OxmlElement('w:instrText')
+        instrText.set(qn('xml:space'), 'preserve')
+        instrText.text = 'TOC \\o "1-3" \\h \\z \\u'
+
+        fldChar2 = OxmlElement('w:fldChar')
+        fldChar2.set(qn('w:fldCharType'), 'separate')
+
+        fldChar3 = OxmlElement('w:fldChar')
+        fldChar3.set(qn('w:fldCharType'), 'end')
+
+        run._r.append(fldChar1)
+        run._r.append(instrText)
+        run._r.append(fldChar2)
+
+        # Add placeholder text (will be replaced when doc is opened in Word)
+        placeholder = self.doc.add_paragraph()
+        placeholder.add_run("Right-click and select 'Update Field' to update this table of contents")
+        placeholder.runs[0].font.italic = True
+        placeholder.runs[0].font.color.rgb = RGBColor(150, 150, 150)
+
+        run._r.append(fldChar3)
+
+        self.doc.add_paragraph()
+        self.doc.add_page_break()
+
+    def _add_drivers_overview_grid(self):
+        """Add a 3-column grid view of strategic drivers with card-style layout."""
+        drivers = self.filter.get_drivers() if self.filter else self.pyramid.strategic_drivers
+        if not drivers:
+            return
+
+        self.doc.add_heading('Strategic Drivers Overview', level=2)
+        p_intro = self.doc.add_paragraph('Our key strategic priorities at a glance')
+        p_intro.runs[0].italic = True
+        p_intro.runs[0].font.color.rgb = RGBColor(100, 100, 100)
+        p_intro.space_after = Pt(16)
+
+        # Calculate grid layout (3 columns)
+        num_drivers = len(drivers)
+        num_rows = (num_drivers + 2) // 3  # Ceiling division
+
+        # Create table for grid layout
+        table = self.doc.add_table(rows=num_rows, cols=3)
+        table.alignment = WD_TABLE_ALIGNMENT.CENTER
+
+        # Set column widths
+        for row in table.rows:
+            for cell in row.cells:
+                cell.width = Inches(2.0)
+
+        drivers_color = self._get_tier_color("drivers")
+
+        for idx, driver in enumerate(drivers):
+            row = idx // 3
+            col = idx % 3
+
+            cell = table.rows[row].cells[col]
+
+            # Clear the cell
+            cell.text = ""
+
+            # Add driver name
+            p_name = cell.paragraphs[0]
+            run_name = p_name.add_run(driver.name)
+            run_name.bold = True
+            run_name.font.size = Pt(11)
+            run_name.font.color.rgb = drivers_color
+            p_name.space_after = Pt(4)
+
+            # Add description (truncated)
+            p_desc = cell.add_paragraph()
+            desc_text = driver.description[:100] + "..." if len(driver.description) > 100 else driver.description
+            run_desc = p_desc.add_run(desc_text)
+            run_desc.font.size = Pt(9)
+            run_desc.font.color.rgb = RGBColor(80, 80, 80)
+            p_desc.space_after = Pt(8)
+
+            # Count commitments for this driver
+            if self.filter:
+                commitments = [c for c in self.filter.get_commitments() if c.primary_driver_id == driver.id]
+            else:
+                commitments = self.pyramid.get_commitments_by_driver(driver.id, primary_only=True)
+
+            h1_count = len([c for c in commitments if c.horizon.value == "H1"])
+            h2_count = len([c for c in commitments if c.horizon.value == "H2"])
+            h3_count = len([c for c in commitments if c.horizon.value == "H3"])
+
+            # Add commitment counts
+            if h1_count or h2_count or h3_count:
+                p_counts = cell.add_paragraph()
+                if h1_count:
+                    run = p_counts.add_run(f"H1:{h1_count} ")
+                    run.font.size = Pt(8)
+                    run.font.color.rgb = self._get_horizon_color("H1")
+                if h2_count:
+                    run = p_counts.add_run(f"H2:{h2_count} ")
+                    run.font.size = Pt(8)
+                    run.font.color.rgb = self._get_horizon_color("H2")
+                if h3_count:
+                    run = p_counts.add_run(f"H3:{h3_count}")
+                    run.font.size = Pt(8)
+                    run.font.color.rgb = self._get_horizon_color("H3")
+
+            # Add cell shading (light background)
+            shading = OxmlElement('w:shd')
+            shading.set(qn('w:fill'), 'F5F5F5')
+            cell._tc.get_or_add_tcPr().append(shading)
+
+            # Add cell padding
+            cell_props = cell._tc.get_or_add_tcPr()
+            margins = OxmlElement('w:tcMar')
+            for margin_name in ['top', 'left', 'bottom', 'right']:
+                margin = OxmlElement(f'w:{margin_name}')
+                margin.set(qn('w:w'), '120')
+                margin.set(qn('w:type'), 'dxa')
+                margins.append(margin)
+            cell_props.append(margins)
+
+        self.doc.add_paragraph()  # Spacing after grid
 
     def _generate_executive_summary(self):
         """Generate 1-page executive summary."""

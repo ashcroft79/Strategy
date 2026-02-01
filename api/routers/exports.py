@@ -3,7 +3,7 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Literal, Dict, Any, List
 import tempfile
 from pathlib import Path
 
@@ -12,6 +12,9 @@ from src.pyramid_builder.exports.powerpoint_exporter import PowerPointExporter
 from src.pyramid_builder.exports.markdown_exporter import MarkdownExporter
 from src.pyramid_builder.exports.json_exporter import JSONExporter
 from src.pyramid_builder.exports.ai_guide_generator import AIGuideGenerator
+from src.pyramid_builder.exports.element_selection import ExportElementSelection
+from src.pyramid_builder.exports.presets import get_preset, list_presets
+from src.pyramid_builder.exports.selection_filter import SelectionFilter
 from .pyramids import active_pyramids
 from .context import context_storage, scoring_storage, tension_storage, stakeholder_storage
 import json
@@ -20,16 +23,68 @@ router = APIRouter()
 
 
 class ExportRequest(BaseModel):
-    """Request to export a pyramid."""
+    """Request to export a pyramid with optional fine-grained selection.
+
+    Supports two modes:
+    1. Preset mode (default): Use `audience` to select a predefined configuration
+    2. Custom mode: Set `mode="custom"` and provide a `selection` object
+
+    Examples:
+        # Preset mode (backward compatible)
+        {"audience": "executive"}
+
+        # Custom mode with specific drivers
+        {
+            "mode": "custom",
+            "selection": {
+                "drivers": {"enabled": true, "selected_ids": ["uuid1", "uuid2"]},
+                "commitments": {"enabled": true, "horizons": {"H1": true, "H2": false, "H3": false}}
+            }
+        }
+    """
+    # Selection mode
+    mode: Literal["preset", "custom"] = "preset"
+
+    # Preset mode options (backward compatible)
     audience: str = "leadership"  # executive, leadership, detailed, team
+
+    # Custom mode: full selection object
+    selection: Optional[Dict[str, Any]] = None
+
+    # Legacy options (still supported for backward compatibility)
     include_metadata: bool = True
     include_cover_page: bool = True
     include_distribution: bool = True
 
+    def get_selection(self) -> ExportElementSelection:
+        """Resolve the selection from either preset or custom mode."""
+        if self.mode == "custom" and self.selection:
+            # Parse custom selection
+            return ExportElementSelection.model_validate(self.selection)
 
-@router.post("/{session_id}/word")
-async def export_word(session_id: str, request: ExportRequest):
-    """Export pyramid to Word document (DOCX)."""
+        # Use preset
+        selection = get_preset(self.audience)
+
+        # Apply legacy options to preset
+        selection.supplementary.metadata = self.include_metadata
+        selection.supplementary.cover_page = self.include_cover_page
+        selection.supplementary.distribution = self.include_distribution
+
+        return selection
+
+
+@router.get("/presets")
+async def get_export_presets():
+    """Get available export presets with descriptions."""
+    return list_presets()
+
+
+@router.post("/{session_id}/preview")
+async def preview_export(session_id: str, request: ExportRequest):
+    """Preview what will be included in an export without generating the file.
+
+    Returns counts and element names for each tier based on the selection.
+    """
     if session_id not in active_pyramids:
         raise HTTPException(status_code=404, detail="Pyramid not found")
 
@@ -38,7 +93,40 @@ async def export_word(session_id: str, request: ExportRequest):
         raise HTTPException(status_code=404, detail="No pyramid initialized")
 
     try:
-        exporter = WordExporter(manager.pyramid)
+        selection = request.get_selection()
+        filter = SelectionFilter(manager.pyramid, selection)
+
+        return {
+            "summary": filter.get_filter_summary(),
+            "total_elements": filter.get_total_element_count(),
+            "enabled_tiers": selection.get_enabled_tiers(),
+            "enabled_horizons": selection.get_enabled_horizons(),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid selection: {str(e)}")
+
+
+@router.post("/{session_id}/word")
+async def export_word(session_id: str, request: ExportRequest):
+    """Export pyramid to Word document (DOCX).
+
+    Supports two modes:
+    1. Preset mode: Use `audience` to select a predefined configuration
+    2. Custom mode: Set `mode="custom"` and provide a `selection` object
+    """
+    if session_id not in active_pyramids:
+        raise HTTPException(status_code=404, detail="Pyramid not found")
+
+    manager = active_pyramids[session_id]
+    if not manager.pyramid:
+        raise HTTPException(status_code=404, detail="No pyramid initialized")
+
+    try:
+        # Get the selection (from preset or custom)
+        selection = request.get_selection()
+
+        # Create exporter with selection for fine-grained control
+        exporter = WordExporter(manager.pyramid, selection=selection)
 
         # Create temporary file
         with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
@@ -48,11 +136,12 @@ async def export_word(session_id: str, request: ExportRequest):
         exporter.export(
             filepath=tmp_path,
             audience=request.audience,
-            include_cover_page=request.include_cover_page,
+            include_cover_page=selection.supplementary.cover_page,
         )
 
         # Return file
-        filename = f"{manager.pyramid.metadata.project_name}_{request.audience}.docx"
+        mode_suffix = "custom" if request.mode == "custom" else request.audience
+        filename = f"{manager.pyramid.metadata.project_name}_{mode_suffix}.docx"
         return FileResponse(
             path=tmp_path,
             media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -65,7 +154,12 @@ async def export_word(session_id: str, request: ExportRequest):
 
 @router.post("/{session_id}/powerpoint")
 async def export_powerpoint(session_id: str, request: ExportRequest):
-    """Export pyramid to PowerPoint presentation (PPTX)."""
+    """Export pyramid to PowerPoint presentation (PPTX).
+
+    Supports two modes:
+    1. Preset mode: Use `audience` to select a predefined configuration
+    2. Custom mode: Set `mode="custom"` and provide a `selection` object
+    """
     if session_id not in active_pyramids:
         raise HTTPException(status_code=404, detail="Pyramid not found")
 
@@ -74,7 +168,11 @@ async def export_powerpoint(session_id: str, request: ExportRequest):
         raise HTTPException(status_code=404, detail="No pyramid initialized")
 
     try:
-        exporter = PowerPointExporter(manager.pyramid)
+        # Get the selection (from preset or custom)
+        selection = request.get_selection()
+
+        # Create exporter with selection for fine-grained control
+        exporter = PowerPointExporter(manager.pyramid, selection=selection)
 
         # Create temporary file
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pptx") as tmp:
@@ -84,11 +182,12 @@ async def export_powerpoint(session_id: str, request: ExportRequest):
         exporter.export(
             filepath=tmp_path,
             audience=request.audience,
-            include_title_slide=request.include_cover_page,
+            include_title_slide=selection.supplementary.cover_page,
         )
 
         # Return file
-        filename = f"{manager.pyramid.metadata.project_name}_{request.audience}.pptx"
+        mode_suffix = "custom" if request.mode == "custom" else request.audience
+        filename = f"{manager.pyramid.metadata.project_name}_{mode_suffix}.pptx"
         return FileResponse(
             path=tmp_path,
             media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
@@ -101,7 +200,12 @@ async def export_powerpoint(session_id: str, request: ExportRequest):
 
 @router.post("/{session_id}/markdown")
 async def export_markdown(session_id: str, request: ExportRequest):
-    """Export pyramid to Markdown file."""
+    """Export pyramid to Markdown file.
+
+    Supports two modes:
+    1. Preset mode: Use `audience` to select a predefined configuration
+    2. Custom mode: Set `mode="custom"` and provide a `selection` object
+    """
     if session_id not in active_pyramids:
         raise HTTPException(status_code=404, detail="Pyramid not found")
 
@@ -110,7 +214,11 @@ async def export_markdown(session_id: str, request: ExportRequest):
         raise HTTPException(status_code=404, detail="No pyramid initialized")
 
     try:
-        exporter = MarkdownExporter(manager.pyramid)
+        # Get the selection (from preset or custom)
+        selection = request.get_selection()
+
+        # Create exporter with selection for fine-grained control
+        exporter = MarkdownExporter(manager.pyramid, selection=selection)
 
         # Create temporary file
         with tempfile.NamedTemporaryFile(delete=False, suffix=".md", mode='w') as tmp:
@@ -120,12 +228,13 @@ async def export_markdown(session_id: str, request: ExportRequest):
         exporter.export(
             filepath=tmp_path,
             audience=request.audience,
-            include_metadata=request.include_metadata,
-            include_distribution=request.include_distribution,
+            include_metadata=selection.supplementary.metadata,
+            include_distribution=selection.supplementary.distribution,
         )
 
         # Return file
-        filename = f"{manager.pyramid.metadata.project_name}_{request.audience}.md"
+        mode_suffix = "custom" if request.mode == "custom" else request.audience
+        filename = f"{manager.pyramid.metadata.project_name}_{mode_suffix}.md"
         return FileResponse(
             path=tmp_path,
             media_type="text/markdown",

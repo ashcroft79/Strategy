@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 100" fill="none">
+  <!-- Strategy Pyramid Logo -->
+  <!-- Main pyramid shape -->
+  <polygon points="60,5 110,90 10,90" fill="none" stroke="#1f4e79" stroke-width="3"/>
+
+  <!-- Tier lines (horizontal divisions) -->
+  <line x1="25" y1="35" x2="95" y2="35" stroke="#1f4e79" stroke-width="1.5"/>
+  <line x1="20" y1="50" x2="100" y2="50" stroke="#1f4e79" stroke-width="1.5"/>
+  <line x1="15" y1="65" x2="105" y2="65" stroke="#1f4e79" stroke-width="1.5"/>
+  <line x1="12" y1="80" x2="108" y2="80" stroke="#1f4e79" stroke-width="1.5"/>
+
+  <!-- Tier colors (filled sections) -->
+  <polygon points="60,5 75,35 45,35" fill="#8e44ad" opacity="0.8"/>
+  <polygon points="45,35 75,35 82,50 38,50" fill="#16a085" opacity="0.8"/>
+  <polygon points="38,50 82,50 88,65 32,65" fill="#c0392b" opacity="0.8"/>
+  <polygon points="32,65 88,65 95,80 25,80" fill="#2980b9" opacity="0.8"/>
+  <polygon points="25,80 95,80 110,90 10,90" fill="#34495e" opacity="0.8"/>
+
+  <!-- Small star at apex -->
+  <circle cx="60" cy="10" r="3" fill="#e67e22"/>
+</svg>

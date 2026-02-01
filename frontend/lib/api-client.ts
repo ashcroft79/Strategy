@@ -509,7 +509,25 @@ export const validationApi = {
 // EXPORTS
 // ============================================================================
 
+import type { ExportPreviewResponse } from "@/types/pyramid";
+
 export const exportsApi = {
+  /**
+   * Get available export presets with descriptions
+   */
+  async getPresets(): Promise<Record<string, { description: string; enabled_tiers: string[] }>> {
+    const { data } = await api.get("/api/exports/presets");
+    return data;
+  },
+
+  /**
+   * Preview what will be included in an export without generating the file
+   */
+  async previewExport(sessionId: string, request: ExportRequest): Promise<ExportPreviewResponse> {
+    const { data } = await api.post(`/api/exports/${sessionId}/preview`, request);
+    return data;
+  },
+
   async exportWord(sessionId: string, request: ExportRequest): Promise<Blob> {
     const { data } = await api.post(`/api/exports/${sessionId}/word`, request, {
       responseType: "blob",
