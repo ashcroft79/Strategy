@@ -1,0 +1,345 @@
+/**
+ * Strategy Pyramid Design System
+ *
+ * CSS custom properties (variables) for consistent styling across all exports
+ * and the Strategic Blueprint visualization.
+ *
+ * Usage:
+ *   @import './design-system.css';
+ *
+ *   .my-component {
+ *     color: var(--color-primary);
+ *     font-size: var(--font-size-body);
+ *     padding: var(--spacing-md);
+ *   }
+ */
+
+:root {
+  /* =========================================================================
+   * PRIMARY BRAND COLORS
+   * ========================================================================= */
+  --color-primary: #1f4e79;
+  --color-primary-light: #44729d;
+  --color-primary-dark: #153654;
+  --color-secondary: #2c3e50;
+  --color-accent: #e67e22;
+
+  /* =========================================================================
+   * HORIZON COLORS (for commitments timeline)
+   * ========================================================================= */
+  --color-horizon-h1: #27ae60;  /* Green - Now to 12 months */
+  --color-horizon-h2: #3498db;  /* Blue - 12-24 months */
+  --color-horizon-h3: #e67e22;  /* Orange - 24-36 months */
+
+  /* Horizon backgrounds (lighter versions for badges) */
+  --color-horizon-h1-bg: rgba(39, 174, 96, 0.1);
+  --color-horizon-h2-bg: rgba(52, 152, 219, 0.1);
+  --color-horizon-h3-bg: rgba(230, 126, 34, 0.1);
+
+  /* =========================================================================
+   * TIER-SPECIFIC COLORS
+   * ========================================================================= */
+  --color-tier-foundation: #8e44ad;   /* Purple - Vision/Mission */
+  --color-tier-values: #16a085;       /* Teal - Values */
+  --color-tier-behaviours: #1abc9c;   /* Aqua - Behaviours */
+  --color-tier-drivers: #c0392b;      /* Coral red - Strategic Drivers */
+  --color-tier-intents: #9b59b6;      /* Light purple - Intents */
+  --color-tier-enablers: #34495e;     /* Dark blue-gray - Enablers */
+  --color-tier-commitments: #2980b9;  /* Blue - Commitments */
+  --color-tier-team: #16a085;         /* Teal - Team objectives */
+  --color-tier-individual: #7f8c8d;   /* Gray - Individual objectives */
+
+  /* Tier backgrounds (lighter versions) */
+  --color-tier-foundation-bg: rgba(142, 68, 173, 0.08);
+  --color-tier-values-bg: rgba(22, 160, 133, 0.08);
+  --color-tier-behaviours-bg: rgba(26, 188, 156, 0.08);
+  --color-tier-drivers-bg: rgba(192, 57, 43, 0.08);
+  --color-tier-intents-bg: rgba(155, 89, 182, 0.08);
+  --color-tier-enablers-bg: rgba(52, 73, 94, 0.08);
+  --color-tier-commitments-bg: rgba(41, 128, 185, 0.08);
+  --color-tier-team-bg: rgba(22, 160, 133, 0.08);
+  --color-tier-individual-bg: rgba(127, 140, 141, 0.08);
+
+  /* =========================================================================
+   * NEUTRAL COLORS
+   * ========================================================================= */
+  --color-text-primary: #2c3e50;
+  --color-text-secondary: #7f8c8d;
+  --color-text-light: #bdc3c7;
+  --color-text-inverse: #ffffff;
+
+  --color-background: #ffffff;
+  --color-background-alt: #f8f9fa;
+  --color-background-hover: #f1f3f4;
+
+  --color-border: #bdc3c7;
+  --color-border-light: #ecf0f1;
+  --color-border-dark: #95a5a6;
+
+  /* =========================================================================
+   * STATUS COLORS
+   * ========================================================================= */
+  --color-success: #27ae60;
+  --color-warning: #f39c12;
+  --color-error: #e74c3c;
+  --color-info: #3498db;
+
+  /* =========================================================================
+   * TYPOGRAPHY
+   * ========================================================================= */
+  --font-heading: 'Calibri', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Calibri', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Consolas', 'Monaco', 'Courier New', monospace;
+
+  /* Font sizes */
+  --font-size-title: 36px;
+  --font-size-h1: 26px;
+  --font-size-h2: 20px;
+  --font-size-h3: 18px;
+  --font-size-h4: 16px;
+  --font-size-body: 14px;
+  --font-size-body-small: 13px;
+  --font-size-small: 12px;
+  --font-size-caption: 11px;
+
+  /* Line heights */
+  --line-height-heading: 1.2;
+  --line-height-body: 1.5;
+  --line-height-tight: 1.3;
+
+  /* Font weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* =========================================================================
+   * SPACING
+   * ========================================================================= */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+
+  /* Component-specific spacing */
+  --card-padding: 16px;
+  --card-gap: 16px;
+  --icon-gap: 8px;
+  --section-gap: 24px;
+
+  /* =========================================================================
+   * BORDERS & SHADOWS
+   * ========================================================================= */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-full: 9999px;
+
+  --border-width: 1px;
+  --border-width-thick: 2px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+  /* =========================================================================
+   * TRANSITIONS
+   * ========================================================================= */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 350ms ease;
+}
+
+/* =========================================================================
+ * TIER HEADER STYLES
+ * ========================================================================= */
+
+.tier-header {
+  display: flex;
+  align-items: center;
+  gap: var(--icon-gap);
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: var(--border-width-thick) solid currentColor;
+}
+
+.tier-header-foundation { color: var(--color-tier-foundation); }
+.tier-header-values { color: var(--color-tier-values); }
+.tier-header-behaviours { color: var(--color-tier-behaviours); }
+.tier-header-drivers { color: var(--color-tier-drivers); }
+.tier-header-intents { color: var(--color-tier-intents); }
+.tier-header-enablers { color: var(--color-tier-enablers); }
+.tier-header-commitments { color: var(--color-tier-commitments); }
+.tier-header-team { color: var(--color-tier-team); }
+.tier-header-individual { color: var(--color-tier-individual); }
+
+/* =========================================================================
+ * HORIZON BADGE STYLES
+ * ========================================================================= */
+
+.horizon-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-semibold);
+}
+
+.horizon-badge-h1 {
+  background-color: var(--color-horizon-h1-bg);
+  color: var(--color-horizon-h1);
+  border: 1px solid var(--color-horizon-h1);
+}
+
+.horizon-badge-h2 {
+  background-color: var(--color-horizon-h2-bg);
+  color: var(--color-horizon-h2);
+  border: 1px solid var(--color-horizon-h2);
+}
+
+.horizon-badge-h3 {
+  background-color: var(--color-horizon-h3-bg);
+  color: var(--color-horizon-h3);
+  border: 1px solid var(--color-horizon-h3);
+}
+
+/* =========================================================================
+ * TIER ICON STYLES
+ * ========================================================================= */
+
+.tier-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.tier-icon-sm {
+  width: 16px;
+  height: 16px;
+}
+
+.tier-icon-lg {
+  width: 32px;
+  height: 32px;
+}
+
+/* =========================================================================
+ * CARD STYLES (for exports)
+ * ========================================================================= */
+
+.export-card {
+  background: var(--color-background);
+  border: var(--border-width) solid var(--color-border-light);
+  border-radius: var(--border-radius-md);
+  padding: var(--card-padding);
+}
+
+.export-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--icon-gap);
+  margin-bottom: var(--spacing-sm);
+}
+
+.export-card-title {
+  font-size: var(--font-size-h4);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.export-card-body {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+/* =========================================================================
+ * DRIVER CARD STYLES
+ * ========================================================================= */
+
+.driver-card {
+  border-left: 4px solid var(--color-tier-drivers);
+  background: var(--color-tier-drivers-bg);
+  padding: var(--card-padding);
+  border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
+}
+
+.driver-card-name {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-tier-drivers);
+  margin-bottom: var(--spacing-sm);
+}
+
+/* =========================================================================
+ * COMMITMENT STYLES
+ * ========================================================================= */
+
+.commitment-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.commitment-item:last-child {
+  border-bottom: none;
+}
+
+.commitment-name {
+  flex: 1;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.commitment-date {
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+/* =========================================================================
+ * PRINT STYLES
+ * ========================================================================= */
+
+@media print {
+  :root {
+    /* Slightly smaller sizes for print */
+    --font-size-title: 28pt;
+    --font-size-h1: 18pt;
+    --font-size-h2: 14pt;
+    --font-size-h3: 12pt;
+    --font-size-body: 10pt;
+    --font-size-small: 9pt;
+
+    /* Tighter spacing for print */
+    --spacing-md: 12px;
+    --spacing-lg: 18px;
+    --card-padding: 12px;
+    --section-gap: 18px;
+  }
+
+  /* Ensure colors print correctly */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Avoid page breaks inside key elements */
+  .export-card,
+  .driver-card,
+  .tier-header {
+    page-break-inside: avoid;
+  }
+
+  /* Hide interactive elements */
+  .no-print {
+    display: none !important;
+  }
+}
