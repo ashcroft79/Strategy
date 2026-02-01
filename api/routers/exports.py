@@ -154,7 +154,12 @@ async def export_word(session_id: str, request: ExportRequest):
 
 @router.post("/{session_id}/powerpoint")
 async def export_powerpoint(session_id: str, request: ExportRequest):
-    """Export pyramid to PowerPoint presentation (PPTX)."""
+    """Export pyramid to PowerPoint presentation (PPTX).
+
+    Supports two modes:
+    1. Preset mode: Use `audience` to select a predefined configuration
+    2. Custom mode: Set `mode="custom"` and provide a `selection` object
+    """
     if session_id not in active_pyramids:
         raise HTTPException(status_code=404, detail="Pyramid not found")
 
@@ -163,7 +168,11 @@ async def export_powerpoint(session_id: str, request: ExportRequest):
         raise HTTPException(status_code=404, detail="No pyramid initialized")
 
     try:
-        exporter = PowerPointExporter(manager.pyramid)
+        # Get the selection (from preset or custom)
+        selection = request.get_selection()
+
+        # Create exporter with selection for fine-grained control
+        exporter = PowerPointExporter(manager.pyramid, selection=selection)
 
         # Create temporary file
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pptx") as tmp:
@@ -173,11 +182,12 @@ async def export_powerpoint(session_id: str, request: ExportRequest):
         exporter.export(
             filepath=tmp_path,
             audience=request.audience,
-            include_title_slide=request.include_cover_page,
+            include_title_slide=selection.supplementary.cover_page,
         )
 
         # Return file
-        filename = f"{manager.pyramid.metadata.project_name}_{request.audience}.pptx"
+        mode_suffix = "custom" if request.mode == "custom" else request.audience
+        filename = f"{manager.pyramid.metadata.project_name}_{mode_suffix}.pptx"
         return FileResponse(
             path=tmp_path,
             media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
