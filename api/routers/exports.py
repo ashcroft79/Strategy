@@ -108,7 +108,12 @@ async def preview_export(session_id: str, request: ExportRequest):
 
 @router.post("/{session_id}/word")
 async def export_word(session_id: str, request: ExportRequest):
-    """Export pyramid to Word document (DOCX)."""
+    """Export pyramid to Word document (DOCX).
+
+    Supports two modes:
+    1. Preset mode: Use `audience` to select a predefined configuration
+    2. Custom mode: Set `mode="custom"` and provide a `selection` object
+    """
     if session_id not in active_pyramids:
         raise HTTPException(status_code=404, detail="Pyramid not found")
 
@@ -117,7 +122,11 @@ async def export_word(session_id: str, request: ExportRequest):
         raise HTTPException(status_code=404, detail="No pyramid initialized")
 
     try:
-        exporter = WordExporter(manager.pyramid)
+        # Get the selection (from preset or custom)
+        selection = request.get_selection()
+
+        # Create exporter with selection for fine-grained control
+        exporter = WordExporter(manager.pyramid, selection=selection)
 
         # Create temporary file
         with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
@@ -127,11 +136,12 @@ async def export_word(session_id: str, request: ExportRequest):
         exporter.export(
             filepath=tmp_path,
             audience=request.audience,
-            include_cover_page=request.include_cover_page,
+            include_cover_page=selection.supplementary.cover_page,
         )
 
         # Return file
-        filename = f"{manager.pyramid.metadata.project_name}_{request.audience}.docx"
+        mode_suffix = "custom" if request.mode == "custom" else request.audience
+        filename = f"{manager.pyramid.metadata.project_name}_{mode_suffix}.docx"
         return FileResponse(
             path=tmp_path,
             media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",

@@ -656,3 +656,7 @@ class SelectionFilter:
             len(self.get_team_objectives()) +
             len(self.get_individual_objectives())
         )
+
+    def get_enabled_horizons(self) -> List[str]:
+        """Get list of enabled horizons from the selection."""
+        return self.selection.get_enabled_horizons()
