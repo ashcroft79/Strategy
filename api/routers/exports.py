@@ -200,7 +200,12 @@ async def export_powerpoint(session_id: str, request: ExportRequest):
 
 @router.post("/{session_id}/markdown")
 async def export_markdown(session_id: str, request: ExportRequest):
-    """Export pyramid to Markdown file."""
+    """Export pyramid to Markdown file.
+
+    Supports two modes:
+    1. Preset mode: Use `audience` to select a predefined configuration
+    2. Custom mode: Set `mode="custom"` and provide a `selection` object
+    """
     if session_id not in active_pyramids:
         raise HTTPException(status_code=404, detail="Pyramid not found")
 
@@ -209,7 +214,11 @@ async def export_markdown(session_id: str, request: ExportRequest):
         raise HTTPException(status_code=404, detail="No pyramid initialized")
 
     try:
-        exporter = MarkdownExporter(manager.pyramid)
+        # Get the selection (from preset or custom)
+        selection = request.get_selection()
+
+        # Create exporter with selection for fine-grained control
+        exporter = MarkdownExporter(manager.pyramid, selection=selection)
 
         # Create temporary file
         with tempfile.NamedTemporaryFile(delete=False, suffix=".md", mode='w') as tmp:
@@ -219,12 +228,13 @@ async def export_markdown(session_id: str, request: ExportRequest):
         exporter.export(
             filepath=tmp_path,
             audience=request.audience,
-            include_metadata=request.include_metadata,
-            include_distribution=request.include_distribution,
+            include_metadata=selection.supplementary.metadata,
+            include_distribution=selection.supplementary.distribution,
         )
 
         # Return file
-        filename = f"{manager.pyramid.metadata.project_name}_{request.audience}.md"
+        mode_suffix = "custom" if request.mode == "custom" else request.audience
+        filename = f"{manager.pyramid.metadata.project_name}_{mode_suffix}.md"
         return FileResponse(
             path=tmp_path,
             media_type="text/markdown",
