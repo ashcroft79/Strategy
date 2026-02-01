@@ -7,17 +7,37 @@ import { exportsApi } from "@/lib/api-client";
 import { Button } from "@/components/ui/Button";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { UnsavedChangesIndicator } from "@/components/ui/UnsavedChangesIndicator";
+import { ExportSelectionPanel } from "@/components/exports";
 import { EXPORTS_TOOLTIPS } from "@/config/tooltips";
 import { downloadBlob } from "@/lib/utils";
-import { FileText, Presentation, FileCode, Download, ArrowLeft, Sparkles, BarChart3 } from "lucide-react";
-
-type AudienceType = "executive" | "leadership" | "detailed" | "team";
+import {
+  ExportElementSelection,
+  DEFAULT_EXPORT_SELECTION,
+  cloneSelection,
+  getEnabledTiers,
+} from "@/types/export-selection";
+import type { ExportRequest } from "@/types/pyramid";
+import {
+  FileText,
+  Presentation,
+  FileCode,
+  Download,
+  ArrowLeft,
+  Sparkles,
+  BarChart3,
+  Eye,
+  Loader2,
+} from "lucide-react";
 
 export default function ExportsPage() {
   const router = useRouter();
   const { sessionId, pyramid } = usePyramidStore();
-  const [audience, setAudience] = useState<AudienceType>("leadership");
+  const [selection, setSelection] = useState<ExportElementSelection>(
+    cloneSelection(DEFAULT_EXPORT_SELECTION)
+  );
   const [isExporting, setIsExporting] = useState(false);
+  const [previewCounts, setPreviewCounts] = useState<Record<string, number> | null>(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
 
   useEffect(() => {
     if (!pyramid) {
@@ -25,15 +45,52 @@ export default function ExportsPage() {
     }
   }, [pyramid, router]);
 
+  // Fetch preview when selection changes
+  useEffect(() => {
+    if (!sessionId || !pyramid) return;
+
+    const fetchPreview = async () => {
+      setIsLoadingPreview(true);
+      try {
+        const request: ExportRequest = {
+          mode: "custom",
+          selection,
+        };
+        const preview = await exportsApi.previewExport(sessionId, request);
+        setPreviewCounts({
+          foundation: preview.summary.foundation?.count || 0,
+          values: preview.summary.values?.count || 0,
+          behaviours: preview.summary.behaviours?.count || 0,
+          drivers: preview.summary.drivers?.count || 0,
+          intents: preview.summary.intents?.count || 0,
+          enablers: preview.summary.enablers?.count || 0,
+          commitments: preview.summary.commitments?.count || 0,
+          team_objectives: preview.summary.team_objectives?.count || 0,
+          individual_objectives: preview.summary.individual_objectives?.count || 0,
+          total: preview.total_elements,
+        });
+      } catch (err) {
+        console.error("Preview failed:", err);
+        setPreviewCounts(null);
+      } finally {
+        setIsLoadingPreview(false);
+      }
+    };
+
+    // Debounce preview requests
+    const timer = setTimeout(fetchPreview, 300);
+    return () => clearTimeout(timer);
+  }, [sessionId, pyramid, selection]);
+
   const handleExport = async (format: "word" | "powerpoint" | "markdown" | "json") => {
+    if (!pyramid) return;
+
     try {
       setIsExporting(true);
 
-      const exportRequest = {
-        audience,
-        include_metadata: true,
-        include_cover_page: true,
-        include_distribution: true,
+      const exportRequest: ExportRequest = {
+        mode: "custom",
+        selection,
       };
 
       let blob: Blob;
@@ -42,19 +99,19 @@ export default function ExportsPage() {
       switch (format) {
         case "word":
           blob = await exportsApi.exportWord(sessionId, exportRequest);
-          filename = `${pyramid?.metadata.project_name}_${audience}.docx`;
+          filename = `${pyramid.metadata.project_name}_export.docx`;
           break;
         case "powerpoint":
           blob = await exportsApi.exportPowerPoint(sessionId, exportRequest);
-          filename = `${pyramid?.metadata.project_name}_${audience}.pptx`;
+          filename = `${pyramid.metadata.project_name}_export.pptx`;
           break;
         case "markdown":
           blob = await exportsApi.exportMarkdown(sessionId, exportRequest);
-          filename = `${pyramid?.metadata.project_name}_${audience}.md`;
+          filename = `${pyramid.metadata.project_name}_export.md`;
           break;
         case "json":
           blob = await exportsApi.exportJSON(sessionId, exportRequest);
-          filename = `${pyramid?.metadata.project_name}.json`;
+          filename = `${pyramid.metadata.project_name}.json`;
           break;
       }
 
@@ -82,10 +139,12 @@ export default function ExportsPage() {
     return null;
   }
 
+  const enabledTiers = getEnabledTiers(selection);
+
   return (
     <div className="min-h-screen p-4">
       <UnsavedChangesIndicator />
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-6 flex gap-3">
           <Button variant="ghost" onClick={() => router.push("/builder")}>
@@ -105,171 +164,209 @@ export default function ExportsPage() {
         <div className="card mb-6">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Export Your Strategy</h1>
           <p className="text-gray-600">
-            Download your strategic pyramid in different formats for various audiences.
+            Customize what to include in your export and download in your preferred format.
           </p>
         </div>
 
-        {/* AI Guide Section */}
-        <div className="card mb-6 bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200">
-          <div className="flex items-start gap-4">
-            <div className="flex-shrink-0">
-              <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-white" />
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Left Column: Selection Panel */}
+          <div className="lg:col-span-2">
+            {/* AI Guide Section */}
+            <div className="card mb-6 bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
+                    <Sparkles className="w-6 h-6 text-white" />
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-xl font-bold text-gray-900 mb-2">
+                    Use AI to Build Your Strategy
+                  </h2>
+                  <p className="text-gray-700 mb-4">
+                    Download our comprehensive guide to generate strategic pyramids using ChatGPT, Claude, or any AI tool.
+                  </p>
+                  <Button
+                    onClick={handleDownloadAIGuide}
+                    disabled={isExporting}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download AI Strategy Guide
+                  </Button>
+                </div>
               </div>
             </div>
-            <div className="flex-1">
-              <h2 className="text-xl font-bold text-gray-900 mb-2">
-                Use AI to Build Your Strategy
-              </h2>
-              <p className="text-gray-700 mb-4">
-                Download our comprehensive guide to generate strategic pyramids using ChatGPT, Claude, or any AI tool.
-                Includes complete JSON schema, tier-by-tier prompt templates, and import instructions.
-              </p>
-              <Button
-                onClick={handleDownloadAIGuide}
-                disabled={isExporting}
-                className="bg-purple-600 hover:bg-purple-700"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download AI Strategy Guide
-              </Button>
-            </div>
+
+            {/* Selection Panel */}
+            <ExportSelectionPanel
+              selection={selection}
+              onSelectionChange={setSelection}
+              pyramid={pyramid}
+              isLoading={isExporting}
+            />
           </div>
-        </div>
 
-        {/* Audience Selection */}
-        <div className="card mb-6">
-          <h2 className="text-xl font-bold mb-4">Select Audience</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[
-              { value: "executive", label: "Executive", desc: "High-level summary", tooltip: EXPORTS_TOOLTIPS.AUDIENCE_EXECUTIVE },
-              { value: "leadership", label: "Leadership", desc: "Detailed strategy", tooltip: EXPORTS_TOOLTIPS.AUDIENCE_LEADERSHIP },
-              { value: "detailed", label: "Detailed", desc: "Complete documentation", tooltip: EXPORTS_TOOLTIPS.AUDIENCE_DETAILED },
-              { value: "team", label: "Team Cascade", desc: "Team-focused view", tooltip: EXPORTS_TOOLTIPS.AUDIENCE_TEAM },
-            ].map((option) => (
-              <button
-                key={option.value}
-                onClick={() => setAudience(option.value as AudienceType)}
-                className={`p-4 rounded-lg border-2 text-left transition-all ${
-                  audience === option.value
-                    ? "border-primary bg-primary/5"
-                    : "border-gray-200 hover:border-gray-300"
-                }`}
-              >
-                <div className="font-semibold text-gray-800 inline-flex items-center">
-                  {option.label}
-                  <Tooltip tooltipContent={option.tooltip} placement="top" />
+          {/* Right Column: Export Formats & Preview */}
+          <div className="space-y-6">
+            {/* Preview Card */}
+            <div className="card bg-gray-50">
+              <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                <Eye className="w-4 h-4" />
+                Export Preview
+                {isLoadingPreview && (
+                  <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                )}
+              </h3>
+              {previewCounts ? (
+                <div className="space-y-2">
+                  <div className="text-2xl font-bold text-primary">
+                    {previewCounts.total} elements
+                  </div>
+                  <div className="text-sm text-gray-600 space-y-1">
+                    {enabledTiers.map((tier) => (
+                      <div key={tier} className="flex justify-between">
+                        <span className="capitalize">{tier.replace("_", " ")}</span>
+                        <span className="font-medium">
+                          {previewCounts[tier] || 0}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="text-sm text-gray-600">{option.desc}</div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Export Formats */}
-        <div className="card">
-          <h2 className="text-xl font-bold mb-4">Choose Format</h2>
-          <div className="grid md:grid-cols-2 gap-4">
-            {/* Word */}
-            <div className="p-6 border-2 border-gray-200 rounded-lg hover:border-primary transition-all">
-              <div className="flex items-center gap-3 mb-3">
-                <FileText className="w-8 h-8 text-blue-600" />
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg inline-flex items-center">
-                    Word Document
-                    <Tooltip tooltipContent={EXPORTS_TOOLTIPS.FORMAT_WORD} placement="right" />
-                  </h3>
-                  <p className="text-sm text-gray-600">Professional DOCX format</p>
+              ) : (
+                <div className="text-sm text-gray-500">
+                  Select elements to see preview
                 </div>
-              </div>
-              <p className="text-sm text-gray-600 mb-4">
-                Formatted document with cover page, tables, and full content. Perfect for
-                sharing and printing.
-              </p>
-              <Button
-                onClick={() => handleExport("word")}
-                disabled={isExporting}
-                className="w-full"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Export Word
-              </Button>
+              )}
             </div>
 
-            {/* PowerPoint */}
-            <div className="p-6 border-2 border-gray-200 rounded-lg hover:border-primary transition-all">
-              <div className="flex items-center gap-3 mb-3">
-                <Presentation className="w-8 h-8 text-orange-600" />
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg inline-flex items-center">
-                    PowerPoint
-                    <Tooltip tooltipContent={EXPORTS_TOOLTIPS.FORMAT_POWERPOINT} placement="right" />
-                  </h3>
-                  <p className="text-sm text-gray-600">Presentation deck (PPTX)</p>
+            {/* Export Formats */}
+            <div className="card">
+              <h3 className="font-semibold text-gray-800 mb-4">Choose Format</h3>
+              <div className="space-y-3">
+                {/* Word */}
+                <div className="p-4 border-2 border-gray-200 rounded-lg hover:border-primary transition-all">
+                  <div className="flex items-center gap-3 mb-2">
+                    <FileText className="w-6 h-6 text-blue-600" />
+                    <div className="flex-1">
+                      <h4 className="font-semibold inline-flex items-center">
+                        Word Document
+                        <Tooltip tooltipContent={EXPORTS_TOOLTIPS.FORMAT_WORD} placement="right" />
+                      </h4>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">
+                    Professional DOCX format with cover page and tables.
+                  </p>
+                  <Button
+                    onClick={() => handleExport("word")}
+                    disabled={isExporting || enabledTiers.length === 0}
+                    className="w-full"
+                    size="sm"
+                  >
+                    {isExporting ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Download className="w-4 h-4 mr-2" />
+                    )}
+                    Export Word
+                  </Button>
                 </div>
-              </div>
-              <p className="text-sm text-gray-600 mb-4">
-                Slide deck with professional layout, charts, and visualizations. Ready
-                for presentations.
-              </p>
-              <Button
-                onClick={() => handleExport("powerpoint")}
-                disabled={isExporting}
-                className="w-full"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Export PowerPoint
-              </Button>
-            </div>
 
-            {/* Markdown */}
-            <div className="p-6 border-2 border-gray-200 rounded-lg hover:border-primary transition-all">
-              <div className="flex items-center gap-3 mb-3">
-                <FileCode className="w-8 h-8 text-green-600" />
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg inline-flex items-center">
-                    Markdown
-                    <Tooltip tooltipContent={EXPORTS_TOOLTIPS.FORMAT_MARKDOWN} placement="right" />
-                  </h3>
-                  <p className="text-sm text-gray-600">Clean documentation (.md)</p>
+                {/* PowerPoint */}
+                <div className="p-4 border-2 border-gray-200 rounded-lg hover:border-primary transition-all">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Presentation className="w-6 h-6 text-orange-600" />
+                    <div className="flex-1">
+                      <h4 className="font-semibold inline-flex items-center">
+                        PowerPoint
+                        <Tooltip tooltipContent={EXPORTS_TOOLTIPS.FORMAT_POWERPOINT} placement="right" />
+                      </h4>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">
+                    Presentation deck ready for meetings.
+                  </p>
+                  <Button
+                    onClick={() => handleExport("powerpoint")}
+                    disabled={isExporting || enabledTiers.length === 0}
+                    className="w-full"
+                    size="sm"
+                  >
+                    {isExporting ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Download className="w-4 h-4 mr-2" />
+                    )}
+                    Export PowerPoint
+                  </Button>
                 </div>
-              </div>
-              <p className="text-sm text-gray-600 mb-4">
-                Clean, readable documentation for GitHub, wikis, or documentation sites.
-              </p>
-              <Button
-                onClick={() => handleExport("markdown")}
-                disabled={isExporting}
-                className="w-full"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Export Markdown
-              </Button>
-            </div>
 
-            {/* JSON */}
-            <div className="p-6 border-2 border-gray-200 rounded-lg hover:border-primary transition-all">
-              <div className="flex items-center gap-3 mb-3">
-                <FileCode className="w-8 h-8 text-purple-600" />
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg inline-flex items-center">
-                    JSON
-                    <Tooltip tooltipContent={EXPORTS_TOOLTIPS.FORMAT_JSON} placement="right" />
-                  </h3>
-                  <p className="text-sm text-gray-600">Machine-readable format</p>
+                {/* Markdown */}
+                <div className="p-4 border-2 border-gray-200 rounded-lg hover:border-primary transition-all">
+                  <div className="flex items-center gap-3 mb-2">
+                    <FileCode className="w-6 h-6 text-green-600" />
+                    <div className="flex-1">
+                      <h4 className="font-semibold inline-flex items-center">
+                        Markdown
+                        <Tooltip tooltipContent={EXPORTS_TOOLTIPS.FORMAT_MARKDOWN} placement="right" />
+                      </h4>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">
+                    Clean documentation for GitHub or wikis.
+                  </p>
+                  <Button
+                    onClick={() => handleExport("markdown")}
+                    disabled={isExporting || enabledTiers.length === 0}
+                    className="w-full"
+                    size="sm"
+                  >
+                    {isExporting ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Download className="w-4 h-4 mr-2" />
+                    )}
+                    Export Markdown
+                  </Button>
+                </div>
+
+                {/* JSON */}
+                <div className="p-4 border-2 border-gray-200 rounded-lg hover:border-primary transition-all">
+                  <div className="flex items-center gap-3 mb-2">
+                    <FileCode className="w-6 h-6 text-purple-600" />
+                    <div className="flex-1">
+                      <h4 className="font-semibold inline-flex items-center">
+                        JSON
+                        <Tooltip tooltipContent={EXPORTS_TOOLTIPS.FORMAT_JSON} placement="right" />
+                      </h4>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">
+                    Complete data backup for re-importing.
+                  </p>
+                  <Button
+                    onClick={() => handleExport("json")}
+                    disabled={isExporting}
+                    className="w-full"
+                    size="sm"
+                  >
+                    {isExporting ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Download className="w-4 h-4 mr-2" />
+                    )}
+                    Export JSON
+                  </Button>
                 </div>
               </div>
-              <p className="text-sm text-gray-600 mb-4">
-                Complete data backup for archiving or loading back into the application.
-              </p>
-              <Button
-                onClick={() => handleExport("json")}
-                disabled={isExporting}
-                className="w-full"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Export JSON
-              </Button>
+
+              {enabledTiers.length === 0 && (
+                <p className="mt-4 text-sm text-amber-600 bg-amber-50 p-3 rounded-lg">
+                  Please select at least one tier to export.
+                </p>
+              )}
             </div>
           </div>
         </div>
