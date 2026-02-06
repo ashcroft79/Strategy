@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import StrategyOnePage from "@/components/visualizations/StrategyOnePage";
 import StrategyOnePageLandscape from "@/components/visualizations/StrategyOnePageLandscape";
 import StrategyOnePageCompact from "@/components/visualizations/StrategyOnePageCompact";
+import { BlueprintFilterPanel } from "@/components/visualizations/BlueprintFilterPanel";
 import { ArrowLeft, Printer, Download, FileText, Columns3, Columns, LayoutGrid, Settings, ChevronDown, FileOutput } from "lucide-react";
 import "../../../styles/strategy-one-page.css";
 import "../../../styles/strategy-landscape.css";
@@ -16,13 +17,11 @@ import {
   DEFAULT_EXPORT_SELECTION,
   cloneSelection,
   getEnabledHorizons,
-  getEnabledTiers,
   EXECUTIVE_PRESET,
   LEADERSHIP_PRESET,
   DETAILED_PRESET,
   TEAM_PRESET,
   AudiencePreset,
-  PRESET_DESCRIPTIONS,
 } from "@/types/export-selection";
 
 type LayoutType = "portrait" | "landscape" | "compact";
@@ -108,55 +107,6 @@ function OnePageVisualizationContent() {
     window.print();
   };
 
-  // Quick presets
-  const applyPreset = (presetName: AudiencePreset) => {
-    setSelectedPreset(presetName);
-    if (presetName === "executive") setSelection(cloneSelection(EXECUTIVE_PRESET));
-    else if (presetName === "leadership") setSelection(cloneSelection(LEADERSHIP_PRESET));
-    else if (presetName === "detailed") setSelection(cloneSelection(DETAILED_PRESET));
-    else if (presetName === "team") setSelection(cloneSelection(TEAM_PRESET));
-    else setSelection(cloneSelection(DEFAULT_EXPORT_SELECTION));
-  };
-
-  // Get enabled tiers for display
-  const enabledTiers = getEnabledTiers(selection);
-
-  // Toggle tier in selection
-  const toggleTier = (tier: keyof TierSelection) => {
-    const updated = cloneSelection(selection);
-    switch (tier) {
-      case "vision":
-        updated.foundation.enabled = !updated.foundation.enabled;
-        break;
-      case "values":
-        updated.values.enabled = !updated.values.enabled;
-        updated.behaviours.enabled = !updated.behaviours.enabled;
-        break;
-      case "drivers":
-        updated.drivers.enabled = !updated.drivers.enabled;
-        updated.intents.enabled = !updated.intents.enabled;
-        updated.commitments.enabled = !updated.commitments.enabled;
-        break;
-      case "enablers":
-        updated.enablers.enabled = !updated.enablers.enabled;
-        break;
-      case "teamObjectives":
-        updated.teamObjectives.enabled = !updated.teamObjectives.enabled;
-        break;
-      case "individualObjectives":
-        updated.individualObjectives.enabled = !updated.individualObjectives.enabled;
-        break;
-    }
-    setSelection(updated);
-  };
-
-  // Toggle horizon
-  const toggleHorizon = (horizon: "H1" | "H2" | "H3") => {
-    const updated = cloneSelection(selection);
-    updated.commitments.horizons[horizon] = !updated.commitments.horizons[horizon];
-    setSelection(updated);
-  };
-
   const enabledHorizons = getEnabledHorizons(selection);
 
   return (
@@ -229,158 +179,15 @@ function OnePageVisualizationContent() {
                   <ChevronDown className={`w-4 h-4 transition-transform ${showTierSelector ? 'rotate-180' : ''}`} />
                 </button>
 
-                {/* Tier Selector Dropdown - Matching Exports Page Format */}
+                {/* Tier Selector Dropdown - Using BlueprintFilterPanel for granular control */}
                 {showTierSelector && (
-                  <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl p-4 w-80 z-50">
-                    {/* Audience Preset Section */}
-                    <div className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Audience Preset</div>
-                    <div className="grid grid-cols-2 gap-2 mb-3">
-                      {(["executive", "leadership", "detailed", "team"] as AudiencePreset[]).map((preset) => (
-                        <button
-                          key={preset}
-                          onClick={() => applyPreset(preset)}
-                          className={`p-2 rounded-lg border-2 text-left transition-all ${
-                            selectedPreset === preset
-                              ? "border-blue-500 bg-blue-50"
-                              : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                          }`}
-                        >
-                          <div className="font-semibold text-gray-800 capitalize text-sm">{preset}</div>
-                          <div className="text-xs text-gray-500 mt-0.5">
-                            {preset === "executive" && "High-level"}
-                            {preset === "leadership" && "Comprehensive"}
-                            {preset === "detailed" && "Full detail"}
-                            {preset === "team" && "Team focus"}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Preset Description */}
-                    <div className="p-2 bg-gray-50 rounded-lg text-xs text-gray-600 mb-3">
-                      <span className="font-medium text-gray-700 capitalize">{selectedPreset}:</span>{" "}
-                      {PRESET_DESCRIPTIONS[selectedPreset]?.slice(0, 80)}...
-                    </div>
-
-                    {/* Enabled Tiers Pills */}
-                    <div className="flex flex-wrap gap-1.5 mb-3">
-                      {enabledTiers.map((tier) => (
-                        <span
-                          key={tier}
-                          className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full"
-                        >
-                          {tier.replace(/([A-Z])/g, ' $1').trim()}
-                        </span>
-                      ))}
-                      {enabledTiers.length === 0 && (
-                        <span className="text-gray-400 text-xs">No tiers selected</span>
-                      )}
-                    </div>
-
-                    {/* Tiers Section */}
-                    <div className="border-t border-gray-200 pt-3 mb-2">
-                      <div className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Customize Tiers</div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1.5 rounded transition-colors">
-                        <input
-                          type="checkbox"
-                          checked={selectedTiers.vision}
-                          onChange={() => toggleTier("vision")}
-                          className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                        />
-                        <span className="text-sm text-gray-700">Vision/Mission</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1.5 rounded transition-colors">
-                        <input
-                          type="checkbox"
-                          checked={selectedTiers.values}
-                          onChange={() => toggleTier("values")}
-                          className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                        />
-                        <span className="text-sm text-gray-700">Values & Behaviours</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1.5 rounded transition-colors">
-                        <input
-                          type="checkbox"
-                          checked={selectedTiers.drivers}
-                          onChange={() => toggleTier("drivers")}
-                          className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                        />
-                        <span className="text-sm text-gray-700">Drivers, Intents & Commitments</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1.5 rounded transition-colors">
-                        <input
-                          type="checkbox"
-                          checked={selectedTiers.enablers}
-                          onChange={() => toggleTier("enablers")}
-                          className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                        />
-                        <span className="text-sm text-gray-700">Enablers</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1.5 rounded transition-colors">
-                        <input
-                          type="checkbox"
-                          checked={selectedTiers.teamObjectives}
-                          onChange={() => toggleTier("teamObjectives")}
-                          className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                        />
-                        <span className="text-sm text-gray-700">Team Objectives</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1.5 rounded transition-colors">
-                        <input
-                          type="checkbox"
-                          checked={selectedTiers.individualObjectives}
-                          onChange={() => toggleTier("individualObjectives")}
-                          className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                        />
-                        <span className="text-sm text-gray-700">Individual Objectives</span>
-                      </label>
-                    </div>
-
-                    {/* Horizon Filter */}
-                    {selectedTiers.drivers && (
-                      <>
-                        <div className="border-t border-gray-200 pt-3 mt-3 mb-2">
-                          <div className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Horizons</div>
-                        </div>
-                        <div className="flex gap-2">
-                          <label className={`flex items-center gap-1.5 cursor-pointer px-3 py-1.5 rounded-lg border-2 transition-all ${
-                            selectedTiers.horizons.H1 ? "border-green-500 bg-green-50" : "border-gray-200 hover:border-gray-300"
-                          }`}>
-                            <input
-                              type="checkbox"
-                              checked={selectedTiers.horizons.H1}
-                              onChange={() => toggleHorizon("H1")}
-                              className="w-3.5 h-3.5 text-green-600 rounded border-gray-300 focus:ring-green-500"
-                            />
-                            <span className="text-xs text-green-700 font-medium">H1</span>
-                          </label>
-                          <label className={`flex items-center gap-1.5 cursor-pointer px-3 py-1.5 rounded-lg border-2 transition-all ${
-                            selectedTiers.horizons.H2 ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"
-                          }`}>
-                            <input
-                              type="checkbox"
-                              checked={selectedTiers.horizons.H2}
-                              onChange={() => toggleHorizon("H2")}
-                              className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                            />
-                            <span className="text-xs text-blue-700 font-medium">H2</span>
-                          </label>
-                          <label className={`flex items-center gap-1.5 cursor-pointer px-3 py-1.5 rounded-lg border-2 transition-all ${
-                            selectedTiers.horizons.H3 ? "border-orange-500 bg-orange-50" : "border-gray-200 hover:border-gray-300"
-                          }`}>
-                            <input
-                              type="checkbox"
-                              checked={selectedTiers.horizons.H3}
-                              onChange={() => toggleHorizon("H3")}
-                              className="w-3.5 h-3.5 text-orange-600 rounded border-gray-300 focus:ring-orange-500"
-                            />
-                            <span className="text-xs text-orange-700 font-medium">H3</span>
-                          </label>
-                        </div>
-                      </>
-                    )}
+                  <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl p-4 z-50">
+                    <BlueprintFilterPanel
+                      selection={selection}
+                      onChange={setSelection}
+                      selectedPreset={selectedPreset}
+                      onPresetChange={setSelectedPreset}
+                    />
                   </div>
                 )}
               </div>
