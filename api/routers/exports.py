@@ -11,6 +11,7 @@ from src.pyramid_builder.exports.word_exporter import WordExporter
 from src.pyramid_builder.exports.powerpoint_exporter import PowerPointExporter
 from src.pyramid_builder.exports.markdown_exporter import MarkdownExporter
 from src.pyramid_builder.exports.json_exporter import JSONExporter
+from src.pyramid_builder.exports.presentation_exporter import PresentationExporter
 from src.pyramid_builder.exports.ai_guide_generator import AIGuideGenerator
 from src.pyramid_builder.exports.element_selection import ExportElementSelection
 from src.pyramid_builder.exports.presets import get_preset, list_presets
@@ -306,6 +307,39 @@ async def export_json(session_id: str, request: ExportRequest):
             content=json_content,
             media_type="application/json",
             headers={"Content-Disposition": f"attachment; filename={filename}"},
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
+
+
+@router.post("/{session_id}/presentation")
+async def export_presentation(session_id: str):
+    """Export pyramid to interactive HTML presentation.
+
+    Generates a self-contained HTML file with McKinsey/BCG-style
+    professional design, keyboard/swipe navigation, and drill-down panels.
+    """
+    if session_id not in active_pyramids:
+        raise HTTPException(status_code=404, detail="Pyramid not found")
+
+    manager = active_pyramids[session_id]
+    if not manager.pyramid:
+        raise HTTPException(status_code=404, detail="No pyramid initialized")
+
+    try:
+        exporter = PresentationExporter(manager.pyramid)
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".html", mode='w', encoding='utf-8') as tmp:
+            tmp_path = tmp.name
+
+        exporter.export(tmp_path)
+
+        filename = f"{manager.pyramid.metadata.project_name}_presentation.html"
+        return FileResponse(
+            path=tmp_path,
+            media_type="text/html",
+            filename=filename,
         )
 
     except Exception as e:

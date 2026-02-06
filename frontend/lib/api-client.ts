@@ -556,6 +556,13 @@ export const exportsApi = {
     return data;
   },
 
+  async exportPresentation(sessionId: string): Promise<Blob> {
+    const { data } = await api.post(`/api/exports/${sessionId}/presentation`, {}, {
+      responseType: "blob",
+    });
+    return data;
+  },
+
   async downloadAIGuide(): Promise<Blob> {
     const { data } = await api.get(`/api/exports/ai-guide`, {
       responseType: "blob",
