@@ -1,23 +1,19 @@
 import { StrategyPyramid, Value, Behaviour, StrategicDriver, StrategicIntent, IconicCommitment, Enabler, TeamObjective, IndividualObjective } from "@/types/pyramid";
-
-interface TierSelection {
-  vision: boolean;
-  values: boolean;
-  drivers: boolean;
-  enablers: boolean;
-  teamObjectives: boolean;
-  individualObjectives: boolean;
-}
+import { ExportElementSelection } from "@/types/export-selection";
 
 interface StrategyOnePageProps {
   pyramid: StrategyPyramid;
-  selectedTiers: TierSelection;
+  selection: ExportElementSelection;
 }
 
-export default function StrategyOnePage({ pyramid, selectedTiers }: StrategyOnePageProps) {
+export default function StrategyOnePage({ pyramid, selection }: StrategyOnePageProps) {
   // Helper functions
   const getVisionStatements = () => {
-    return pyramid.vision?.statements || [];
+    const statements = pyramid.vision?.statements || [];
+    // Filter by selected statement types
+    return statements.filter(stmt =>
+      selection.foundation.statementTypes[stmt.statement_type as keyof typeof selection.foundation.statementTypes]
+    );
   };
 
   const getBehavioursForValue = (valueId: string): Behaviour[] => {
@@ -29,7 +25,16 @@ export default function StrategyOnePage({ pyramid, selectedTiers }: StrategyOneP
   };
 
   const getCommitmentsByDriver = (driverId: string): IconicCommitment[] => {
-    const commitments = pyramid.iconic_commitments.filter(c => c.primary_driver_id === driverId);
+    const commitments = pyramid.iconic_commitments.filter(c => {
+      // Filter by driver
+      if (c.primary_driver_id !== driverId) return false;
+      // Filter by horizon selection
+      const horizons = selection.commitments.horizons;
+      if (c.horizon === "H1" && !horizons.H1) return false;
+      if (c.horizon === "H2" && !horizons.H2) return false;
+      if (c.horizon === "H3" && !horizons.H3) return false;
+      return true;
+    });
 
     // Sort by horizon first (H1, H2, H3), then by target date
     return commitments.sort((a, b) => {
@@ -116,7 +121,7 @@ export default function StrategyOnePage({ pyramid, selectedTiers }: StrategyOneP
       </div>
 
       {/* Vision/Mission Banner */}
-      {selectedTiers.vision && getVisionStatements().length > 0 && (
+      {selection.foundation.enabled && getVisionStatements().length > 0 && (
         <div className="vision-banner bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg p-4 mb-4">
           {getVisionStatements().map((statement) => (
             <div key={statement.id} className="mb-3 last:mb-0">
@@ -133,11 +138,11 @@ export default function StrategyOnePage({ pyramid, selectedTiers }: StrategyOneP
         </div>
       )}
 
-      {/* Values & Behaviours Section */}
-      {selectedTiers.values && pyramid.values.length > 0 && (
+      {/* Values Section */}
+      {selection.values.enabled && pyramid.values.length > 0 && (
         <div className="values-section mb-5">
           <div className="section-header bg-blue-600 text-white px-3 py-2 rounded-lg font-bold text-sm uppercase tracking-wide mb-3">
-            Values & Behaviours
+            Values{selection.behaviours.enabled ? " & Behaviours" : ""}
           </div>
           <div className="grid grid-cols-2 gap-3">
             {pyramid.values.map((value) => (
@@ -145,14 +150,14 @@ export default function StrategyOnePage({ pyramid, selectedTiers }: StrategyOneP
                 <h3 className="font-bold text-sm text-blue-900 mb-1">
                   {value.name}
                 </h3>
-                {value.description && (
+                {selection.values.includeDescriptions && value.description && (
                   <p className="text-xs text-gray-700 mb-2 leading-relaxed">
                     {value.description}
                   </p>
                 )}
 
-                {/* Associated Behaviours */}
-                {getBehavioursForValue(value.id).length > 0 && (
+                {/* Associated Behaviours - only if behaviours tier is enabled */}
+                {selection.behaviours.enabled && getBehavioursForValue(value.id).length > 0 && (
                   <div className="mt-2 pt-2 border-t border-blue-200">
                     <div className="text-xs font-semibold text-blue-800 mb-1.5">Behaviours:</div>
                     <ul className="space-y-1">
@@ -171,7 +176,7 @@ export default function StrategyOnePage({ pyramid, selectedTiers }: StrategyOneP
       )}
 
       {/* Strategic Drivers Section with Nested Intents and Commitments */}
-      {selectedTiers.drivers && pyramid.strategic_drivers.length > 0 && (
+      {selection.drivers.enabled && pyramid.strategic_drivers.length > 0 && (
         <div className="drivers-section mb-5">
           <div className="section-header bg-purple-600 text-white px-3 py-2 rounded-lg font-bold text-sm uppercase tracking-wide mb-3">
             Strategic Drivers & Execution
@@ -187,12 +192,14 @@ export default function StrategyOnePage({ pyramid, selectedTiers }: StrategyOneP
                 <h3 className="font-bold text-base text-purple-900 mb-2">
                   {driver.name}
                 </h3>
-                <p className="text-sm text-gray-700 mb-3 leading-relaxed">
-                  {driver.description}
-                </p>
+                {selection.drivers.includeDescriptions && driver.description && (
+                  <p className="text-sm text-gray-700 mb-3 leading-relaxed">
+                    {driver.description}
+                  </p>
+                )}
 
                 {/* Strategic Intents */}
-                {intents.length > 0 && (
+                {selection.intents.enabled && intents.length > 0 && (
                   <div className="intents-section mb-4">
                     <h4 className="text-xs font-bold text-purple-800 uppercase tracking-wide mb-2">
                       Strategic Intents
@@ -210,7 +217,7 @@ export default function StrategyOnePage({ pyramid, selectedTiers }: StrategyOneP
                 )}
 
                 {/* Commitments grouped by horizon */}
-                {commitments.length > 0 && (
+                {selection.commitments.enabled && commitments.length > 0 && (
                   <div className="commitments-section">
                     <h4 className="text-xs font-bold text-purple-800 uppercase tracking-wide mb-2">
                       Iconic Commitments
@@ -229,19 +236,19 @@ export default function StrategyOnePage({ pyramid, selectedTiers }: StrategyOneP
                                 {commitment.horizon}
                               </span>
                             </div>
-                            {commitment.description && (
+                            {selection.commitments.includeDescriptions && commitment.description && (
                               <p className="text-xs text-gray-700 mb-1.5 leading-relaxed">
                                 {commitment.description}
                               </p>
                             )}
                             <div className="flex items-center gap-3 text-xs text-gray-600">
-                              {commitment.target_date && (
+                              {selection.commitments.includeTargetDates && commitment.target_date && (
                                 <span className="flex items-center gap-1">
                                   <span className="font-medium">Target:</span>
                                   {formatDate(commitment.target_date)}
                                 </span>
                               )}
-                              {commitment.owner && (
+                              {selection.commitments.includeOwners && commitment.owner && (
                                 <span className="flex items-center gap-1">
                                   <span className="font-medium">Owner:</span>
                                   {commitment.owner}
@@ -250,7 +257,7 @@ export default function StrategyOnePage({ pyramid, selectedTiers }: StrategyOneP
                             </div>
 
                             {/* Nested Team Objectives */}
-                            {selectedTiers.teamObjectives && teamObjectives.length > 0 && (
+                            {selection.teamObjectives.enabled && teamObjectives.length > 0 && (
                               <div className="mt-2 pt-2 border-t border-indigo-100">
                                 <div className="text-xs font-semibold text-indigo-800 mb-1.5">Team Objectives:</div>
                                 <div className="space-y-1.5 ml-3">
@@ -276,7 +283,7 @@ export default function StrategyOnePage({ pyramid, selectedTiers }: StrategyOneP
                                         )}
 
                                         {/* Nested Individual Objectives */}
-                                        {selectedTiers.individualObjectives && individualObjectives.length > 0 && (
+                                        {selection.individualObjectives.enabled && individualObjectives.length > 0 && (
                                           <div className="mt-1.5 pt-1.5 border-t border-pink-100">
                                             <div className="text-[10px] font-semibold text-pink-800 mb-1">Individual Objectives:</div>
                                             <div className="space-y-1 ml-2">
@@ -324,7 +331,7 @@ export default function StrategyOnePage({ pyramid, selectedTiers }: StrategyOneP
       )}
 
       {/* Enablers Section */}
-      {selectedTiers.enablers && pyramid.enablers.length > 0 && (
+      {selection.enablers.enabled && pyramid.enablers.length > 0 && (
         <div className="enablers-section mb-5">
           <div className="section-header bg-teal-600 text-white px-3 py-2 rounded-lg font-bold text-sm uppercase tracking-wide mb-3">
             Enablers

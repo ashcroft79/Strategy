@@ -6,10 +6,24 @@ This model is shared between all export formats (Word, PowerPoint, Markdown, JSO
 """
 
 from typing import Optional, List, Literal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
-class FoundationSelection(BaseModel):
+def to_camel(string: str) -> str:
+    """Convert snake_case to camelCase."""
+    components = string.split('_')
+    return components[0] + ''.join(x.title() for x in components[1:])
+
+
+class CamelCaseModel(BaseModel):
+    """Base model that accepts both camelCase and snake_case field names."""
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel,
+    )
+
+
+class FoundationSelection(CamelCaseModel):
     """Selection options for Tier 1: Foundation (Vision/Mission/Purpose)."""
 
     enabled: bool = Field(
@@ -29,7 +43,7 @@ class FoundationSelection(BaseModel):
     )
 
 
-class ValuesSelection(BaseModel):
+class ValuesSelection(CamelCaseModel):
     """Selection options for Tier 2: Values."""
 
     enabled: bool = Field(
@@ -46,7 +60,7 @@ class ValuesSelection(BaseModel):
     )
 
 
-class BehavioursSelection(BaseModel):
+class BehavioursSelection(CamelCaseModel):
     """Selection options for Tier 3: Behaviours."""
 
     enabled: bool = Field(
@@ -63,7 +77,7 @@ class BehavioursSelection(BaseModel):
     )
 
 
-class DriversSelection(BaseModel):
+class DriversSelection(CamelCaseModel):
     """Selection options for Tier 5: Strategic Drivers."""
 
     enabled: bool = Field(
@@ -84,7 +98,7 @@ class DriversSelection(BaseModel):
     )
 
 
-class IntentsSelection(BaseModel):
+class IntentsSelection(CamelCaseModel):
     """Selection options for Tier 4: Strategic Intents."""
 
     enabled: bool = Field(
@@ -105,7 +119,7 @@ class IntentsSelection(BaseModel):
     )
 
 
-class EnablersSelection(BaseModel):
+class EnablersSelection(CamelCaseModel):
     """Selection options for Tier 6: Enablers."""
 
     enabled: bool = Field(
@@ -130,7 +144,7 @@ class EnablersSelection(BaseModel):
     )
 
 
-class HorizonSelection(BaseModel):
+class HorizonSelection(CamelCaseModel):
     """Selection options for commitment horizons."""
 
     H1: bool = Field(default=True, description="Include H1 (0-12 months)")
@@ -138,7 +152,7 @@ class HorizonSelection(BaseModel):
     H3: bool = Field(default=True, description="Include H3 (24-36 months)")
 
 
-class CommitmentsSelection(BaseModel):
+class CommitmentsSelection(CamelCaseModel):
     """Selection options for Tier 7: Iconic Commitments."""
 
     enabled: bool = Field(
@@ -179,7 +193,7 @@ class CommitmentsSelection(BaseModel):
     )
 
 
-class TeamObjectivesSelection(BaseModel):
+class TeamObjectivesSelection(CamelCaseModel):
     """Selection options for Tier 8: Team Objectives."""
 
     enabled: bool = Field(
@@ -212,7 +226,7 @@ class TeamObjectivesSelection(BaseModel):
     )
 
 
-class IndividualObjectivesSelection(BaseModel):
+class IndividualObjectivesSelection(CamelCaseModel):
     """Selection options for Tier 9: Individual Objectives."""
 
     enabled: bool = Field(
@@ -237,7 +251,7 @@ class IndividualObjectivesSelection(BaseModel):
     )
 
 
-class SupplementarySelection(BaseModel):
+class SupplementarySelection(CamelCaseModel):
     """Selection options for supplementary elements."""
 
     distribution: bool = Field(
@@ -274,7 +288,7 @@ class SupplementarySelection(BaseModel):
     )
 
 
-class ExportElementSelection(BaseModel):
+class ExportElementSelection(CamelCaseModel):
     """
     Complete element selection model for exports.
 
