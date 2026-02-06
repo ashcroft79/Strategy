@@ -27,6 +27,7 @@ import {
   BarChart3,
   Eye,
   Loader2,
+  Monitor,
 } from "lucide-react";
 
 export default function ExportsPage() {
@@ -81,6 +82,20 @@ export default function ExportsPage() {
     const timer = setTimeout(fetchPreview, 300);
     return () => clearTimeout(timer);
   }, [sessionId, pyramid, selection]);
+
+  const handleExportPresentation = async () => {
+    if (!pyramid) return;
+
+    try {
+      setIsExporting(true);
+      const blob = await exportsApi.exportPresentation(sessionId);
+      downloadBlob(blob, `${pyramid.metadata.project_name}_presentation.html`);
+    } catch (err) {
+      console.error("Presentation export failed:", err);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const handleExport = async (format: "word" | "powerpoint" | "markdown" | "json") => {
     if (!pyramid) return;
@@ -193,6 +208,39 @@ export default function ExportsPage() {
                   >
                     <Download className="w-4 h-4 mr-2" />
                     Download AI Strategy Guide
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Presentation Mode */}
+            <div className="card mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="w-12 h-12 bg-blue-700 rounded-full flex items-center justify-center">
+                    <Monitor className="w-6 h-6 text-white" />
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-xl font-bold text-gray-900 mb-2">
+                    Interactive Presentation Mode
+                  </h2>
+                  <p className="text-gray-700 mb-4">
+                    Generate a professional, consultant-quality HTML presentation with
+                    keyboard/swipe navigation, drill-down panels, and interactive
+                    diagrams. Perfect for boardroom presentations or self-guided exploration.
+                  </p>
+                  <Button
+                    onClick={handleExportPresentation}
+                    disabled={isExporting}
+                    className="bg-blue-700 hover:bg-blue-800"
+                  >
+                    {isExporting ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Download className="w-4 h-4 mr-2" />
+                    )}
+                    Download Presentation
                   </Button>
                 </div>
               </div>
