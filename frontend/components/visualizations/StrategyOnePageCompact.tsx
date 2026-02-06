@@ -1,22 +1,18 @@
 import { StrategyPyramid, Behaviour, StrategicDriver, StrategicIntent, IconicCommitment, TeamObjective, IndividualObjective } from "@/types/pyramid";
-
-interface TierSelection {
-  vision: boolean;
-  values: boolean;
-  drivers: boolean;
-  enablers: boolean;
-  teamObjectives: boolean;
-  individualObjectives: boolean;
-}
+import { ExportElementSelection } from "@/types/export-selection";
 
 interface StrategyOnePageCompactProps {
   pyramid: StrategyPyramid;
-  selectedTiers: TierSelection;
+  selection: ExportElementSelection;
 }
 
-export default function StrategyOnePageCompact({ pyramid, selectedTiers }: StrategyOnePageCompactProps) {
+export default function StrategyOnePageCompact({ pyramid, selection }: StrategyOnePageCompactProps) {
   const getVisionStatements = () => {
-    return pyramid.vision?.statements || [];
+    const statements = pyramid.vision?.statements || [];
+    // Filter by selected statement types
+    return statements.filter(stmt =>
+      selection.foundation.statementTypes[stmt.statement_type as keyof typeof selection.foundation.statementTypes]
+    );
   };
 
   const getBehavioursForValue = (valueId: string): Behaviour[] => {
@@ -36,7 +32,16 @@ export default function StrategyOnePageCompact({ pyramid, selectedTiers }: Strat
   };
 
   const getCommitmentsByDriver = (driverId: string): IconicCommitment[] => {
-    const commitments = pyramid.iconic_commitments.filter(c => c.primary_driver_id === driverId);
+    const commitments = pyramid.iconic_commitments.filter(c => {
+      // Filter by driver
+      if (c.primary_driver_id !== driverId) return false;
+      // Filter by horizon selection
+      const horizons = selection.commitments.horizons;
+      if (c.horizon === "H1" && !horizons.H1) return false;
+      if (c.horizon === "H2" && !horizons.H2) return false;
+      if (c.horizon === "H3" && !horizons.H3) return false;
+      return true;
+    });
 
     return commitments.sort((a, b) => {
       const horizonPriority: { [key: string]: number } = { H1: 1, H2: 2, H3: 3 };
@@ -89,7 +94,7 @@ export default function StrategyOnePageCompact({ pyramid, selectedTiers }: Strat
       </div>
 
       {/* Vision - Inline */}
-      {selectedTiers.vision && getVisionStatements().length > 0 && (
+      {selection.foundation.enabled && getVisionStatements().length > 0 && (
         <div className="vision bg-blue-700 text-white rounded px-2 py-1 mb-2">
           {getVisionStatements().map((statement) => (
             <span key={statement.id} className="text-xs font-semibold">
@@ -102,16 +107,19 @@ export default function StrategyOnePageCompact({ pyramid, selectedTiers }: Strat
       {/* Three Column Layout */}
       <div className="grid grid-cols-12 gap-2 mb-2">
         {/* Left: Values */}
-        {selectedTiers.values && (
+        {selection.values.enabled && (
         <div className="col-span-3">
           <div className="bg-blue-600 text-white px-1.5 py-0.5 rounded text-[9px] font-bold uppercase mb-1">
-            Values
+            Values{selection.behaviours.enabled ? " & Behaviours" : ""}
           </div>
           <div className="space-y-1">
             {pyramid.values.map((value) => (
               <div key={value.id} className="bg-blue-50 border-l-2 border-blue-600 px-1.5 py-1">
                 <div className="font-bold text-blue-900">{value.name}</div>
-                {getBehavioursForValue(value.id).length > 0 && (
+                {selection.values.includeDescriptions && value.description && (
+                  <div className="text-[9px] text-gray-600 mt-0.5">{value.description}</div>
+                )}
+                {selection.behaviours.enabled && getBehavioursForValue(value.id).length > 0 && (
                   <ul className="mt-0.5 space-y-0.5">
                     {getBehavioursForValue(value.id).map((behaviour) => (
                       <li key={behaviour.id} className="text-[9px] text-gray-700 pl-1 border-l border-blue-300">
@@ -127,7 +135,7 @@ export default function StrategyOnePageCompact({ pyramid, selectedTiers }: Strat
         )}
 
         {/* Middle: Drivers & Execution */}
-        {selectedTiers.drivers && (
+        {selection.drivers.enabled && (
         <div className="col-span-7">
           <div className="bg-purple-600 text-white px-1.5 py-0.5 rounded text-[9px] font-bold uppercase mb-1">
             Strategic Drivers & Execution
@@ -140,9 +148,12 @@ export default function StrategyOnePageCompact({ pyramid, selectedTiers }: Strat
               return (
                 <div key={driver.id} className="bg-purple-50 border-l-2 border-purple-600 px-1.5 py-1">
                   <div className="font-bold text-purple-900 mb-0.5">{driver.name}</div>
+                  {selection.drivers.includeDescriptions && driver.description && (
+                    <div className="text-[9px] text-gray-600 mb-1">{driver.description}</div>
+                  )}
 
                   {/* Intents - Inline bullets */}
-                  {intents.length > 0 && (
+                  {selection.intents.enabled && intents.length > 0 && (
                     <div className="mb-1">
                       <span className="text-[9px] font-semibold text-purple-800">Intents: </span>
                       <span className="text-gray-700">
@@ -157,7 +168,7 @@ export default function StrategyOnePageCompact({ pyramid, selectedTiers }: Strat
                   )}
 
                   {/* Commitments - Table style */}
-                  {commitments.length > 0 && (
+                  {selection.commitments.enabled && commitments.length > 0 && (
                     <div className="space-y-0.5">
                       {commitments.map((commitment) => {
                         const teamObjectives = getTeamObjectivesForCommitment(commitment.id);
@@ -168,13 +179,19 @@ export default function StrategyOnePageCompact({ pyramid, selectedTiers }: Strat
                                 {commitment.horizon}
                               </span>
                               <span className="flex-1 font-semibold text-gray-900">{commitment.name}</span>
-                              {commitment.target_date && (
+                              {selection.commitments.includeTargetDates && commitment.target_date && (
                                 <span className="text-gray-500 whitespace-nowrap">{formatDate(commitment.target_date)}</span>
                               )}
                             </div>
+                            {selection.commitments.includeDescriptions && commitment.description && (
+                              <div className="text-[8px] text-gray-600 ml-6 mt-0.5">{commitment.description}</div>
+                            )}
+                            {selection.commitments.includeOwners && commitment.owner && (
+                              <div className="text-[8px] text-gray-500 ml-6">Owner: {commitment.owner}</div>
+                            )}
 
                             {/* Nested Team Objectives */}
-                            {selectedTiers.teamObjectives && teamObjectives.length > 0 && (
+                            {selection.teamObjectives.enabled && teamObjectives.length > 0 && (
                               <div className="mt-0.5 ml-6 space-y-0.5">
                                 {teamObjectives.map((teamObj) => {
                                   const individualObjectives = getIndividualObjectivesForTeam(teamObj.id);
@@ -188,7 +205,7 @@ export default function StrategyOnePageCompact({ pyramid, selectedTiers }: Strat
                                       </div>
 
                                       {/* Nested Individual Objectives */}
-                                      {selectedTiers.individualObjectives && individualObjectives.length > 0 && (
+                                      {selection.individualObjectives.enabled && individualObjectives.length > 0 && (
                                         <div className="mt-0.5 space-y-0.5">
                                           {individualObjectives.map((indObj) => (
                                             <div key={indObj.id} className="bg-pink-50 border-l border-pink-600 rounded-r px-1 py-0.5 ml-1">
@@ -220,7 +237,7 @@ export default function StrategyOnePageCompact({ pyramid, selectedTiers }: Strat
         )}
 
         {/* Right: Enablers */}
-        {selectedTiers.enablers && (
+        {selection.enablers.enabled && (
         <div className="col-span-2">
           <div className="bg-teal-600 text-white px-1.5 py-0.5 rounded text-[9px] font-bold uppercase mb-1">
             Enablers

@@ -16,7 +16,6 @@ import {
   ExportElementSelection,
   DEFAULT_EXPORT_SELECTION,
   cloneSelection,
-  getEnabledHorizons,
   EXECUTIVE_PRESET,
   LEADERSHIP_PRESET,
   DETAILED_PRESET,
@@ -25,42 +24,6 @@ import {
 } from "@/types/export-selection";
 
 type LayoutType = "portrait" | "landscape" | "compact";
-
-// Legacy interface for backward compatibility with visualization components
-interface TierSelection {
-  vision: boolean;
-  values: boolean;
-  drivers: boolean;
-  enablers: boolean;
-  teamObjectives: boolean;
-  individualObjectives: boolean;
-}
-
-// Extended interface with horizon filtering
-interface ExtendedTierSelection extends TierSelection {
-  horizons: {
-    H1: boolean;
-    H2: boolean;
-    H3: boolean;
-  };
-}
-
-// Convert ExportElementSelection to legacy TierSelection
-function selectionToTierSelection(selection: ExportElementSelection): ExtendedTierSelection {
-  return {
-    vision: selection.foundation.enabled,
-    values: selection.values.enabled,
-    drivers: selection.drivers.enabled,
-    enablers: selection.enablers.enabled,
-    teamObjectives: selection.teamObjectives.enabled,
-    individualObjectives: selection.individualObjectives.enabled,
-    horizons: {
-      H1: selection.commitments.horizons.H1,
-      H2: selection.commitments.horizons.H2,
-      H3: selection.commitments.horizons.H3,
-    },
-  };
-}
 
 function OnePageVisualizationContent() {
   const router = useRouter();
@@ -85,9 +48,6 @@ function OnePageVisualizationContent() {
     return cloneSelection(DEFAULT_EXPORT_SELECTION);
   });
 
-  // Convert to legacy format for visualization components
-  const selectedTiers = selectionToTierSelection(selection);
-
   useEffect(() => {
     if (!pyramid) {
       router.push("/");
@@ -106,8 +66,6 @@ function OnePageVisualizationContent() {
     // Simple approach: use browser's print to PDF
     window.print();
   };
-
-  const enabledHorizons = getEnabledHorizons(selection);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -237,9 +195,9 @@ function OnePageVisualizationContent() {
       <div className="py-8">
         <div className={`mx-auto px-6 ${layout === "landscape" ? "max-w-full" : "max-w-[1400px]"}`}>
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            {layout === "portrait" && <StrategyOnePage pyramid={pyramid} selectedTiers={selectedTiers} />}
-            {layout === "landscape" && <StrategyOnePageLandscape pyramid={pyramid} selectedTiers={selectedTiers} />}
-            {layout === "compact" && <StrategyOnePageCompact pyramid={pyramid} selectedTiers={selectedTiers} />}
+            {layout === "portrait" && <StrategyOnePage pyramid={pyramid} selection={selection} />}
+            {layout === "landscape" && <StrategyOnePageLandscape pyramid={pyramid} selection={selection} />}
+            {layout === "compact" && <StrategyOnePageCompact pyramid={pyramid} selection={selection} />}
           </div>
         </div>
       </div>
