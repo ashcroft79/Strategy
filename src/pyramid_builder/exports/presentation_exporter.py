@@ -1095,19 +1095,57 @@ h3 {{
 }}
 .house-roof-shape {{
   width: 100%;
-  height: 100px;
+  height: 80px;
   position: relative;
 }}
-.house-lintel {{
+.house-vision-bar {{
   background: var(--primary);
   color: #fff;
-  padding: 14px 32px;
+  padding: 16px 32px;
   text-align: center;
-  font-weight: 700;
-  font-size: 1rem;
-  letter-spacing: 0.02em;
   border-radius: 0 0 4px 4px;
   margin-bottom: 4px;
+}}
+.house-vision-label {{
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 6px;
+}}
+.house-vision-text {{
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #fff;
+}}
+.house-values-bar {{
+  width: 100%;
+  display: flex;
+  gap: 4px;
+  margin-bottom: 4px;
+}}
+.house-value-chip {{
+  flex: 1;
+  padding: 10px 8px;
+  text-align: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}}
+.house-value-chip:hover {{
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}}
+.house-value-name {{
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+}}
+.house-value-desc {{
+  font-size: 0.6rem;
+  line-height: 1.3;
+  opacity: 0.8;
 }}
 .house-pillars {{
   display: flex;
@@ -1121,7 +1159,7 @@ h3 {{
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 20px 12px;
+  padding: 16px 10px;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.25s ease;
@@ -1133,53 +1171,65 @@ h3 {{
   border-color: rgba(255,255,255,0.3);
 }}
 .house-pillar-title {{
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: #fff;
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.25);
+  width: 100%;
   line-height: 1.3;
 }}
+.house-pillar-commitments {{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}}
+.house-pillar-commitment {{
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.12);
+  padding: 5px 8px;
+  border-radius: 3px;
+  line-height: 1.3;
+  text-align: left;
+}}
 .house-pillar-items {{
-  font-size: 0.7rem;
-  color: rgba(255,255,255,0.85);
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.7);
   text-align: center;
   line-height: 1.5;
-}}
-.house-pillar-count {{
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: #fff;
-  margin-bottom: 4px;
+  margin-top: auto;
+  padding-top: 8px;
 }}
 .house-foundation {{
   width: 100%;
-  display: flex;
-  gap: 4px;
+  padding: 16px 20px;
   margin-top: 4px;
-}}
-.house-foundation-block {{
-  flex: 1;
-  padding: 14px 16px;
-  text-align: center;
   border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}}
-.house-foundation-block:hover {{
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  text-align: center;
 }}
 .house-foundation-label {{
   font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }}
-.house-foundation-text {{
-  font-size: 0.75rem;
-  line-height: 1.4;
+.house-foundation-items {{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}}
+.house-foundation-chip {{
+  font-size: 0.65rem;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  line-height: 1.3;
 }}
 
 /* ================================================================
@@ -2213,20 +2263,32 @@ h3 {{
 </div>"""
 
     def _slide_strategy_house(self) -> str:
-        """Strategy House diagram: roof (vision), pillars (drivers), foundation (values/enablers)."""
+        """Strategy House diagram: roof (vision), values bar, pillars (drivers with commitments), foundation (enablers)."""
         p = self.pyramid
         c = self.colors
 
-        # Roof: Vision/Mission
-        roof_text = ""
+        # Roof: Vision/Mission text for the bar below the triangle
+        vision_text = ""
         if p.vision and p.vision.statements:
             ordered = p.vision.get_statements_ordered()
             if ordered:
-                roof_text = ordered[0].statement
-                if len(roof_text) > 100:
-                    roof_text = roof_text[:97] + "..."
+                vision_text = ordered[0].statement
 
-        # Pillars: Strategic Drivers
+        # Values bar: sits below the vision row
+        val_color = c.TIER_VALUES.to_hex()
+        values_html = ""
+        if p.values:
+            for v in p.values:
+                desc_html = ""
+                if v.description:
+                    short_desc = v.description if len(v.description) <= 60 else v.description[:57] + "..."
+                    desc_html = f'<div class="house-value-desc">{_esc(short_desc)}</div>'
+                values_html += f'''<div class="house-value-chip" style="background:{val_color}18;border:1px solid {val_color}35">
+  <div class="house-value-name" style="color:{val_color}">{_esc(v.name)}</div>
+  {desc_html}
+</div>'''
+
+        # Pillars: Strategic Drivers with commitments listed
         pillar_colors = [
             self._get_driver_color(str(d.id))
             for d in p.strategic_drivers
@@ -2234,70 +2296,63 @@ h3 {{
         pillars_html = ""
         for i, driver in enumerate(p.strategic_drivers):
             color = pillar_colors[i]
-            num_intents = len(self._intents_for_driver(driver.id))
-            num_commitments = len(self._commitments_for_driver(driver.id))
-            items_text = f"{num_intents} intent{'s' if num_intents != 1 else ''}, {num_commitments} commitment{'s' if num_commitments != 1 else ''}"
+            commitments = self._commitments_for_driver(driver.id)
+            commitments_html = ""
+            for cm in commitments[:6]:
+                cm_name = cm.name if len(cm.name) <= 50 else cm.name[:47] + "..."
+                commitments_html += f'<div class="house-pillar-commitment">{_esc(cm_name)}</div>'
+            if len(commitments) > 6:
+                commitments_html += f'<div class="house-pillar-commitment" style="text-align:center;font-style:italic">+{len(commitments) - 6} more</div>'
+
+            items_text = ""
+            if not commitments:
+                num_intents = len(self._intents_for_driver(driver.id))
+                items_text = f"{num_intents} intent{'s' if num_intents != 1 else ''}"
+
+            items_html = f'<div class="house-pillar-items">{_esc(items_text)}</div>' if items_text else ""
+
             pillars_html += f'''<div class="house-pillar" style="background:{color}" onclick="showDetail('driver-{driver.id}')">
   <div class="house-pillar-title">{_esc(driver.name)}</div>
-  <div class="house-pillar-items">{_esc(items_text)}</div>
+  <div class="house-pillar-commitments">{commitments_html}</div>
+  {items_html}
 </div>'''
 
-        # Foundation: Values + Enablers
-        foundation_html = ""
-
-        # Values block
-        if p.values:
-            val_color = c.TIER_VALUES.to_hex()
-            val_names = ", ".join(v.name for v in p.values[:4])
-            if len(p.values) > 4:
-                val_names += f" +{len(p.values) - 4}"
-            foundation_html += f'''<div class="house-foundation-block" style="background:{val_color}12;border:1px solid {val_color}30">
-  <div class="house-foundation-label" style="color:{val_color}">Values</div>
-  <div class="house-foundation-text" style="color:var(--text-muted)">{_esc(val_names)}</div>
-</div>'''
-
-        # Enablers block
+        # Foundation: Enablers
+        en_color = c.TIER_ENABLERS.to_hex()
+        enablers_html = ""
         if p.enablers:
-            en_color = c.TIER_ENABLERS.to_hex()
-            # Group by type
-            types = set(e.enabler_type or "General" for e in p.enablers)
-            type_text = ", ".join(sorted(types)[:4])
-            if len(types) > 4:
-                type_text += f" +{len(types) - 4}"
-            foundation_html += f'''<div class="house-foundation-block" style="background:{en_color}12;border:1px solid {en_color}30">
-  <div class="house-foundation-label" style="color:{en_color}">Enablers</div>
-  <div class="house-foundation-text" style="color:var(--text-muted)">{_esc(type_text)}</div>
-</div>'''
+            chips_html = ""
+            for e in p.enablers:
+                e_name = e.name if len(e.name) <= 40 else e.name[:37] + "..."
+                chips_html += f'<span class="house-foundation-chip" style="background:{en_color}18;color:{en_color};border:1px solid {en_color}35">{_esc(e_name)}</span>'
+            enablers_html = f'''<div class="house-foundation-label" style="color:{en_color}">Enablers</div>
+  <div class="house-foundation-items">{chips_html}</div>'''
 
-        # Behaviours block
-        if p.behaviours:
-            beh_color = c.TIER_BEHAVIOURS.to_hex()
-            foundation_html += f'''<div class="house-foundation-block" style="background:{beh_color}12;border:1px solid {beh_color}30">
-  <div class="house-foundation-label" style="color:{beh_color}">Behaviours</div>
-  <div class="house-foundation-text" style="color:var(--text-muted)">{len(p.behaviours)} defined behaviours</div>
-</div>'''
-
-        # Build the roof SVG (triangle)
-        roof_svg = f'''<svg width="100%" height="100" viewBox="0 0 900 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-  <polygon points="450,5 880,95 20,95" fill="{c.PRIMARY.to_hex()}" opacity="0.95"/>
-  <text x="450" y="60" text-anchor="middle" fill="#fff" font-size="13" font-weight="600" font-family="Inter, sans-serif">{_esc(roof_text)}</text>
-  <text x="450" y="82" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="9" font-weight="700" font-family="Inter, sans-serif" letter-spacing="0.15em">VISION &amp; PURPOSE</text>
+        # Build the roof SVG (triangle only - no text)
+        roof_svg = f'''<svg width="100%" height="80" viewBox="0 0 900 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+  <polygon points="450,5 880,78 20,78" fill="{c.PRIMARY.to_hex()}" opacity="0.95"/>
 </svg>'''
 
         return f"""<div class="slide">
   <div class="slide-label">Strategic Architecture</div>
   <div class="slide-title">The Strategy House</div>
-  <div class="slide-subtitle">Vision supported by strategic pillars, grounded in values and capabilities.</div>
+  <div class="slide-subtitle">Vision supported by strategic pillars, grounded in values and enablers.</div>
   <div class="strategy-house">
     <div class="house-roof">
       <div class="house-roof-shape">{roof_svg}</div>
     </div>
-    <div class="house-lintel">STRATEGIC DRIVERS</div>
+    <div class="house-vision-bar">
+      <div class="house-vision-label">VISION &amp; PURPOSE</div>
+      <div class="house-vision-text">{_esc(vision_text)}</div>
+    </div>
+    <div class="house-values-bar">
+      {values_html}
+    </div>
     <div class="house-pillars">
       {pillars_html}
     </div>
-    <div class="house-foundation">
-      {foundation_html}
+    <div class="house-foundation" style="background:{en_color}08;border:1px solid {en_color}25">
+      {enablers_html}
     </div>
   </div>
 </div>"""
