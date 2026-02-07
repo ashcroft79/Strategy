@@ -7,6 +7,10 @@ McKinsey/BCG-style professional design. Features:
 - Touch/swipe support for mobile/tablet
 - Click-to-drill-down exploration
 - SVG-based diagrams and iconography
+- Interactive clickable pyramid with tier drill-down
+- Strategy house diagram (roof/pillars/foundation)
+- AI-generated elevator pitch and strategic narrative
+- Configurable slide content and purpose page
 - Responsive design for projection and screen viewing
 - Print-friendly styles
 """
@@ -26,6 +30,7 @@ from ..models.pyramid import (
     IndividualObjective,
 )
 from .design_system import DesignColors
+from .presentation_options import PresentationOptions
 
 
 def _esc(text: str) -> str:
@@ -36,9 +41,16 @@ def _esc(text: str) -> str:
 class PresentationExporter:
     """Export pyramids to interactive HTML presentation."""
 
-    def __init__(self, pyramid: StrategyPyramid):
+    def __init__(
+        self,
+        pyramid: StrategyPyramid,
+        options: Optional[PresentationOptions] = None,
+        narratives: Optional[Dict[str, str]] = None,
+    ):
         self.pyramid = pyramid
         self.colors = DesignColors
+        self.options = options or PresentationOptions()
+        self.narratives = narratives or {}
         self._driver_color_map = self._build_driver_colors()
 
     def _build_driver_colors(self) -> Dict[str, str]:
@@ -102,30 +114,56 @@ class PresentationExporter:
     # Top-level HTML generation
     # ------------------------------------------------------------------
     def _generate_html(self) -> str:
+        opts = self.options.slides
         slides = []
-        slides.append(self._slide_cover())
-        slides.append(self._slide_executive_summary())
-        slides.append(self._slide_purpose_overview())
-        if self.pyramid.vision and self.pyramid.vision.statements:
+
+        if opts.include_cover:
+            slides.append(self._slide_cover())
+
+        if opts.include_executive_summary:
+            slides.append(self._slide_executive_summary())
+
+        # AI Narrative / Elevator Pitch slide (after exec summary, before purpose)
+        elevator_pitch = self.narratives.get("elevator_pitch", "")
+        narrative = self.narratives.get("narrative", "")
+        if self.options.narrative.custom_elevator_pitch:
+            elevator_pitch = self.options.narrative.custom_elevator_pitch
+        if self.options.narrative.custom_narrative:
+            narrative = self.options.narrative.custom_narrative
+        if elevator_pitch or narrative:
+            slides.append(self._slide_strategic_narrative(elevator_pitch, narrative))
+
+        # Strategy House diagram
+        if self.options.diagrams.include_strategy_house:
+            slides.append(self._slide_strategy_house())
+
+        if opts.include_purpose_section:
+            slides.append(self._slide_purpose_overview())
+        if opts.include_vision_detail and self.pyramid.vision and self.pyramid.vision.statements:
             slides.append(self._slide_vision_detail())
-        if self.pyramid.values:
+        if opts.include_values and self.pyramid.values:
             slides.append(self._slide_values())
-        if self.pyramid.behaviours:
+        if opts.include_behaviours and self.pyramid.behaviours:
             slides.append(self._slide_behaviours())
-        slides.append(self._slide_strategy_overview())
-        for driver in self.pyramid.strategic_drivers:
-            slides.append(self._slide_driver_deep_dive(driver))
-        if self.pyramid.enablers:
+        if opts.include_strategy_overview:
+            slides.append(self._slide_strategy_overview())
+        if opts.include_driver_deep_dives:
+            for driver in self.pyramid.strategic_drivers:
+                slides.append(self._slide_driver_deep_dive(driver))
+        if opts.include_enablers and self.pyramid.enablers:
             slides.append(self._slide_enablers())
-        slides.append(self._slide_execution_overview())
-        if self.pyramid.iconic_commitments:
+        if opts.include_execution:
+            slides.append(self._slide_execution_overview())
+        if opts.include_horizons and self.pyramid.iconic_commitments:
             slides.append(self._slide_time_horizons())
-        if self.pyramid.team_objectives:
+        if opts.include_team_cascade and self.pyramid.team_objectives:
             slides.append(self._slide_team_cascade())
-        if self.pyramid.individual_objectives:
+        if opts.include_individual_cascade and self.pyramid.individual_objectives:
             slides.append(self._slide_individual_cascade())
-        slides.append(self._slide_strategic_alignment())
-        slides.append(self._slide_closing())
+        if opts.include_alignment and self.options.diagrams.include_golden_threads:
+            slides.append(self._slide_strategic_alignment())
+        if opts.include_closing:
+            slides.append(self._slide_closing())
 
         slides_html = "\n".join(slides)
         total = len(slides)
@@ -1020,6 +1058,184 @@ h3 {{
   }}
   .slide-nav, .overlay, .detail-panel {{ display: none; }}
 }}
+
+/* ================================================================
+   STRATEGY HOUSE DIAGRAM
+   ================================================================ */
+.strategy-house {{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  padding: 20px 0;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}}
+.house-roof {{
+  width: 100%;
+  position: relative;
+  text-align: center;
+  margin-bottom: 0;
+}}
+.house-roof-shape {{
+  width: 100%;
+  height: 100px;
+  position: relative;
+}}
+.house-lintel {{
+  background: var(--primary);
+  color: #fff;
+  padding: 14px 32px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  border-radius: 0 0 4px 4px;
+  margin-bottom: 4px;
+}}
+.house-pillars {{
+  display: flex;
+  gap: 4px;
+  width: 100%;
+  min-height: 200px;
+}}
+.house-pillar {{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 20px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  border: 2px solid transparent;
+}}
+.house-pillar:hover {{
+  transform: translateY(-3px);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.1);
+  border-color: rgba(255,255,255,0.3);
+}}
+.house-pillar-title {{
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 10px;
+  line-height: 1.3;
+}}
+.house-pillar-items {{
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.85);
+  text-align: center;
+  line-height: 1.5;
+}}
+.house-pillar-count {{
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 4px;
+}}
+.house-foundation {{
+  width: 100%;
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}}
+.house-foundation-block {{
+  flex: 1;
+  padding: 14px 16px;
+  text-align: center;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}}
+.house-foundation-block:hover {{
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}}
+.house-foundation-label {{
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+}}
+.house-foundation-text {{
+  font-size: 0.75rem;
+  line-height: 1.4;
+}}
+
+/* ================================================================
+   NARRATIVE / ELEVATOR PITCH SLIDE
+   ================================================================ */
+.narrative-slide {{
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  color: #fff;
+}}
+.narrative-slide .slide-label {{ color: rgba(255,255,255,0.5); }}
+.narrative-slide .slide-title {{ color: #fff; }}
+.narrative-slide .slide-subtitle {{ color: rgba(255,255,255,0.7); }}
+.elevator-pitch {{
+  font-size: 1.4rem;
+  font-weight: 500;
+  line-height: 1.7;
+  color: #fff;
+  max-width: 800px;
+  margin-bottom: 48px;
+  position: relative;
+  padding-left: 24px;
+  border-left: 3px solid var(--accent);
+}}
+.elevator-pitch::before {{
+  content: '\u201C';
+  font-size: 4rem;
+  position: absolute;
+  top: -20px;
+  left: -8px;
+  color: var(--accent);
+  font-family: Georgia, serif;
+  line-height: 1;
+  opacity: 0.4;
+}}
+.strategic-narrative {{
+  max-width: 760px;
+  font-size: 0.92rem;
+  line-height: 1.8;
+  color: rgba(255,255,255,0.8);
+}}
+.strategic-narrative p {{
+  margin-bottom: 16px;
+}}
+.narrative-divider {{
+  width: 48px;
+  height: 2px;
+  background: var(--accent);
+  margin: 32px 0;
+  opacity: 0.6;
+}}
+
+/* ================================================================
+   INTERACTIVE PYRAMID
+   ================================================================ */
+.pyramid-tier-interactive {{
+  cursor: pointer;
+  transition: opacity 0.2s, filter 0.2s;
+}}
+.pyramid-tier-interactive:hover {{
+  opacity: 1 !important;
+  filter: brightness(1.15);
+}}
+.pyramid-tier-label {{
+  pointer-events: none;
+}}
+.pyramid-tier-count {{
+  pointer-events: none;
+  font-size: 10px;
+  fill: rgba(255,255,255,0.7);
+  font-weight: 400;
+}}
 </style>"""
 
     # ------------------------------------------------------------------
@@ -1132,6 +1348,34 @@ h3 {{
   window.closePanel = function() {{
     overlay.classList.remove('open');
     panel.classList.remove('open');
+  }};
+
+  // Interactive pyramid tier click
+  window.showTierDetail = function(tierKey) {{
+    const data = detailData[tierKey];
+    if (!data) return;
+    let html = '<h3>' + data.title + '</h3>';
+    if (data.subtitle) html += '<p class="panel-subtitle">' + data.subtitle + '</p>';
+    if (data.sections) {{
+      data.sections.forEach(function(sec) {{
+        html += '<div class="panel-section">';
+        html += '<div class="panel-section-title">' + sec.title + '</div>';
+        if (sec.items) {{
+          sec.items.forEach(function(item) {{
+            html += '<div class="panel-item">' + item + '</div>';
+          }});
+        }}
+        if (sec.metrics) {{
+          sec.metrics.forEach(function(m) {{
+            html += '<div class="panel-metric">' + m + '</div>';
+          }});
+        }}
+        html += '</div>';
+      }});
+    }}
+    panelContent.innerHTML = html;
+    overlay.classList.add('open');
+    panel.classList.add('open');
   }};
 
   // Init
@@ -1271,6 +1515,63 @@ h3 {{
                 "sections": sections,
             }
 
+        # Tier-level summaries for interactive pyramid
+        p = self.pyramid
+        tier_map = {
+            "tier-purpose": (
+                "Purpose & Foundation",
+                "THE WHY — Vision, mission, and purpose statements",
+                [s.statement for s in (p.vision.get_statements_ordered() if p.vision else [])]
+            ),
+            "tier-values": (
+                "Core Values",
+                f"{len(p.values)} values defining organisational culture",
+                [f"{v.name}: {v.description or ''}" for v in p.values]
+            ),
+            "tier-behaviours": (
+                "Behaviours",
+                f"{len(p.behaviours)} observable behaviours",
+                [b.statement for b in p.behaviours]
+            ),
+            "tier-drivers": (
+                "Strategic Drivers",
+                f"{len(p.strategic_drivers)} focus areas guiding strategic choices",
+                [f"{d.name}: {d.description}" for d in p.strategic_drivers]
+            ),
+            "tier-intents": (
+                "Strategic Intents",
+                f"{len(p.strategic_intents)} bold aspirational outcomes",
+                [i.statement for i in p.strategic_intents]
+            ),
+            "tier-enablers": (
+                "Enablers",
+                f"{len(p.enablers)} capabilities and systems",
+                [f"[{e.enabler_type or 'General'}] {e.name}" for e in p.enablers]
+            ),
+            "tier-commitments": (
+                "Iconic Commitments",
+                f"{len(p.iconic_commitments)} tangible commitments across horizons",
+                [f"[{c.horizon.value}] {c.name}" for c in p.iconic_commitments]
+            ),
+            "tier-team": (
+                "Team Objectives",
+                f"{len(p.team_objectives)} team-level objectives",
+                [f"{t.team_name}: {t.name}" for t in p.team_objectives]
+            ),
+            "tier-individual": (
+                "Individual Objectives",
+                f"{len(p.individual_objectives)} individual contributions",
+                [f"{ind.individual_name}: {ind.name}" for ind in p.individual_objectives]
+            ),
+        }
+        for key, (title, subtitle, items) in tier_map.items():
+            if items:
+                data[key] = {
+                    "title": title,
+                    "subtitle": subtitle,
+                    "sections": [{"title": "Elements", "items": items[:15]}],
+                }
+
         return data
 
     # ------------------------------------------------------------------
@@ -1344,31 +1645,62 @@ h3 {{
 </div>"""
 
     def _build_pyramid_svg(self) -> str:
-        """Build an SVG pyramid diagram showing all 9 tiers."""
-        w, h = 700, 400
+        """Build an SVG pyramid diagram showing all 9 tiers, optionally interactive."""
+        p = self.pyramid
+        w, h = 700, 420
+        interactive = self.options.diagrams.interactive_pyramid
+
+        tier_keys = [
+            "tier-purpose", "tier-values", "tier-behaviours",
+            "tier-drivers", "tier-intents", "tier-enablers",
+            "tier-commitments", "tier-team", "tier-individual",
+        ]
+        tier_counts = [
+            len(p.vision.statements) if p.vision else 0,
+            len(p.values),
+            len(p.behaviours),
+            len(p.strategic_drivers),
+            len(p.strategic_intents),
+            len(p.enablers),
+            len(p.iconic_commitments),
+            len(p.team_objectives),
+            len(p.individual_objectives),
+        ]
         tiers = [
-            ("Purpose", "var(--tier-vision)", 1),
-            ("Values", "var(--tier-values)", 2),
-            ("Behaviours", "var(--tier-behaviours)", 3),
-            ("Strategic Drivers", "var(--tier-drivers)", 4),
-            ("Strategic Intents", "var(--tier-intents)", 5),
-            ("Enablers", "var(--tier-enablers)", 6),
-            ("Iconic Commitments", "var(--tier-commitments)", 7),
-            ("Team Objectives", "var(--tier-team)", 8),
-            ("Individual Objectives", "var(--tier-individual)", 9),
+            ("Purpose", "var(--tier-vision)"),
+            ("Values", "var(--tier-values)"),
+            ("Behaviours", "var(--tier-behaviours)"),
+            ("Strategic Drivers", "var(--tier-drivers)"),
+            ("Strategic Intents", "var(--tier-intents)"),
+            ("Enablers", "var(--tier-enablers)"),
+            ("Iconic Commitments", "var(--tier-commitments)"),
+            ("Team Objectives", "var(--tier-team)"),
+            ("Individual Objectives", "var(--tier-individual)"),
         ]
         rows = ""
         tier_height = h / len(tiers)
         cx = w / 2
-        for i, (name, color, tier_num) in enumerate(tiers):
+        for i, (name, color) in enumerate(tiers):
             y = i * tier_height
-            # Pyramid narrows towards top
             factor = 0.25 + 0.75 * (i / (len(tiers) - 1))
             half_w = (w / 2) * factor
             x1 = cx - half_w
             x2 = cx + half_w
+            count = tier_counts[i]
+            key = tier_keys[i]
+
+            click_attr = ""
+            css_class = ""
+            if interactive and count > 0:
+                click_attr = f' onclick="showTierDetail(\'{key}\')"'
+                css_class = ' class="pyramid-tier-interactive"'
+
+            rows += f'''<g{css_class}{click_attr} style="cursor:{("pointer" if interactive and count > 0 else "default")}">'''
             rows += f'''<rect x="{x1:.0f}" y="{y + 2:.0f}" width="{x2 - x1:.0f}" height="{tier_height - 4:.0f}" rx="4" fill="{color}" opacity="0.9"/>'''
-            rows += f'''<text x="{cx:.0f}" y="{y + tier_height/2 + 5:.0f}" text-anchor="middle" fill="#fff" font-size="12" font-weight="600" font-family="Inter, sans-serif">{name}</text>'''
+            rows += f'''<text class="pyramid-tier-label" x="{cx:.0f}" y="{y + tier_height/2 + 1:.0f}" text-anchor="middle" fill="#fff" font-size="12" font-weight="600" font-family="Inter, sans-serif">{name}</text>'''
+            if count > 0:
+                rows += f'''<text class="pyramid-tier-count" x="{x2 - 14:.0f}" y="{y + tier_height/2 + 4:.0f}" text-anchor="end" font-size="10" font-family="Inter, sans-serif" fill="rgba(255,255,255,0.7)">{count}</text>'''
+            rows += '</g>'
 
         # Section labels
         sections = [
@@ -1381,30 +1713,67 @@ h3 {{
             y_mid = (start + count / 2) * tier_height
             section_labels += f'''<text x="8" y="{y_mid:.0f}" fill="var(--text-muted)" font-size="9" font-weight="700" font-family="Inter, sans-serif" letter-spacing="0.15em">{label}</text>'''
 
+        hint = ""
+        if interactive:
+            hint = f'''<text x="{cx:.0f}" y="{h - 2:.0f}" text-anchor="middle" fill="var(--text-muted)" font-size="9" font-family="Inter, sans-serif" font-style="italic">Click any tier to explore its elements</text>'''
+
         return f'''<svg width="{w}" height="{h}" viewBox="0 0 {w} {h}" xmlns="http://www.w3.org/2000/svg">
 {section_labels}
 {rows}
+{hint}
 </svg>'''
 
     def _slide_purpose_overview(self) -> str:
-        vision_text = ""
+        po = self.options.purpose_slide
+
+        # Gather statements based on options
+        lead_text = ""
+        statement_chips = ""
         if self.pyramid.vision and self.pyramid.vision.statements:
-            v = self.pyramid.vision.get_statements_ordered()[0]
-            vision_text = v.statement
+            ordered = self.pyramid.vision.get_statements_ordered()
+            # Select which statement types to show
+            shown = []
+            for s in ordered:
+                stype = s.statement_type.value.lower()
+                if stype == "vision" and po.include_vision:
+                    shown.append(s)
+                elif stype == "mission" and po.include_mission:
+                    shown.append(s)
+                elif stype in ("purpose", "belief", "passion", "aspiration") and po.include_purpose_statements:
+                    shown.append(s)
+
+            if shown:
+                lead_text = shown[0].statement
+                # Show remaining as chips
+                if len(shown) > 1:
+                    color = self.colors.TIER_FOUNDATION.to_hex()
+                    for s in shown[1:]:
+                        stype = s.statement_type.value.title()
+                        statement_chips += f'''<div style="padding:12px 20px;background:{color}08;border-left:3px solid {color};border-radius:0 8px 8px 0;margin-bottom:8px;">
+  <span style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:{color};display:block;margin-bottom:4px">{_esc(stype)}</span>
+  <span style="font-size:0.88rem;line-height:1.5;color:var(--text)">{_esc(s.statement)}</span>
+</div>'''
 
         values_html = ""
-        for val in self.pyramid.values[:5]:
-            color = self.colors.TIER_VALUES.to_hex()
-            values_html += f'''<div class="value-card" onclick="showDetail('value-{val.id}')">
+        if po.include_values:
+            max_vals = po.max_values_shown
+            for val in self.pyramid.values[:max_vals]:
+                color = self.colors.TIER_VALUES.to_hex()
+                values_html += f'''<div class="value-card" onclick="showDetail('value-{val.id}')">
   <div class="value-icon" style="background:{color}15;color:{color};">{self._icon_svg('values', 24, color)}</div>
   <div class="value-name">{_esc(val.name)}</div>
   <div class="value-desc">{_esc(val.description or '')[:80]}{"..." if val.description and len(val.description) > 80 else ""}</div>
 </div>'''
 
+        chips_section = ""
+        if statement_chips:
+            chips_section = f'<div style="margin-bottom:24px;max-width:700px">{statement_chips}</div>'
+
         return f"""<div class="slide">
   <div class="slide-label">Section 1 — Purpose</div>
   <div class="slide-title">The Why</div>
-  <div class="slide-subtitle">{_esc(vision_text)}</div>
+  <div class="slide-subtitle">{_esc(lead_text)}</div>
+  {chips_section}
   <div class="values-visual">
     {values_html}
   </div>
@@ -1800,6 +2169,121 @@ h3 {{
   </div>
   <div class="alignment-flow">
     {flow_html}
+  </div>
+</div>"""
+
+    # ------------------------------------------------------------------
+    # NEW SLIDES: Narrative, Strategy House
+    # ------------------------------------------------------------------
+
+    def _slide_strategic_narrative(self, elevator_pitch: str, narrative: str) -> str:
+        """Slide with AI-generated elevator pitch and strategic narrative."""
+        pitch_html = ""
+        if elevator_pitch:
+            pitch_html = f'''<div class="elevator-pitch">{_esc(elevator_pitch)}</div>'''
+
+        narrative_html = ""
+        if narrative:
+            paragraphs = narrative.split("\n\n")
+            narrative_paras = "".join(f"<p>{_esc(p.strip())}</p>" for p in paragraphs if p.strip())
+            narrative_html = f'''<div class="narrative-divider"></div>
+<div class="strategic-narrative">{narrative_paras}</div>'''
+
+        return f"""<div class="slide narrative-slide">
+  <div class="slide-label">Strategic Narrative</div>
+  <div class="slide-title">The Elevator Pitch</div>
+  <div class="slide-subtitle">A 30-second summary of our strategic direction</div>
+  {pitch_html}
+  {narrative_html}
+</div>"""
+
+    def _slide_strategy_house(self) -> str:
+        """Strategy House diagram: roof (vision), pillars (drivers), foundation (values/enablers)."""
+        p = self.pyramid
+        c = self.colors
+
+        # Roof: Vision/Mission
+        roof_text = ""
+        if p.vision and p.vision.statements:
+            ordered = p.vision.get_statements_ordered()
+            if ordered:
+                roof_text = ordered[0].statement
+                if len(roof_text) > 100:
+                    roof_text = roof_text[:97] + "..."
+
+        # Pillars: Strategic Drivers
+        pillar_colors = [
+            self._get_driver_color(str(d.id))
+            for d in p.strategic_drivers
+        ]
+        pillars_html = ""
+        for i, driver in enumerate(p.strategic_drivers):
+            color = pillar_colors[i]
+            num_intents = len(self._intents_for_driver(driver.id))
+            num_commitments = len(self._commitments_for_driver(driver.id))
+            items_text = f"{num_intents} intent{'s' if num_intents != 1 else ''}, {num_commitments} commitment{'s' if num_commitments != 1 else ''}"
+            pillars_html += f'''<div class="house-pillar" style="background:{color}" onclick="showDetail('driver-{driver.id}')">
+  <div class="house-pillar-title">{_esc(driver.name)}</div>
+  <div class="house-pillar-items">{_esc(items_text)}</div>
+</div>'''
+
+        # Foundation: Values + Enablers
+        foundation_html = ""
+
+        # Values block
+        if p.values:
+            val_color = c.TIER_VALUES.to_hex()
+            val_names = ", ".join(v.name for v in p.values[:4])
+            if len(p.values) > 4:
+                val_names += f" +{len(p.values) - 4}"
+            foundation_html += f'''<div class="house-foundation-block" style="background:{val_color}12;border:1px solid {val_color}30">
+  <div class="house-foundation-label" style="color:{val_color}">Values</div>
+  <div class="house-foundation-text" style="color:var(--text-muted)">{_esc(val_names)}</div>
+</div>'''
+
+        # Enablers block
+        if p.enablers:
+            en_color = c.TIER_ENABLERS.to_hex()
+            # Group by type
+            types = set(e.enabler_type or "General" for e in p.enablers)
+            type_text = ", ".join(sorted(types)[:4])
+            if len(types) > 4:
+                type_text += f" +{len(types) - 4}"
+            foundation_html += f'''<div class="house-foundation-block" style="background:{en_color}12;border:1px solid {en_color}30">
+  <div class="house-foundation-label" style="color:{en_color}">Enablers</div>
+  <div class="house-foundation-text" style="color:var(--text-muted)">{_esc(type_text)}</div>
+</div>'''
+
+        # Behaviours block
+        if p.behaviours:
+            beh_color = c.TIER_BEHAVIOURS.to_hex()
+            foundation_html += f'''<div class="house-foundation-block" style="background:{beh_color}12;border:1px solid {beh_color}30">
+  <div class="house-foundation-label" style="color:{beh_color}">Behaviours</div>
+  <div class="house-foundation-text" style="color:var(--text-muted)">{len(p.behaviours)} defined behaviours</div>
+</div>'''
+
+        # Build the roof SVG (triangle)
+        roof_svg = f'''<svg width="100%" height="100" viewBox="0 0 900 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+  <polygon points="450,5 880,95 20,95" fill="{c.PRIMARY.to_hex()}" opacity="0.95"/>
+  <text x="450" y="60" text-anchor="middle" fill="#fff" font-size="13" font-weight="600" font-family="Inter, sans-serif">{_esc(roof_text)}</text>
+  <text x="450" y="82" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="9" font-weight="700" font-family="Inter, sans-serif" letter-spacing="0.15em">VISION &amp; PURPOSE</text>
+</svg>'''
+
+        return f"""<div class="slide">
+  <div class="slide-label">Strategic Architecture</div>
+  <div class="slide-title">The Strategy House</div>
+  <div class="slide-subtitle">Vision supported by strategic pillars, grounded in values and capabilities.</div>
+  <div class="strategy-house">
+    <div class="house-roof">
+      <div class="house-roof-shape">{roof_svg}</div>
+    </div>
+    <div class="house-lintel">STRATEGIC DRIVERS</div>
+    <div class="house-pillars">
+      {pillars_html}
+    </div>
+    <div class="house-foundation">
+      {foundation_html}
+    </div>
   </div>
 </div>"""
 

@@ -16,6 +16,8 @@ from .word_exporter import WordExporter
 from .powerpoint_exporter import PowerPointExporter
 from .presentation_exporter import PresentationExporter
 from .ai_guide_generator import AIGuideGenerator
+from .presentation_options import PresentationOptions
+from .narrative_generator import NarrativeGenerator
 
 # Element selection model
 from .element_selection import (
@@ -69,6 +71,8 @@ __all__ = [
     "PowerPointExporter",
     "PresentationExporter",
     "AIGuideGenerator",
+    "PresentationOptions",
+    "NarrativeGenerator",
     # Element selection model
     "ExportElementSelection",
     "FoundationSelection",

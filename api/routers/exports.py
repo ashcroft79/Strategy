@@ -12,6 +12,8 @@ from src.pyramid_builder.exports.powerpoint_exporter import PowerPointExporter
 from src.pyramid_builder.exports.markdown_exporter import MarkdownExporter
 from src.pyramid_builder.exports.json_exporter import JSONExporter
 from src.pyramid_builder.exports.presentation_exporter import PresentationExporter
+from src.pyramid_builder.exports.presentation_options import PresentationOptions
+from src.pyramid_builder.exports.narrative_generator import NarrativeGenerator
 from src.pyramid_builder.exports.ai_guide_generator import AIGuideGenerator
 from src.pyramid_builder.exports.element_selection import ExportElementSelection
 from src.pyramid_builder.exports.presets import get_preset, list_presets
@@ -313,12 +315,25 @@ async def export_json(session_id: str, request: ExportRequest):
         raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
 
 
+class PresentationRequest(BaseModel):
+    """Request body for interactive presentation export."""
+    # Presentation options (all optional, defaults to everything enabled)
+    options: Optional[Dict[str, Any]] = None
+    # Whether to generate AI narratives (requires API key)
+    generate_narrative: bool = True
+
+
 @router.post("/{session_id}/presentation")
-async def export_presentation(session_id: str):
+async def export_presentation(session_id: str, request: Optional[PresentationRequest] = None):
     """Export pyramid to interactive HTML presentation.
 
     Generates a self-contained HTML file with McKinsey/BCG-style
-    professional design, keyboard/swipe navigation, and drill-down panels.
+    professional design, keyboard/swipe navigation, drill-down panels,
+    strategy house diagram, interactive pyramid, and AI-generated narratives.
+
+    Options:
+    - options: PresentationOptions dict to control which slides/diagrams are included
+    - generate_narrative: Whether to call AI to generate elevator pitch and narrative
     """
     if session_id not in active_pyramids:
         raise HTTPException(status_code=404, detail="Pyramid not found")
@@ -328,7 +343,34 @@ async def export_presentation(session_id: str):
         raise HTTPException(status_code=404, detail="No pyramid initialized")
 
     try:
-        exporter = PresentationExporter(manager.pyramid)
+        # Parse options
+        options = PresentationOptions()
+        if request and request.options:
+            options = PresentationOptions.model_validate(request.options)
+
+        # Generate AI narratives if requested
+        narratives = {}
+        should_generate = request.generate_narrative if request else True
+        if should_generate and (options.narrative.include_elevator_pitch or options.narrative.include_narrative):
+            try:
+                generator = NarrativeGenerator(manager.pyramid)
+                if generator.is_available:
+                    narratives = generator.generate_all()
+            except Exception:
+                # AI narrative generation is best-effort; don't fail the export
+                pass
+
+        # Apply any custom overrides from options
+        if options.narrative.custom_elevator_pitch:
+            narratives["elevator_pitch"] = options.narrative.custom_elevator_pitch
+        if options.narrative.custom_narrative:
+            narratives["narrative"] = options.narrative.custom_narrative
+
+        exporter = PresentationExporter(
+            manager.pyramid,
+            options=options,
+            narratives=narratives,
+        )
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".html", mode='w', encoding='utf-8') as tmp:
             tmp_path = tmp.name
