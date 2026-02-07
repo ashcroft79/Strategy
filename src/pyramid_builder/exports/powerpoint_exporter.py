@@ -15,9 +15,12 @@ from pptx.enum.shapes import MSO_SHAPE
 from pptx.dml.color import RGBColor
 
 from ..models.pyramid import StrategyPyramid
+from ..models.context import SOCCAnalysis, OpportunityScoringAnalysis, TensionAnalysis, StakeholderAnalysis
 from .element_selection import ExportElementSelection
 from .selection_filter import SelectionFilter
 from .design_system import DesignColors
+
+from typing import Dict, Any
 
 
 class PowerPointExporter:
@@ -27,6 +30,7 @@ class PowerPointExporter:
         self,
         pyramid: StrategyPyramid,
         selection: Optional[ExportElementSelection] = None,
+        context_data: Optional[Dict[str, Any]] = None,
     ):
         """
         Initialize exporter.
@@ -34,9 +38,11 @@ class PowerPointExporter:
         Args:
             pyramid: StrategyPyramid to export
             selection: Optional element selection for fine-grained control
+            context_data: Optional tier 0 context data (socc, scores, tensions, stakeholders)
         """
         self.pyramid = pyramid
         self.selection = selection
+        self.context_data = context_data or {}
         self.filter = SelectionFilter(pyramid, selection) if selection else None
         self.prs = Presentation()
         self.prs.slide_width = Inches(10)
@@ -227,6 +233,200 @@ class PowerPointExporter:
 
             if has_individual:
                 self._add_individual_objectives_slides_filtered()
+
+        # Section 5: Context & Discovery (Tier 0)
+        has_context = any([
+            sel.supplementary.socc,
+            sel.supplementary.opportunity_scores,
+            sel.supplementary.tensions,
+            sel.supplementary.stakeholders,
+        ])
+
+        if has_context and self.context_data:
+            self._add_styled_section_divider(
+                "Context & Discovery", "The strategic landscape that shaped our strategy", "foundation"
+            )
+
+            if sel.supplementary.socc:
+                self._add_socc_slides()
+
+            if sel.supplementary.opportunity_scores:
+                self._add_opportunity_scores_slides()
+
+            if sel.supplementary.tensions:
+                self._add_tensions_slides()
+
+            if sel.supplementary.stakeholders:
+                self._add_stakeholders_slides()
+
+    def _add_socc_slides(self):
+        """Add SOCC analysis slides."""
+        socc_data = self.context_data.get("socc")
+        if not socc_data:
+            return
+
+        slide = self._add_content_slide("SOCC Analysis")
+        text_frame = slide.placeholders[1].text_frame
+        text_frame.clear()
+
+        quadrant_labels = {
+            "strength": ("Strengths", RGBColor(39, 174, 96)),
+            "opportunity": ("Opportunities", RGBColor(41, 128, 185)),
+            "consideration": ("Considerations", RGBColor(243, 156, 18)),
+            "constraint": ("Constraints", RGBColor(192, 57, 43)),
+        }
+
+        first = True
+        for quadrant, (label, color) in quadrant_labels.items():
+            items = [item for item in socc_data.items if item.quadrant == quadrant]
+            if not items:
+                continue
+
+            # Quadrant header
+            p = text_frame.paragraphs[0] if first else text_frame.add_paragraph()
+            first = False
+            run = p.add_run()
+            run.text = label
+            run.font.bold = True
+            run.font.size = Pt(18)
+            run.font.color.rgb = color
+            p.level = 0
+            p.space_after = Pt(4)
+
+            # Show top items (limit per quadrant to fit slide)
+            for item in items[:3]:
+                p_item = text_frame.add_paragraph()
+                run_item = p_item.add_run()
+                impact_marker = {"high": "▲ ", "medium": "● ", "low": "○ "}.get(item.impact_level, "")
+                run_item.text = f"{impact_marker}{item.title}"
+                run_item.font.size = Pt(14)
+                run_item.font.color.rgb = RGBColor(60, 60, 60)
+                p_item.level = 1
+                p_item.space_after = Pt(2)
+
+    def _add_opportunity_scores_slides(self):
+        """Add opportunity scores slide."""
+        scores_data = self.context_data.get("opportunity_scores")
+        socc_data = self.context_data.get("socc")
+        if not scores_data or not scores_data.scores:
+            return
+
+        slide = self._add_content_slide("Opportunity Scores")
+        text_frame = slide.placeholders[1].text_frame
+        text_frame.clear()
+
+        viability_colors = {
+            "high": RGBColor(39, 174, 96),
+            "moderate": RGBColor(243, 156, 18),
+            "marginal": RGBColor(230, 126, 34),
+            "low": RGBColor(192, 57, 43),
+        }
+
+        first = True
+        for score in scores_data.get_sorted_scores()[:8]:  # Limit for slide space
+            opp_name = score.opportunity_item_id
+            if socc_data:
+                opp_item = socc_data.get_item_by_id(score.opportunity_item_id)
+                if opp_item:
+                    opp_name = opp_item.title
+
+            p = text_frame.paragraphs[0] if first else text_frame.add_paragraph()
+            first = False
+            run = p.add_run()
+            run.text = f"{opp_name}  —  Score: {score.calculated_score} ({score.viability_level.title()})"
+            run.font.size = Pt(14)
+            run.font.color.rgb = viability_colors.get(score.viability_level, RGBColor(60, 60, 60))
+            p.level = 0
+            p.space_after = Pt(6)
+
+    def _add_tensions_slides(self):
+        """Add strategic tensions slide."""
+        tensions_data = self.context_data.get("tensions")
+        if not tensions_data or not tensions_data.tensions:
+            return
+
+        slide = self._add_content_slide("Strategic Tensions")
+        text_frame = slide.placeholders[1].text_frame
+        text_frame.clear()
+
+        first = True
+        for tension in tensions_data.tensions:
+            # Tension name
+            p = text_frame.paragraphs[0] if first else text_frame.add_paragraph()
+            first = False
+            run = p.add_run()
+            run.text = tension.name
+            run.font.bold = True
+            run.font.size = Pt(18)
+            run.font.color.rgb = self.primary_color
+            p.level = 0
+            p.space_after = Pt(4)
+
+            # Spectrum
+            p_spectrum = text_frame.add_paragraph()
+            run_s = p_spectrum.add_run()
+            run_s.text = f"{tension.left_pole}  ◄{'─' * 8}►  {tension.right_pole}"
+            run_s.font.size = Pt(14)
+            p_spectrum.level = 1
+
+            # Positions
+            p_pos = text_frame.add_paragraph()
+            run_pos = p_pos.add_run()
+            run_pos.text = f"Current: {tension.current_position}/100  →  Target: {tension.target_position}/100"
+            run_pos.font.size = Pt(12)
+            run_pos.font.color.rgb = RGBColor(100, 100, 100)
+            p_pos.level = 1
+            p_pos.space_after = Pt(12)
+
+    def _add_stakeholders_slides(self):
+        """Add stakeholder map slide."""
+        stakeholder_data = self.context_data.get("stakeholders")
+        if not stakeholder_data or not stakeholder_data.stakeholders:
+            return
+
+        slide = self._add_content_slide("Stakeholder Map")
+        text_frame = slide.placeholders[1].text_frame
+        text_frame.clear()
+
+        quadrant_colors = {
+            "key_players": RGBColor(192, 57, 43),
+            "keep_satisfied": RGBColor(41, 128, 185),
+            "keep_informed": RGBColor(39, 174, 96),
+            "monitor": RGBColor(150, 150, 150),
+        }
+
+        quadrant_labels = {
+            "key_players": "Key Players",
+            "keep_satisfied": "Keep Satisfied",
+            "keep_informed": "Keep Informed",
+            "monitor": "Monitor",
+        }
+
+        first = True
+        for quadrant, label in quadrant_labels.items():
+            stakeholders = stakeholder_data.get_stakeholders_by_quadrant(quadrant)
+            if not stakeholders:
+                continue
+
+            p = text_frame.paragraphs[0] if first else text_frame.add_paragraph()
+            first = False
+            run = p.add_run()
+            run.text = label
+            run.font.bold = True
+            run.font.size = Pt(16)
+            run.font.color.rgb = quadrant_colors.get(quadrant, self.primary_color)
+            p.level = 0
+            p.space_after = Pt(4)
+
+            for s in stakeholders[:4]:  # Limit per quadrant
+                p_s = text_frame.add_paragraph()
+                alignment_icon = {"supportive": "✓", "neutral": "–", "opposed": "✗"}.get(s.alignment, "")
+                run_s = p_s.add_run()
+                run_s.text = f"{alignment_icon} {s.name}"
+                run_s.font.size = Pt(14)
+                run_s.font.color.rgb = RGBColor(60, 60, 60)
+                p_s.level = 1
+                p_s.space_after = Pt(2)
 
     def _add_vision_slides_filtered(self):
         """Add slides for filtered vision statements."""

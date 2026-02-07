@@ -76,6 +76,20 @@ class ExportRequest(BaseModel):
         return selection
 
 
+def _gather_context_data(session_id: str) -> dict:
+    """Gather all tier 0 context data for a session."""
+    context = {}
+    if session_id in context_storage:
+        context["socc"] = context_storage[session_id]
+    if session_id in scoring_storage:
+        context["opportunity_scores"] = scoring_storage[session_id]
+    if session_id in tension_storage:
+        context["tensions"] = tension_storage[session_id]
+    if session_id in stakeholder_storage:
+        context["stakeholders"] = stakeholder_storage[session_id]
+    return context
+
+
 @router.get("/presets")
 async def get_export_presets():
     """Get available export presets with descriptions."""
@@ -128,8 +142,11 @@ async def export_word(session_id: str, request: ExportRequest):
         # Get the selection (from preset or custom)
         selection = request.get_selection()
 
+        # Gather context data for tier 0
+        context_data = _gather_context_data(session_id)
+
         # Create exporter with selection for fine-grained control
-        exporter = WordExporter(manager.pyramid, selection=selection)
+        exporter = WordExporter(manager.pyramid, selection=selection, context_data=context_data)
 
         # Create temporary file
         with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
@@ -174,8 +191,11 @@ async def export_powerpoint(session_id: str, request: ExportRequest):
         # Get the selection (from preset or custom)
         selection = request.get_selection()
 
+        # Gather context data for tier 0
+        context_data = _gather_context_data(session_id)
+
         # Create exporter with selection for fine-grained control
-        exporter = PowerPointExporter(manager.pyramid, selection=selection)
+        exporter = PowerPointExporter(manager.pyramid, selection=selection, context_data=context_data)
 
         # Create temporary file
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pptx") as tmp:
@@ -220,8 +240,11 @@ async def export_markdown(session_id: str, request: ExportRequest):
         # Get the selection (from preset or custom)
         selection = request.get_selection()
 
+        # Gather context data for tier 0
+        context_data = _gather_context_data(session_id)
+
         # Create exporter with selection for fine-grained control
-        exporter = MarkdownExporter(manager.pyramid, selection=selection)
+        exporter = MarkdownExporter(manager.pyramid, selection=selection, context_data=context_data)
 
         # Create temporary file
         with tempfile.NamedTemporaryFile(delete=False, suffix=".md", mode='w') as tmp:
@@ -378,10 +401,14 @@ async def export_presentation(
         if options.narrative.custom_narrative:
             narratives["narrative"] = options.narrative.custom_narrative
 
+        # Gather context data for tier 0
+        context_data = _gather_context_data(session_id)
+
         exporter = PresentationExporter(
             manager.pyramid,
             options=options,
             narratives=narratives,
+            context_data=context_data,
         )
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".html", mode='w', encoding='utf-8') as tmp:

@@ -174,6 +174,8 @@ export interface SupplementarySelection {
   stakeholders: boolean;
   /** Include SOCC context analysis */
   socc: boolean;
+  /** Include opportunity scores */
+  opportunityScores: boolean;
   /** Include project metadata (name, org, dates) */
   metadata: boolean;
   /** Include cover page (Word/PowerPoint) */
@@ -363,6 +365,7 @@ export const DEFAULT_SUPPLEMENTARY_SELECTION: SupplementarySelection = {
   tensions: false,
   stakeholders: false,
   socc: false,
+  opportunityScores: false,
   metadata: true,
   coverPage: true,
   tableOfContents: true,
@@ -453,9 +456,10 @@ export const EXECUTIVE_PRESET: ExportElementSelection = {
   },
   supplementary: {
     distribution: false,
-    tensions: false,
+    tensions: true,
     stakeholders: false,
     socc: false,
+    opportunityScores: false,
     metadata: true,
     coverPage: true,
     tableOfContents: false,
@@ -471,6 +475,13 @@ export const LEADERSHIP_PRESET: ExportElementSelection = {
   drivers: {
     ...DEFAULT_DRIVERS_SELECTION,
     includeRationale: true,
+  },
+  supplementary: {
+    ...DEFAULT_SUPPLEMENTARY_SELECTION,
+    tensions: true,
+    stakeholders: true,
+    socc: true,
+    opportunityScores: true,
   },
 };
 
@@ -525,6 +536,7 @@ export const DETAILED_PRESET: ExportElementSelection = {
     tensions: true,
     stakeholders: true,
     socc: true,
+    opportunityScores: true,
     metadata: true,
     coverPage: true,
     tableOfContents: true,
@@ -599,6 +611,7 @@ export const TEAM_PRESET: ExportElementSelection = {
     tensions: false,
     stakeholders: false,
     socc: false,
+    opportunityScores: false,
     metadata: true,
     coverPage: false,
     tableOfContents: false,

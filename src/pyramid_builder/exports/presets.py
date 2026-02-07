@@ -86,9 +86,10 @@ def create_executive_preset() -> ExportElementSelection:
         ),
         supplementary=SupplementarySelection(
             distribution=False,
-            tensions=False,
+            tensions=True,
             stakeholders=False,
             socc=False,
+            opportunity_scores=False,
             metadata=True,
             cover_page=True,
             table_of_contents=False,
@@ -110,6 +111,7 @@ def create_leadership_preset() -> ExportElementSelection:
     - Enablers
     - All horizon commitments with descriptions
     - No team/individual objectives
+    - Tier 0 context (SOCC, tensions, opportunity scores, stakeholders)
     - Full supplementary (distribution, cover page, TOC)
     """
     return ExportElementSelection(
@@ -165,9 +167,10 @@ def create_leadership_preset() -> ExportElementSelection:
         ),
         supplementary=SupplementarySelection(
             distribution=True,
-            tensions=False,
-            stakeholders=False,
-            socc=False,
+            tensions=True,
+            stakeholders=True,
+            socc=True,
+            opportunity_scores=True,
             metadata=True,
             cover_page=True,
             table_of_contents=True,
@@ -247,6 +250,7 @@ def create_detailed_preset() -> ExportElementSelection:
             tensions=True,
             stakeholders=True,
             socc=True,
+            opportunity_scores=True,
             metadata=True,
             cover_page=True,
             table_of_contents=True,
@@ -326,6 +330,7 @@ def create_team_preset() -> ExportElementSelection:
             tensions=False,
             stakeholders=False,
             socc=False,
+            opportunity_scores=False,
             metadata=True,
             cover_page=False,
             table_of_contents=False,

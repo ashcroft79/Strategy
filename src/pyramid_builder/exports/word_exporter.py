@@ -18,9 +18,12 @@ from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 
 from ..models.pyramid import StrategyPyramid
+from ..models.context import SOCCAnalysis, OpportunityScoringAnalysis, TensionAnalysis, StakeholderAnalysis
 from .element_selection import ExportElementSelection
 from .selection_filter import SelectionFilter
 from .design_system import DesignColors
+
+from typing import Dict, Any
 
 
 class WordExporter:
@@ -30,6 +33,7 @@ class WordExporter:
         self,
         pyramid: StrategyPyramid,
         selection: Optional[ExportElementSelection] = None,
+        context_data: Optional[Dict[str, Any]] = None,
     ):
         """
         Initialize exporter.
@@ -37,9 +41,11 @@ class WordExporter:
         Args:
             pyramid: StrategyPyramid to export
             selection: Optional element selection for fine-grained control
+            context_data: Optional tier 0 context data (socc, scores, tensions, stakeholders)
         """
         self.pyramid = pyramid
         self.selection = selection
+        self.context_data = context_data or {}
         self.filter = SelectionFilter(pyramid, selection) if selection else None
         self.doc = Document()
         self._setup_styles()
@@ -200,6 +206,228 @@ class WordExporter:
 
             if has_individual:
                 self._add_individual_objectives_filtered()
+
+        # Section 5: Context & Discovery (Tier 0)
+        has_context = any([
+            sel.supplementary.socc,
+            sel.supplementary.opportunity_scores,
+            sel.supplementary.tensions,
+            sel.supplementary.stakeholders,
+        ])
+
+        if has_context and self.context_data:
+            self.doc.add_page_break()
+            self._add_tier_header("Context & Discovery", "foundation", "The strategic landscape that shaped our strategy")
+
+            if sel.supplementary.socc:
+                self._add_socc_section()
+
+            if sel.supplementary.opportunity_scores:
+                self._add_opportunity_scores_section()
+
+            if sel.supplementary.tensions:
+                self._add_tensions_section()
+
+            if sel.supplementary.stakeholders:
+                self._add_stakeholders_section()
+
+    def _add_socc_section(self):
+        """Add SOCC analysis section to Word document."""
+        socc_data = self.context_data.get("socc")
+        if not socc_data:
+            return
+
+        self.doc.add_heading('SOCC Analysis', level=2)
+        p = self.doc.add_paragraph()
+        run = p.add_run('Strengths, Opportunities, Considerations & Constraints')
+        run.italic = True
+        run.font.color.rgb = RGBColor(100, 100, 100)
+
+        quadrant_labels = {
+            "strength": ("Strengths", RGBColor(39, 174, 96)),
+            "opportunity": ("Opportunities", RGBColor(41, 128, 185)),
+            "consideration": ("Considerations", RGBColor(243, 156, 18)),
+            "constraint": ("Constraints", RGBColor(192, 57, 43)),
+        }
+
+        for quadrant, (label, color) in quadrant_labels.items():
+            items = [item for item in socc_data.items if item.quadrant == quadrant]
+            if not items:
+                continue
+
+            h = self.doc.add_heading(label, level=3)
+            for run in h.runs:
+                run.font.color.rgb = color
+
+            for item in items:
+                p = self.doc.add_paragraph()
+                run = p.add_run(f"{item.title}")
+                run.font.bold = True
+                impact_marker = {"high": " [HIGH]", "medium": " [MED]", "low": " [LOW]"}
+                run2 = p.add_run(impact_marker.get(item.impact_level, ""))
+                run2.font.size = Pt(8)
+                run2.font.color.rgb = RGBColor(150, 150, 150)
+
+                if item.description:
+                    desc_p = self.doc.add_paragraph()
+                    desc_p.paragraph_format.left_indent = Inches(0.25)
+                    desc_run = desc_p.add_run(item.description)
+                    desc_run.font.size = Pt(10)
+                    desc_run.font.color.rgb = RGBColor(80, 80, 80)
+
+    def _add_opportunity_scores_section(self):
+        """Add opportunity scores section to Word document."""
+        scores_data = self.context_data.get("opportunity_scores")
+        socc_data = self.context_data.get("socc")
+        if not scores_data or not scores_data.scores:
+            return
+
+        self.doc.add_heading('Opportunity Scores', level=2)
+        p = self.doc.add_paragraph()
+        run = p.add_run('Score = (Strength Match × 2) − Consideration Risk − Constraint Impact')
+        run.italic = True
+        run.font.color.rgb = RGBColor(100, 100, 100)
+
+        sorted_scores = scores_data.get_sorted_scores()
+
+        # Create table
+        table = self.doc.add_table(rows=len(sorted_scores) + 1, cols=4)
+        table.style = 'Medium Grid 1 Accent 1'
+
+        # Header
+        table.rows[0].cells[0].text = "Opportunity"
+        table.rows[0].cells[1].text = "Score"
+        table.rows[0].cells[2].text = "Viability"
+        table.rows[0].cells[3].text = "Recommendation"
+
+        for idx, score in enumerate(sorted_scores, 1):
+            # Resolve opportunity name from SOCC items
+            opp_name = score.opportunity_item_id
+            if socc_data:
+                opp_item = socc_data.get_item_by_id(score.opportunity_item_id)
+                if opp_item:
+                    opp_name = opp_item.title
+
+            table.rows[idx].cells[0].text = opp_name
+            table.rows[idx].cells[1].text = str(score.calculated_score)
+            table.rows[idx].cells[2].text = score.viability_level.title()
+            table.rows[idx].cells[3].text = score.recommendation
+
+    def _add_tensions_section(self):
+        """Add strategic tensions section to Word document."""
+        tensions_data = self.context_data.get("tensions")
+        if not tensions_data or not tensions_data.tensions:
+            return
+
+        self.doc.add_heading('Strategic Tensions', level=2)
+        p = self.doc.add_paragraph()
+        run = p.add_run('Competing goods requiring deliberate strategic choices')
+        run.italic = True
+        run.font.color.rgb = RGBColor(100, 100, 100)
+
+        for tension in tensions_data.tensions:
+            self.doc.add_heading(tension.name, level=3)
+
+            # Spectrum representation
+            p = self.doc.add_paragraph()
+            run_left = p.add_run(f"{tension.left_pole}")
+            run_left.font.bold = True
+            p.add_run("  ◄")
+            bar = "─" * 20
+            current_pos = tension.current_position // 5
+            target_pos = tension.target_position // 5
+            p.add_run(f"  {bar}  ")
+            p.add_run("►  ")
+            run_right = p.add_run(f"{tension.right_pole}")
+            run_right.font.bold = True
+
+            # Current vs target positions
+            pos_p = self.doc.add_paragraph()
+            pos_p.paragraph_format.left_indent = Inches(0.25)
+            pos_p.add_run(f"Current position: {tension.current_position}/100  |  ")
+            pos_p.add_run(f"Target position: {tension.target_position}/100")
+
+            # Rationale
+            if tension.rationale:
+                rat_p = self.doc.add_paragraph()
+                rat_p.paragraph_format.left_indent = Inches(0.25)
+                run = rat_p.add_run(f"Rationale: ")
+                run.font.bold = True
+                rat_p.add_run(tension.rationale)
+
+            if tension.implications:
+                imp_p = self.doc.add_paragraph()
+                imp_p.paragraph_format.left_indent = Inches(0.25)
+                run = imp_p.add_run(f"Implications: ")
+                run.font.bold = True
+                imp_p.add_run(tension.implications)
+
+            self.doc.add_paragraph()  # Spacing
+
+    def _add_stakeholders_section(self):
+        """Add stakeholder map section to Word document."""
+        stakeholder_data = self.context_data.get("stakeholders")
+        if not stakeholder_data or not stakeholder_data.stakeholders:
+            return
+
+        self.doc.add_heading('Stakeholder Map', level=2)
+        p = self.doc.add_paragraph()
+        run = p.add_run('Interest/Influence matrix for strategic stakeholders')
+        run.italic = True
+        run.font.color.rgb = RGBColor(100, 100, 100)
+
+        quadrant_info = {
+            "key_players": ("Key Players", "High Interest / High Influence — Engage closely"),
+            "keep_satisfied": ("Keep Satisfied", "Low Interest / High Influence — Don't alienate"),
+            "keep_informed": ("Keep Informed", "High Interest / Low Influence — Communicate regularly"),
+            "monitor": ("Monitor", "Low Interest / Low Influence — Minimal effort"),
+        }
+
+        for quadrant, (label, description) in quadrant_info.items():
+            stakeholders = stakeholder_data.get_stakeholders_by_quadrant(quadrant)
+            if not stakeholders:
+                continue
+
+            h = self.doc.add_heading(label, level=3)
+            desc_p = self.doc.add_paragraph()
+            run = desc_p.add_run(description)
+            run.italic = True
+            run.font.size = Pt(9)
+            run.font.color.rgb = RGBColor(120, 120, 120)
+
+            for stakeholder in stakeholders:
+                p = self.doc.add_paragraph()
+                run = p.add_run(f"{stakeholder.name}")
+                run.font.bold = True
+
+                alignment_colors = {
+                    "supportive": RGBColor(39, 174, 96),
+                    "neutral": RGBColor(150, 150, 150),
+                    "opposed": RGBColor(192, 57, 43),
+                }
+                align_run = p.add_run(f"  ({stakeholder.alignment})")
+                align_run.font.size = Pt(9)
+                align_run.font.color.rgb = alignment_colors.get(
+                    stakeholder.alignment, RGBColor(150, 150, 150)
+                )
+
+                if stakeholder.key_needs:
+                    needs_p = self.doc.add_paragraph()
+                    needs_p.paragraph_format.left_indent = Inches(0.25)
+                    needs_p.add_run("Needs: ").font.bold = True
+                    needs_p.add_run("; ".join(stakeholder.key_needs))
+
+                if stakeholder.concerns:
+                    concerns_p = self.doc.add_paragraph()
+                    concerns_p.paragraph_format.left_indent = Inches(0.25)
+                    concerns_p.add_run("Concerns: ").font.bold = True
+                    concerns_p.add_run("; ".join(stakeholder.concerns))
+
+                if stakeholder.required_actions:
+                    actions_p = self.doc.add_paragraph()
+                    actions_p.paragraph_format.left_indent = Inches(0.25)
+                    actions_p.add_run("Actions: ").font.bold = True
+                    actions_p.add_run("; ".join(stakeholder.required_actions))
 
     def _add_tier_header(self, title: str, tier: str, subtitle: str = ""):
         """Add a styled tier header with design system colors."""

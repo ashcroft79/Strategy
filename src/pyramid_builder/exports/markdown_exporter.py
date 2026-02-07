@@ -10,8 +10,11 @@ from pathlib import Path
 from datetime import datetime
 
 from ..models.pyramid import StrategyPyramid, IconicCommitment
+from ..models.context import SOCCAnalysis, OpportunityScoringAnalysis, TensionAnalysis, StakeholderAnalysis
 from .element_selection import ExportElementSelection
 from .selection_filter import SelectionFilter
+
+from typing import Dict, Any
 
 
 class MarkdownExporter:
@@ -21,6 +24,7 @@ class MarkdownExporter:
         self,
         pyramid: StrategyPyramid,
         selection: Optional[ExportElementSelection] = None,
+        context_data: Optional[Dict[str, Any]] = None,
     ):
         """
         Initialize exporter.
@@ -28,9 +32,11 @@ class MarkdownExporter:
         Args:
             pyramid: StrategyPyramid to export
             selection: Optional element selection for fine-grained control
+            context_data: Optional tier 0 context data (socc, scores, tensions, stakeholders)
         """
         self.pyramid = pyramid
         self.selection = selection
+        self.context_data = context_data or {}
         self.filter = SelectionFilter(pyramid, selection) if selection else None
 
     def _format_vision_statements(self, heading="## Our Purpose"):
@@ -146,6 +152,33 @@ class MarkdownExporter:
             lines.append("---")
             lines.append("")
             lines.extend(self._format_distribution_analysis())
+
+        # Context & Discovery (Tier 0)
+        has_context = any([
+            sel.supplementary.socc,
+            sel.supplementary.opportunity_scores,
+            sel.supplementary.tensions,
+            sel.supplementary.stakeholders,
+        ])
+
+        if has_context and self.context_data:
+            lines.append("---")
+            lines.append("")
+            lines.append("## Context & Discovery")
+            lines.append("*The strategic landscape that shaped our strategy*")
+            lines.append("")
+
+            if sel.supplementary.socc:
+                lines.extend(self._format_socc_section())
+
+            if sel.supplementary.opportunity_scores:
+                lines.extend(self._format_opportunity_scores_section())
+
+            if sel.supplementary.tensions:
+                lines.extend(self._format_tensions_section())
+
+            if sel.supplementary.stakeholders:
+                lines.extend(self._format_stakeholders_section())
 
         # Visual diagrams section (Mermaid)
         if sel.supplementary.diagrams:
@@ -465,6 +498,143 @@ class MarkdownExporter:
             lines.append(f"| {driver_name} | {count} | {percentage:.0f}% |")
 
         lines.append("")
+        return lines
+
+    # =========================================================================
+    # CONTEXT & DISCOVERY (TIER 0) SECTIONS
+    # =========================================================================
+
+    def _format_socc_section(self) -> List[str]:
+        """Format SOCC analysis for Markdown."""
+        lines = []
+        socc_data = self.context_data.get("socc")
+        if not socc_data:
+            return lines
+
+        lines.append("### SOCC Analysis")
+        lines.append("*Strengths, Opportunities, Considerations & Constraints*")
+        lines.append("")
+
+        quadrant_labels = {
+            "strength": "Strengths",
+            "opportunity": "Opportunities",
+            "consideration": "Considerations",
+            "constraint": "Constraints",
+        }
+
+        for quadrant, label in quadrant_labels.items():
+            items = [item for item in socc_data.items if item.quadrant == quadrant]
+            if not items:
+                continue
+
+            lines.append(f"#### {label}")
+            lines.append("")
+
+            for item in items:
+                impact_badge = f" `{item.impact_level.upper()}`" if item.impact_level else ""
+                lines.append(f"- **{item.title}**{impact_badge}")
+                if item.description:
+                    lines.append(f"  {item.description}")
+            lines.append("")
+
+        return lines
+
+    def _format_opportunity_scores_section(self) -> List[str]:
+        """Format opportunity scores for Markdown."""
+        lines = []
+        scores_data = self.context_data.get("opportunity_scores")
+        socc_data = self.context_data.get("socc")
+        if not scores_data or not scores_data.scores:
+            return lines
+
+        lines.append("### Opportunity Scores")
+        lines.append("*Score = (Strength Match × 2) − Consideration Risk − Constraint Impact*")
+        lines.append("")
+
+        lines.append("| Opportunity | Score | Viability | Recommendation |")
+        lines.append("|-------------|-------|-----------|----------------|")
+
+        for score in scores_data.get_sorted_scores():
+            opp_name = score.opportunity_item_id
+            if socc_data:
+                opp_item = socc_data.get_item_by_id(score.opportunity_item_id)
+                if opp_item:
+                    opp_name = opp_item.title
+
+            lines.append(
+                f"| {opp_name} | {score.calculated_score} | {score.viability_level.title()} | {score.recommendation} |"
+            )
+
+        lines.append("")
+        return lines
+
+    def _format_tensions_section(self) -> List[str]:
+        """Format strategic tensions for Markdown."""
+        lines = []
+        tensions_data = self.context_data.get("tensions")
+        if not tensions_data or not tensions_data.tensions:
+            return lines
+
+        lines.append("### Strategic Tensions")
+        lines.append("*Competing goods requiring deliberate strategic choices*")
+        lines.append("")
+
+        for tension in tensions_data.tensions:
+            lines.append(f"#### {tension.name}")
+            lines.append("")
+            lines.append(f"**{tension.left_pole}** ◄{'─' * 10}►  **{tension.right_pole}**")
+            lines.append("")
+            lines.append(f"- Current position: **{tension.current_position}/100**")
+            lines.append(f"- Target position: **{tension.target_position}/100**")
+
+            if tension.rationale:
+                lines.append(f"- Rationale: {tension.rationale}")
+            if tension.implications:
+                lines.append(f"- Implications: {tension.implications}")
+
+            lines.append("")
+
+        return lines
+
+    def _format_stakeholders_section(self) -> List[str]:
+        """Format stakeholder map for Markdown."""
+        lines = []
+        stakeholder_data = self.context_data.get("stakeholders")
+        if not stakeholder_data or not stakeholder_data.stakeholders:
+            return lines
+
+        lines.append("### Stakeholder Map")
+        lines.append("*Interest/Influence matrix for strategic stakeholders*")
+        lines.append("")
+
+        quadrant_info = {
+            "key_players": ("Key Players", "High Interest / High Influence"),
+            "keep_satisfied": ("Keep Satisfied", "Low Interest / High Influence"),
+            "keep_informed": ("Keep Informed", "High Interest / Low Influence"),
+            "monitor": ("Monitor", "Low Interest / Low Influence"),
+        }
+
+        for quadrant, (label, description) in quadrant_info.items():
+            stakeholders = stakeholder_data.get_stakeholders_by_quadrant(quadrant)
+            if not stakeholders:
+                continue
+
+            lines.append(f"#### {label}")
+            lines.append(f"*{description}*")
+            lines.append("")
+
+            for s in stakeholders:
+                alignment_icon = {"supportive": "🟢", "neutral": "🟡", "opposed": "🔴"}.get(s.alignment, "⚪")
+                lines.append(f"- **{s.name}** {alignment_icon} {s.alignment}")
+                if s.key_needs:
+                    lines.append(f"  - Needs: {'; '.join(s.key_needs)}")
+                if s.concerns:
+                    lines.append(f"  - Concerns: {'; '.join(s.concerns)}")
+                if s.required_actions:
+                    lines.append(f"  - Actions: {'; '.join(s.required_actions)}")
+
+            lines.append("")
+
         return lines
 
     # =========================================================================

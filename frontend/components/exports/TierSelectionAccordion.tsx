@@ -649,6 +649,43 @@ export const TierSelectionAccordion: React.FC<TierSelectionAccordionProps> = ({
             }
           />
         </div>
+        <h5 className="text-xs font-medium text-gray-500 mt-3 mb-1 uppercase tracking-wide">
+          Context &amp; Discovery (Tier 0)
+        </h5>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+          <Checkbox
+            label="SOCC analysis"
+            checked={selection.supplementary.socc}
+            onChange={(checked) =>
+              onChange(updateSelection(["supplementary", "socc"], checked))
+            }
+          />
+          <Checkbox
+            label="Opportunity scores"
+            checked={selection.supplementary.opportunityScores}
+            onChange={(checked) =>
+              onChange(
+                updateSelection(["supplementary", "opportunityScores"], checked)
+              )
+            }
+          />
+          <Checkbox
+            label="Strategic tensions"
+            checked={selection.supplementary.tensions}
+            onChange={(checked) =>
+              onChange(updateSelection(["supplementary", "tensions"], checked))
+            }
+          />
+          <Checkbox
+            label="Stakeholder map"
+            checked={selection.supplementary.stakeholders}
+            onChange={(checked) =>
+              onChange(
+                updateSelection(["supplementary", "stakeholders"], checked)
+              )
+            }
+          />
+        </div>
       </div>
     </div>
   );
