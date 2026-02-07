@@ -303,17 +303,20 @@ async def add_tension(session_id: str, tension: StrategicTension):
 
 
 @router.put("/{session_id}/tensions/{tension_id}")
-async def update_tension(session_id: str, tension_id: str, tension: StrategicTension):
-    """Update an existing strategic tension."""
+async def update_tension(session_id: str, tension_id: str, tension_update: Dict[str, Any]):
+    """Update an existing strategic tension with partial data."""
     analysis = get_or_create_tensions(session_id)
 
     for i, existing_tension in enumerate(analysis.tensions):
         if existing_tension.id == tension_id:
-            tension.id = tension_id
-            tension.created_at = existing_tension.created_at
-            analysis.tensions[i] = tension
+            existing_dict = existing_tension.model_dump()
+            existing_dict.update(tension_update)
+            existing_dict["id"] = tension_id
+            existing_dict["created_at"] = existing_tension.created_at
+            updated_tension = StrategicTension(**existing_dict)
+            analysis.tensions[i] = updated_tension
             analysis.last_updated = datetime.now()
-            return tension
+            return updated_tension
 
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
