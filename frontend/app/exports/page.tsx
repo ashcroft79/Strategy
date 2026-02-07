@@ -72,6 +72,7 @@ interface PresentationConfig {
     include_team_cascade: boolean;
     include_individual_cascade: boolean;
     include_alignment: boolean;
+    include_context: boolean;
     include_closing: boolean;
   };
 }
@@ -111,6 +112,7 @@ const DEFAULT_PRESENTATION_CONFIG: PresentationConfig = {
     include_team_cascade: true,
     include_individual_cascade: true,
     include_alignment: true,
+    include_context: true,
     include_closing: true,
   },
 };
@@ -572,6 +574,7 @@ export default function ExportsPage() {
                             ["include_team_cascade", "Team cascade"],
                             ["include_individual_cascade", "Individual cascade"],
                             ["include_alignment", "Strategic alignment"],
+                            ["include_context", "Context & discovery (Tier 0)"],
                             ["include_closing", "Closing slide"],
                           ] as const).map(([key, label]) => (
                             <label key={key} className="flex items-center gap-2 text-sm cursor-pointer">
