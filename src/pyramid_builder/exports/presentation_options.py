@@ -50,6 +50,7 @@ class SlideOptions(BaseModel):
     include_team_cascade: bool = Field(default=True, description="Include team objectives cascade")
     include_individual_cascade: bool = Field(default=True, description="Include individual objectives")
     include_alignment: bool = Field(default=True, description="Include strategic alignment slide")
+    include_context: bool = Field(default=True, description="Include context & discovery (Tier 0) slides")
     include_closing: bool = Field(default=True, description="Include closing slide")
 
 

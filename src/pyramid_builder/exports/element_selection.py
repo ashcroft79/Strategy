@@ -270,6 +270,10 @@ class SupplementarySelection(CamelCaseModel):
         default=False,
         description="Include SOCC context analysis"
     )
+    opportunity_scores: bool = Field(
+        default=False,
+        description="Include opportunity scores"
+    )
     metadata: bool = Field(
         default=True,
         description="Include project metadata (name, org, dates)"

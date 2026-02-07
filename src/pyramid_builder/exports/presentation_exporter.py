@@ -29,6 +29,7 @@ from ..models.pyramid import (
     TeamObjective,
     IndividualObjective,
 )
+from ..models.context import SOCCAnalysis, OpportunityScoringAnalysis, TensionAnalysis, StakeholderAnalysis
 from .design_system import DesignColors
 from .presentation_options import PresentationOptions
 
@@ -46,11 +47,13 @@ class PresentationExporter:
         pyramid: StrategyPyramid,
         options: Optional[PresentationOptions] = None,
         narratives: Optional[Dict[str, str]] = None,
+        context_data: Optional[Dict[str, Any]] = None,
     ):
         self.pyramid = pyramid
         self.colors = DesignColors
         self.options = options or PresentationOptions()
         self.narratives = narratives or {}
+        self.context_data = context_data or {}
         self._driver_color_map = self._build_driver_colors()
 
     def _build_driver_colors(self) -> Dict[str, str]:
@@ -160,6 +163,18 @@ class PresentationExporter:
             slides.append(self._slide_team_cascade())
         if opts.include_individual_cascade and self.pyramid.individual_objectives:
             slides.append(self._slide_individual_cascade())
+
+        # Context & Discovery (Tier 0) slides
+        if opts.include_context and self.context_data:
+            if self.context_data.get("socc"):
+                slides.append(self._slide_socc_analysis())
+            if self.context_data.get("opportunity_scores"):
+                slides.append(self._slide_opportunity_scores())
+            if self.context_data.get("tensions"):
+                slides.append(self._slide_strategic_tensions())
+            if self.context_data.get("stakeholders"):
+                slides.append(self._slide_stakeholder_map())
+
         if opts.include_alignment and self.options.diagrams.include_golden_threads:
             slides.append(self._slide_strategic_alignment())
         if opts.include_closing:
@@ -2284,6 +2299,181 @@ h3 {{
     <div class="house-foundation">
       {foundation_html}
     </div>
+  </div>
+</div>"""
+
+    # ------------------------------------------------------------------
+    # Context & Discovery (Tier 0) slides
+    # ------------------------------------------------------------------
+
+    def _slide_socc_analysis(self) -> str:
+        """Generate SOCC analysis slide."""
+        socc_data = self.context_data.get("socc")
+        if not socc_data:
+            return ""
+
+        quadrants = {
+            "strength": {"label": "Strengths", "color": "#27ae60", "icon": "💪"},
+            "opportunity": {"label": "Opportunities", "color": "#2980b9", "icon": "🎯"},
+            "consideration": {"label": "Considerations", "color": "#f39c12", "icon": "⚠️"},
+            "constraint": {"label": "Constraints", "color": "#c0392b", "icon": "🚧"},
+        }
+
+        cards_html = ""
+        for quadrant, info in quadrants.items():
+            items = [item for item in socc_data.items if item.quadrant == quadrant]
+            if not items:
+                continue
+
+            items_html = ""
+            for item in items[:5]:
+                impact_badge = {
+                    "high": '<span style="background:#e74c3c;color:#fff;padding:1px 6px;border-radius:8px;font-size:10px;margin-left:6px;">HIGH</span>',
+                    "medium": '<span style="background:#f39c12;color:#fff;padding:1px 6px;border-radius:8px;font-size:10px;margin-left:6px;">MED</span>',
+                    "low": '<span style="background:#95a5a6;color:#fff;padding:1px 6px;border-radius:8px;font-size:10px;margin-left:6px;">LOW</span>',
+                }.get(item.impact_level, "")
+
+                desc = f'<div style="font-size:11px;color:#666;margin-top:2px;">{_esc(item.description)}</div>' if item.description else ""
+                items_html += f'<div style="margin-bottom:8px;"><strong>{_esc(item.title)}</strong>{impact_badge}{desc}</div>'
+
+            cards_html += f"""
+            <div style="flex:1;min-width:220px;background:#fff;border-radius:8px;padding:16px;border-left:4px solid {info['color']};box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+              <div style="font-size:16px;font-weight:700;color:{info['color']};margin-bottom:10px;">{info['icon']} {info['label']}</div>
+              {items_html}
+            </div>"""
+
+        return f"""<div class="slide">
+  <div class="slide-header">SOCC Analysis</div>
+  <div class="slide-subheader">Strengths, Opportunities, Considerations &amp; Constraints</div>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;padding:0 20px;">
+    {cards_html}
+  </div>
+</div>"""
+
+    def _slide_opportunity_scores(self) -> str:
+        """Generate opportunity scores slide."""
+        scores_data = self.context_data.get("opportunity_scores")
+        socc_data = self.context_data.get("socc")
+        if not scores_data or not scores_data.scores:
+            return ""
+
+        viability_colors = {
+            "high": "#27ae60",
+            "moderate": "#f39c12",
+            "marginal": "#e67e22",
+            "low": "#c0392b",
+        }
+
+        rows_html = ""
+        for score in scores_data.get_sorted_scores():
+            opp_name = score.opportunity_item_id
+            if socc_data:
+                opp_item = socc_data.get_item_by_id(score.opportunity_item_id)
+                if opp_item:
+                    opp_name = opp_item.title
+
+            v_color = viability_colors.get(score.viability_level, "#666")
+            badge = f'<span style="background:{v_color};color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;">{score.viability_level.title()}</span>'
+
+            rows_html += f"""<tr>
+              <td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:500;">{_esc(opp_name)}</td>
+              <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:center;font-weight:700;font-size:18px;color:{v_color};">{score.calculated_score}</td>
+              <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:center;">{badge}</td>
+              <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:12px;color:#666;">{_esc(score.recommendation)}</td>
+            </tr>"""
+
+        return f"""<div class="slide">
+  <div class="slide-header">Opportunity Scores</div>
+  <div class="slide-subheader">Score = (Strength Match × 2) − Consideration Risk − Constraint Impact</div>
+  <div style="padding:0 30px;">
+    <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+      <thead>
+        <tr style="background:#1f4e79;color:#fff;">
+          <th style="padding:10px 12px;text-align:left;">Opportunity</th>
+          <th style="padding:10px 12px;text-align:center;">Score</th>
+          <th style="padding:10px 12px;text-align:center;">Viability</th>
+          <th style="padding:10px 12px;text-align:left;">Recommendation</th>
+        </tr>
+      </thead>
+      <tbody>{rows_html}</tbody>
+    </table>
+  </div>
+</div>"""
+
+    def _slide_strategic_tensions(self) -> str:
+        """Generate strategic tensions slide."""
+        tensions_data = self.context_data.get("tensions")
+        if not tensions_data or not tensions_data.tensions:
+            return ""
+
+        tensions_html = ""
+        for tension in tensions_data.tensions:
+            current_pct = tension.current_position
+            target_pct = tension.target_position
+
+            tensions_html += f"""
+            <div style="background:#fff;border-radius:8px;padding:16px 20px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+              <div style="font-size:15px;font-weight:700;color:#1f4e79;margin-bottom:8px;">{_esc(tension.name)}</div>
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+                <span style="font-size:13px;font-weight:600;min-width:100px;text-align:right;">{_esc(tension.left_pole)}</span>
+                <div style="flex:1;height:8px;background:#e0e0e0;border-radius:4px;position:relative;">
+                  <div style="position:absolute;left:{current_pct}%;top:-4px;width:16px;height:16px;background:#c0392b;border-radius:50%;transform:translateX(-50%);border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.3);" title="Current: {current_pct}"></div>
+                  <div style="position:absolute;left:{target_pct}%;top:-4px;width:16px;height:16px;background:#27ae60;border-radius:50%;transform:translateX(-50%);border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.3);" title="Target: {target_pct}"></div>
+                </div>
+                <span style="font-size:13px;font-weight:600;min-width:100px;">{_esc(tension.right_pole)}</span>
+              </div>
+              <div style="display:flex;gap:16px;font-size:11px;color:#888;margin-top:4px;justify-content:center;">
+                <span><span style="display:inline-block;width:10px;height:10px;background:#c0392b;border-radius:50%;margin-right:4px;"></span>Current ({current_pct})</span>
+                <span><span style="display:inline-block;width:10px;height:10px;background:#27ae60;border-radius:50%;margin-right:4px;"></span>Target ({target_pct})</span>
+              </div>
+              {"<div style='font-size:12px;color:#555;margin-top:8px;'><em>" + _esc(tension.rationale) + "</em></div>" if tension.rationale else ""}
+            </div>"""
+
+        return f"""<div class="slide">
+  <div class="slide-header">Strategic Tensions</div>
+  <div class="slide-subheader">Competing goods requiring deliberate strategic choices</div>
+  <div style="padding:0 40px;">
+    {tensions_html}
+  </div>
+</div>"""
+
+    def _slide_stakeholder_map(self) -> str:
+        """Generate stakeholder map slide."""
+        stakeholder_data = self.context_data.get("stakeholders")
+        if not stakeholder_data or not stakeholder_data.stakeholders:
+            return ""
+
+        quadrant_info = {
+            "key_players": {"label": "Key Players", "color": "#c0392b", "desc": "High Interest / High Influence"},
+            "keep_satisfied": {"label": "Keep Satisfied", "color": "#2980b9", "desc": "Low Interest / High Influence"},
+            "keep_informed": {"label": "Keep Informed", "color": "#27ae60", "desc": "High Interest / Low Influence"},
+            "monitor": {"label": "Monitor", "color": "#95a5a6", "desc": "Low Interest / Low Influence"},
+        }
+
+        grid_html = ""
+        for quadrant, info in quadrant_info.items():
+            stakeholders = stakeholder_data.get_stakeholders_by_quadrant(quadrant)
+            if not stakeholders:
+                continue
+
+            alignment_icons = {"supportive": "🟢", "neutral": "🟡", "opposed": "🔴"}
+            items_html = ""
+            for s in stakeholders[:5]:
+                icon = alignment_icons.get(s.alignment, "⚪")
+                items_html += f'<div style="margin-bottom:4px;font-size:13px;">{icon} <strong>{_esc(s.name)}</strong></div>'
+
+            grid_html += f"""
+            <div style="flex:1;min-width:200px;background:#fff;border-radius:8px;padding:14px;border-top:3px solid {info['color']};box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+              <div style="font-size:14px;font-weight:700;color:{info['color']};margin-bottom:2px;">{info['label']}</div>
+              <div style="font-size:10px;color:#999;margin-bottom:8px;">{info['desc']}</div>
+              {items_html}
+            </div>"""
+
+        return f"""<div class="slide">
+  <div class="slide-header">Stakeholder Map</div>
+  <div class="slide-subheader">Interest / Influence matrix for strategic stakeholders</div>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;padding:0 30px;justify-content:center;">
+    {grid_html}
   </div>
 </div>"""
 
