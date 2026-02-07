@@ -556,10 +556,18 @@ export const exportsApi = {
     return data;
   },
 
-  async exportPresentation(sessionId: string): Promise<Blob> {
-    const { data } = await api.post(`/api/exports/${sessionId}/presentation`, {}, {
-      responseType: "blob",
-    });
+  async exportPresentation(
+    sessionId: string,
+    options?: {
+      options?: Record<string, any>;
+      generate_narrative?: boolean;
+    }
+  ): Promise<Blob> {
+    const { data } = await api.post(
+      `/api/exports/${sessionId}/presentation`,
+      options || {},
+      { responseType: "blob" }
+    );
     return data;
   },
 

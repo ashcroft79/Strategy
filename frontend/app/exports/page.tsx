@@ -28,7 +28,92 @@ import {
   Eye,
   Loader2,
   Monitor,
+  ChevronDown,
+  ChevronUp,
+  Building2,
+  MessageSquareQuote,
+  Pyramid,
+  GitBranch,
 } from "lucide-react";
+
+/** Presentation customization options matching the backend PresentationOptions model */
+interface PresentationConfig {
+  purpose_slide: {
+    include_vision: boolean;
+    include_mission: boolean;
+    include_values: boolean;
+    max_values_shown: number;
+    include_purpose_statements: boolean;
+  };
+  diagrams: {
+    include_pyramid: boolean;
+    interactive_pyramid: boolean;
+    include_strategy_house: boolean;
+    include_golden_threads: boolean;
+  };
+  narrative: {
+    include_elevator_pitch: boolean;
+    include_narrative: boolean;
+    custom_elevator_pitch: string | null;
+    custom_narrative: string | null;
+  };
+  slides: {
+    include_cover: boolean;
+    include_executive_summary: boolean;
+    include_purpose_section: boolean;
+    include_vision_detail: boolean;
+    include_values: boolean;
+    include_behaviours: boolean;
+    include_strategy_overview: boolean;
+    include_driver_deep_dives: boolean;
+    include_enablers: boolean;
+    include_execution: boolean;
+    include_horizons: boolean;
+    include_team_cascade: boolean;
+    include_individual_cascade: boolean;
+    include_alignment: boolean;
+    include_closing: boolean;
+  };
+}
+
+const DEFAULT_PRESENTATION_CONFIG: PresentationConfig = {
+  purpose_slide: {
+    include_vision: true,
+    include_mission: true,
+    include_values: true,
+    max_values_shown: 5,
+    include_purpose_statements: true,
+  },
+  diagrams: {
+    include_pyramid: true,
+    interactive_pyramid: true,
+    include_strategy_house: true,
+    include_golden_threads: true,
+  },
+  narrative: {
+    include_elevator_pitch: true,
+    include_narrative: true,
+    custom_elevator_pitch: null,
+    custom_narrative: null,
+  },
+  slides: {
+    include_cover: true,
+    include_executive_summary: true,
+    include_purpose_section: true,
+    include_vision_detail: true,
+    include_values: true,
+    include_behaviours: true,
+    include_strategy_overview: true,
+    include_driver_deep_dives: true,
+    include_enablers: true,
+    include_execution: true,
+    include_horizons: true,
+    include_team_cascade: true,
+    include_individual_cascade: true,
+    include_alignment: true,
+    include_closing: true,
+  },
+};
 
 export default function ExportsPage() {
   const router = useRouter();
@@ -39,6 +124,10 @@ export default function ExportsPage() {
   const [isExporting, setIsExporting] = useState(false);
   const [previewCounts, setPreviewCounts] = useState<Record<string, number> | null>(null);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+  const [presentationConfig, setPresentationConfig] = useState<PresentationConfig>(
+    DEFAULT_PRESENTATION_CONFIG
+  );
+  const [showPresentationOptions, setShowPresentationOptions] = useState(false);
 
   useEffect(() => {
     if (!pyramid) {
@@ -88,7 +177,13 @@ export default function ExportsPage() {
 
     try {
       setIsExporting(true);
-      const blob = await exportsApi.exportPresentation(sessionId);
+      const hasNarrative =
+        presentationConfig.narrative.include_elevator_pitch ||
+        presentationConfig.narrative.include_narrative;
+      const blob = await exportsApi.exportPresentation(sessionId, {
+        options: presentationConfig,
+        generate_narrative: hasNarrative,
+      });
       downloadBlob(blob, `${pyramid.metadata.project_name}_presentation.html`);
     } catch (err: any) {
       console.error("Presentation export failed:", err);
@@ -237,23 +332,267 @@ export default function ExportsPage() {
                   <h2 className="text-xl font-bold text-gray-900 mb-2">
                     Interactive Presentation Mode
                   </h2>
-                  <p className="text-gray-700 mb-4">
+                  <p className="text-gray-700 mb-3">
                     Generate a professional, consultant-quality HTML presentation with
-                    keyboard/swipe navigation, drill-down panels, and interactive
-                    diagrams. Perfect for boardroom presentations or self-guided exploration.
+                    keyboard/swipe navigation, drill-down panels, interactive pyramid,
+                    strategy house diagram, and AI-generated narrative.
                   </p>
-                  <Button
-                    onClick={handleExportPresentation}
-                    disabled={isExporting}
-                    className="bg-blue-700 hover:bg-blue-800"
-                  >
-                    {isExporting ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <Download className="w-4 h-4 mr-2" />
-                    )}
-                    Download Presentation
-                  </Button>
+
+                  <div className="flex items-center gap-3 mb-3">
+                    <Button
+                      onClick={handleExportPresentation}
+                      disabled={isExporting}
+                      className="bg-blue-700 hover:bg-blue-800"
+                    >
+                      {isExporting ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Download className="w-4 h-4 mr-2" />
+                      )}
+                      Download Presentation
+                    </Button>
+                    <button
+                      onClick={() => setShowPresentationOptions(!showPresentationOptions)}
+                      className="text-sm text-blue-700 hover:text-blue-900 font-medium flex items-center gap-1"
+                    >
+                      Customise
+                      {showPresentationOptions ? (
+                        <ChevronUp className="w-4 h-4" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Presentation Options Panel */}
+                  {showPresentationOptions && (
+                    <div className="mt-4 border-t border-blue-200 pt-4 space-y-4">
+                      {/* AI Narrative Options */}
+                      <div className="bg-white/60 rounded-lg p-4">
+                        <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                          <MessageSquareQuote className="w-4 h-4 text-blue-600" />
+                          AI-Generated Content
+                        </h4>
+                        <div className="space-y-2">
+                          <label className="flex items-center gap-2 text-sm cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={presentationConfig.narrative.include_elevator_pitch}
+                              onChange={(e) =>
+                                setPresentationConfig((prev) => ({
+                                  ...prev,
+                                  narrative: { ...prev.narrative, include_elevator_pitch: e.target.checked },
+                                }))
+                              }
+                              className="rounded border-gray-300"
+                            />
+                            <span>Elevator pitch (AI-generated 30-second summary)</span>
+                          </label>
+                          <label className="flex items-center gap-2 text-sm cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={presentationConfig.narrative.include_narrative}
+                              onChange={(e) =>
+                                setPresentationConfig((prev) => ({
+                                  ...prev,
+                                  narrative: { ...prev.narrative, include_narrative: e.target.checked },
+                                }))
+                              }
+                              className="rounded border-gray-300"
+                            />
+                            <span>Strategic narrative (AI-generated executive summary)</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* Diagram Options */}
+                      <div className="bg-white/60 rounded-lg p-4">
+                        <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                          <Building2 className="w-4 h-4 text-blue-600" />
+                          Diagrams
+                        </h4>
+                        <div className="space-y-2">
+                          <label className="flex items-center gap-2 text-sm cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={presentationConfig.diagrams.include_strategy_house}
+                              onChange={(e) =>
+                                setPresentationConfig((prev) => ({
+                                  ...prev,
+                                  diagrams: { ...prev.diagrams, include_strategy_house: e.target.checked },
+                                }))
+                              }
+                              className="rounded border-gray-300"
+                            />
+                            <span>Strategy house diagram (roof / pillars / foundation)</span>
+                          </label>
+                          <label className="flex items-center gap-2 text-sm cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={presentationConfig.diagrams.interactive_pyramid}
+                              onChange={(e) =>
+                                setPresentationConfig((prev) => ({
+                                  ...prev,
+                                  diagrams: { ...prev.diagrams, interactive_pyramid: e.target.checked },
+                                }))
+                              }
+                              className="rounded border-gray-300"
+                            />
+                            <span>Interactive pyramid (click tiers to explore)</span>
+                          </label>
+                          <label className="flex items-center gap-2 text-sm cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={presentationConfig.diagrams.include_golden_threads}
+                              onChange={(e) =>
+                                setPresentationConfig((prev) => ({
+                                  ...prev,
+                                  diagrams: { ...prev.diagrams, include_golden_threads: e.target.checked },
+                                }))
+                              }
+                              className="rounded border-gray-300"
+                            />
+                            <span>Golden threads alignment flow</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* Purpose Page Options */}
+                      <div className="bg-white/60 rounded-lg p-4">
+                        <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                          <Pyramid className="w-4 h-4 text-blue-600" />
+                          Purpose Summary Page
+                        </h4>
+                        <div className="space-y-2">
+                          <label className="flex items-center gap-2 text-sm cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={presentationConfig.purpose_slide.include_vision}
+                              onChange={(e) =>
+                                setPresentationConfig((prev) => ({
+                                  ...prev,
+                                  purpose_slide: { ...prev.purpose_slide, include_vision: e.target.checked },
+                                }))
+                              }
+                              className="rounded border-gray-300"
+                            />
+                            <span>Vision statement</span>
+                          </label>
+                          <label className="flex items-center gap-2 text-sm cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={presentationConfig.purpose_slide.include_mission}
+                              onChange={(e) =>
+                                setPresentationConfig((prev) => ({
+                                  ...prev,
+                                  purpose_slide: { ...prev.purpose_slide, include_mission: e.target.checked },
+                                }))
+                              }
+                              className="rounded border-gray-300"
+                            />
+                            <span>Mission statement</span>
+                          </label>
+                          <label className="flex items-center gap-2 text-sm cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={presentationConfig.purpose_slide.include_purpose_statements}
+                              onChange={(e) =>
+                                setPresentationConfig((prev) => ({
+                                  ...prev,
+                                  purpose_slide: {
+                                    ...prev.purpose_slide,
+                                    include_purpose_statements: e.target.checked,
+                                  },
+                                }))
+                              }
+                              className="rounded border-gray-300"
+                            />
+                            <span>Other purpose statements (belief, passion, aspiration)</span>
+                          </label>
+                          <label className="flex items-center gap-2 text-sm cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={presentationConfig.purpose_slide.include_values}
+                              onChange={(e) =>
+                                setPresentationConfig((prev) => ({
+                                  ...prev,
+                                  purpose_slide: { ...prev.purpose_slide, include_values: e.target.checked },
+                                }))
+                              }
+                              className="rounded border-gray-300"
+                            />
+                            <span>Values summary</span>
+                          </label>
+                          {presentationConfig.purpose_slide.include_values && (
+                            <div className="ml-6 flex items-center gap-2 text-sm">
+                              <span className="text-gray-600">Max values shown:</span>
+                              <select
+                                value={presentationConfig.purpose_slide.max_values_shown}
+                                onChange={(e) =>
+                                  setPresentationConfig((prev) => ({
+                                    ...prev,
+                                    purpose_slide: {
+                                      ...prev.purpose_slide,
+                                      max_values_shown: parseInt(e.target.value),
+                                    },
+                                  }))
+                                }
+                                className="border rounded px-2 py-1 text-sm"
+                              >
+                                {[3, 4, 5, 6, 7, 8].map((n) => (
+                                  <option key={n} value={n}>
+                                    {n}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Slide Selection */}
+                      <div className="bg-white/60 rounded-lg p-4">
+                        <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                          <GitBranch className="w-4 h-4 text-blue-600" />
+                          Slides to Include
+                        </h4>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                          {([
+                            ["include_cover", "Cover slide"],
+                            ["include_executive_summary", "Executive summary"],
+                            ["include_purpose_section", "Purpose overview"],
+                            ["include_vision_detail", "Vision detail"],
+                            ["include_values", "Values"],
+                            ["include_behaviours", "Behaviours"],
+                            ["include_strategy_overview", "Strategy overview"],
+                            ["include_driver_deep_dives", "Driver deep dives"],
+                            ["include_enablers", "Enablers"],
+                            ["include_execution", "Execution overview"],
+                            ["include_horizons", "Horizons roadmap"],
+                            ["include_team_cascade", "Team cascade"],
+                            ["include_individual_cascade", "Individual cascade"],
+                            ["include_alignment", "Strategic alignment"],
+                            ["include_closing", "Closing slide"],
+                          ] as const).map(([key, label]) => (
+                            <label key={key} className="flex items-center gap-2 text-sm cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={presentationConfig.slides[key as keyof typeof presentationConfig.slides]}
+                                onChange={(e) =>
+                                  setPresentationConfig((prev) => ({
+                                    ...prev,
+                                    slides: { ...prev.slides, [key]: e.target.checked },
+                                  }))
+                                }
+                                className="rounded border-gray-300"
+                              />
+                              <span>{label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
