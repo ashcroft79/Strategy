@@ -738,19 +738,19 @@ class MarkdownExporter:
             lines.append("    section Horizon 1 (0-12mo)")
             for commitment in h1_commitments[:5]:  # Max 5 per horizon
                 name = commitment.name[:30].replace(":", "-")
-                lines.append(f"    {name} :h1_{commitment.id[:8]}, {current_year}-01, 12M")
+                lines.append(f"    {name} :h1_{str(commitment.id)[:8]}, {current_year}-01, 12M")
 
         if h2_commitments:
             lines.append("    section Horizon 2 (12-24mo)")
             for commitment in h2_commitments[:5]:
                 name = commitment.name[:30].replace(":", "-")
-                lines.append(f"    {name} :h2_{commitment.id[:8]}, {current_year + 1}-01, 12M")
+                lines.append(f"    {name} :h2_{str(commitment.id)[:8]}, {current_year + 1}-01, 12M")
 
         if h3_commitments:
             lines.append("    section Horizon 3 (24-36mo)")
             for commitment in h3_commitments[:5]:
                 name = commitment.name[:30].replace(":", "-")
-                lines.append(f"    {name} :h3_{commitment.id[:8]}, {current_year + 2}-01, 12M")
+                lines.append(f"    {name} :h3_{str(commitment.id)[:8]}, {current_year + 2}-01, 12M")
 
         lines.append("```")
         lines.append("")

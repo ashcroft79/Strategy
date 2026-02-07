@@ -1037,9 +1037,9 @@ class PowerPointExporter:
                 )
                 card.fill.solid()
                 card.fill.fore_color.rgb = RGBColor(
-                    min(255, color.red + 180),
-                    min(255, color.green + 180),
-                    min(255, color.blue + 180)
+                    min(255, color[0] + 180),
+                    min(255, color[1] + 180),
+                    min(255, color[2] + 180)
                 )
                 card.line.color.rgb = color
                 card.line.width = Pt(1.5)
