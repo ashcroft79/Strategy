@@ -1,6 +1,6 @@
 """Export API endpoints for different formats."""
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Body
 from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel
 from typing import Optional, Literal, Dict, Any, List
@@ -324,7 +324,10 @@ class PresentationRequest(BaseModel):
 
 
 @router.post("/{session_id}/presentation")
-async def export_presentation(session_id: str, request: Optional[PresentationRequest] = None):
+async def export_presentation(
+    session_id: str,
+    request: PresentationRequest = Body(default=None),
+):
     """Export pyramid to interactive HTML presentation.
 
     Generates a self-contained HTML file with McKinsey/BCG-style
@@ -343,15 +346,24 @@ async def export_presentation(session_id: str, request: Optional[PresentationReq
         raise HTTPException(status_code=404, detail="No pyramid initialized")
 
     try:
-        # Parse options
+        # Normalise: Body(default=None) means request can be None when no body sent
+        if request is None:
+            request = PresentationRequest()
+
+        # Parse presentation options from request body
         options = PresentationOptions()
-        if request and request.options:
-            options = PresentationOptions.model_validate(request.options)
+        if request.options:
+            try:
+                options = PresentationOptions.model_validate(request.options)
+            except Exception:
+                # If custom options fail to parse, fall back to defaults
+                pass
 
         # Generate AI narratives if requested
         narratives = {}
-        should_generate = request.generate_narrative if request else True
-        if should_generate and (options.narrative.include_elevator_pitch or options.narrative.include_narrative):
+        if request.generate_narrative and (
+            options.narrative.include_elevator_pitch or options.narrative.include_narrative
+        ):
             try:
                 generator = NarrativeGenerator(manager.pyramid)
                 if generator.is_available:
