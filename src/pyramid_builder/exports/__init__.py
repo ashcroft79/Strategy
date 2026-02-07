@@ -14,6 +14,7 @@ from .markdown_exporter import MarkdownExporter
 from .json_exporter import JSONExporter
 from .word_exporter import WordExporter
 from .powerpoint_exporter import PowerPointExporter
+from .presentation_exporter import PresentationExporter
 from .ai_guide_generator import AIGuideGenerator
 
 # Element selection model
@@ -66,6 +67,7 @@ __all__ = [
     "JSONExporter",
     "WordExporter",
     "PowerPointExporter",
+    "PresentationExporter",
     "AIGuideGenerator",
     # Element selection model
     "ExportElementSelection",

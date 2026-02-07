@@ -32,7 +32,7 @@ import {
 
 export default function ExportsPage() {
   const router = useRouter();
-  const { sessionId, pyramid } = usePyramidStore();
+  const { sessionId, pyramid, showToast } = usePyramidStore();
   const [selection, setSelection] = useState<ExportElementSelection>(
     cloneSelection(DEFAULT_EXPORT_SELECTION)
   );
@@ -90,8 +90,12 @@ export default function ExportsPage() {
       setIsExporting(true);
       const blob = await exportsApi.exportPresentation(sessionId);
       downloadBlob(blob, `${pyramid.metadata.project_name}_presentation.html`);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Presentation export failed:", err);
+      showToast(
+        err.response?.data?.detail || "Presentation export failed. Please try again.",
+        "error"
+      );
     } finally {
       setIsExporting(false);
     }
@@ -131,8 +135,12 @@ export default function ExportsPage() {
       }
 
       downloadBlob(blob, filename);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Export failed:", err);
+      showToast(
+        err.response?.data?.detail || "Export failed. Please try again.",
+        "error"
+      );
     } finally {
       setIsExporting(false);
     }
@@ -143,8 +151,12 @@ export default function ExportsPage() {
       setIsExporting(true);
       const blob = await exportsApi.downloadAIGuide();
       downloadBlob(blob, "AI_Strategy_Guide.md");
-    } catch (err) {
+    } catch (err: any) {
       console.error("Guide download failed:", err);
+      showToast(
+        err.response?.data?.detail || "Guide download failed. Please try again.",
+        "error"
+      );
     } finally {
       setIsExporting(false);
     }
