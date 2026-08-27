@@ -70,9 +70,19 @@ Or just open `index.html` directly in a browser (some browsers block
   escalation, overlays)
 - **Competency Administrator → Competency Framework Builder** — the real
   Competency Register and Role Profile Register from the scheme manual
-- **Manager → Individual Team Member Record** — an active restriction
-  generated from X-Ray Screening's own tiered failure-consequence rule, not a
-  fabricated example
+- **Manager → My Team Dashboard** — rebuilt against the 27 August session's
+  Appendix A.2 manager brief and stress-tested at 64 direct reports (not a
+  toy 12–15), so it actually proves out at the scale a real Security Officer
+  manager faces: search, status/zone filters, a "fully green" bucket that
+  collapses to a count instead of a wall, a competency rollup that's counts
+  not 1,024 individual cells, cross-team pattern surfacing, and a live toggle
+  testing OQ3 (does clicking an alert jump straight to the action, or open
+  the person's full record first?)
+- **Manager → Individual Team Member Record** — now driven by whichever team
+  member you clicked through from, with tasks framed as activities, a
+  post-remediation flag that stays visible until specifically cleared, and a
+  restriction generated from X-Ray Screening's own tiered failure-consequence
+  rule rather than a fabricated example
 - **"About this prototype"** (info icon in the sidebar, or the logo) — Sections
   1, 3, 4, 5 and 6 of the spec, plus what this prototype is grounded in and
   the full amendments log
@@ -96,6 +106,13 @@ Or just open `index.html` directly in a browser (some browsers block
   manipulation summaries, hierarchical catalogue browsing) take cues from the
   early wireframes supplied alongside the backlog and scheme manual, applied
   through this prototype's own design system rather than copied wholesale.
+- The Manager screens were reworked against the 27 August 2026 "Experience
+  Principles & Persona Priorities" session unpack (Appendix A.2's include/avoid
+  list) and an earlier "Vitality" concept, which nailed most of that brief at
+  a 15-person scale — the rework's job was to prove the same principles hold
+  at a realistic headcount (64), where a flat list, a green-dot row, and a
+  single pattern card all stop working. The 64 names are generated except for
+  the ~15 with a specific narrative; none are real Heathrow staff.
 - This was generated for an internal working conversation with Publicis
   Sapient and the DBLX/HAL programme team — it does not use Heathrow's brand
   assets, only descriptive text.

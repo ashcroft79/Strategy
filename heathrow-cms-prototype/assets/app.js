@@ -216,6 +216,8 @@
         </div>
       </div>`);
     backdrop.addEventListener("click", (e) => {
+      const viewMember = e.target.closest("[data-view-member]");
+      if (viewMember) { backdrop.remove(); selectMemberAndNavigate(viewMember.dataset.viewMember); return; }
       if (e.target === backdrop || e.target.closest(".mc-close") || e.target.closest('[data-act="cancel"]')) backdrop.remove();
       if (e.target.closest('[data-act="save"]')) { backdrop.remove(); onSave && onSave(); }
     });
@@ -1014,48 +1016,259 @@
 
   // ---------------------------------------------------------
   // HERO: Manager / My Team Dashboard  [1-1]
+  //
+  // Rebuilt against the 27 Aug Experience Principles & Persona Priorities
+  // session brief (Appendix A.2) and stress-tested at a realistic Security
+  // Officer manager's headcount — 64 direct reports across four zones, not
+  // the 12-15 a toy example gets away with. The point of this screen is that
+  // "needs action" and "due soon" stay a short, readable list at any
+  // headcount, while "fully green" collapses to a count instead of a wall.
   // ---------------------------------------------------------
-  const TEAM = [
-    { name: "Aisha Bello", role: "Security Officer, T5", score: 92, flag: "" },
-    { name: "Marcus Reid", role: "Security Officer, T3", score: 68, flag: "Assessment overdue" },
-    { name: "Priya Shah", role: "Engineering Technician", score: 54, flag: "Not competent, confident — CMS-105" },
-    { name: "Tom Whitfield", role: "Security Officer, T5", score: 97, flag: "" },
-    { name: "Grace Ilori", role: "Airside Operative", score: 81, flag: "Renewal due in 9 days" },
-    { name: "Sam O'Neill", role: "Security Officer, T3", score: 45, flag: "Suspended — CMS-111" },
+  const ZONES = ["Lanes 4–5", "Lanes 6–7", "Lanes 8–9", "Fast Track & Staff Search"];
+
+  const ROSTER_FIRST = ["Elena", "Marcus", "Priya", "Sam", "Grace", "Tomasz", "Aaliyah", "Connor", "Fatima", "Declan",
+    "Nadia", "Ben", "Yusuf", "Chloe", "Kwame", "Freya", "Amir", "Holly", "Ravi", "Megan",
+    "Idris", "Erin", "Callan", "Simone", "Ola", "Nathan", "Dina", "Lewis", "Bianca", "Owen",
+    "Zara", "Finn", "Aisling", "Rohan", "Paige", "Kofi", "Millie", "Aiden", "Nasrin", "Cody",
+    "Ife", "Ellis", "Wanjiru", "Reuben", "Saoirse", "Youssef", "Tegan", "Marek", "Isla"];
+  const ROSTER_LAST = ["Okoye", "Whitfield", "Malik", "O'Neill", "Ilori", "Nowak", "Hassan", "Byrne", "Rahman", "Doyle",
+    "Petrova", "Sullivan", "Ahmed", "Fitzgerald", "Mensah", "Callaghan", "Farouk", "Bennett", "Chowdhury", "Walsh",
+    "Bello", "Kavanagh", "Osei", "Marchetti", "Adeyemi", "Brennan", "Haque", "Doherty", "Costa", "Flanagan",
+    "Iqbal", "Gallagher", "Ncube", "Sharma", "Kelleher", "Boateng", "Hughes", "Karimi", "Moriarty", "Reilly",
+    "Adegoke", "Maguire", "Kariuki", "Lynch", "Ferreira", "Naderi", "Quinn", "Zielinski", "Cassidy"];
+
+  const RED_FLAGS = [
+    { name: "Leah Ferris", zone: ZONES[0], score: 41, flagLabel: "Restriction applied", action: "restriction",
+      narrative: "Unannounced observation (C&D) — serious deficiency logged 2 days ago. Restricted to screen & bag searching pending retraining." },
+    { name: "Dana Okafor", zone: ZONES[1], score: 58, flagLabel: "TIP below threshold", action: "coaching",
+      narrative: "TIP capture rate 71% this month — 70–74.9% tier: 1 hr 1:1 coaching plus a DNXCT re-sit required." },
+    { name: "Priya Shah", zone: ZONES[2], score: 63, flagLabel: "Verify at next observation", action: "observation", postRemediation: true,
+      narrative: "Returned from remediation on 18 Aug after a Search Baggage retrain — flagged to specifically verify technique at your next observation." },
+    { name: "Sam O'Neill", zone: ZONES[3], score: 38, flagLabel: "Suspended", action: "review",
+      narrative: "Suspended from all duties pending investigation of an incident on 9 Mar — CMS-111." },
+    { name: "Grace Ilori", zone: ZONES[0], score: 55, flagLabel: "Recurrent expired", action: "book",
+      narrative: "Liquids Testing recurrent expired 3 days ago — not deployable on this duty until re-certified." },
+    { name: "Marcus Reid", zone: ZONES[1], score: 49, flagLabel: "TIP below threshold", action: "restriction",
+      narrative: "TIP capture rate 61% this month — 25–69.9% tier: restricted duties on screen & bag searching applied automatically." },
   ];
+
+  const AMBER_FLAGS = [
+    { name: "Marcus Webb", zone: ZONES[2], score: 84, dueDays: 5, action: "book", narrative: "DNXCT recurrent due this week — X-Ray Screening authorisation." },
+    { name: "Callum Reyes", zone: ZONES[3], score: 88, dueDays: 9, action: "book", narrative: "Liquids Testing recurrent expiring in 9 days." },
+    { name: "Nadia Farouk", zone: ZONES[0], score: 86, dueDays: 12, action: "book", narrative: "GSOR Module 6 recurrent expires in 12 days — X-Ray Screening authorisation." },
+    { name: "Ben Doherty", zone: ZONES[1], score: 90, dueDays: 14, action: "book", narrative: "Access Control recurrent expiring in 14 days." },
+    { name: "Aaliyah Petrova", zone: ZONES[2], score: 82, dueDays: null, action: "coaching", narrative: "TIP capture rate 78% this month — approaching the 75–79.9% monitoring band." },
+    { name: "Declan Byrne", zone: ZONES[3], score: 89, dueDays: 6, action: "book", narrative: "Search Baggage recurrent expiring in 6 days." },
+    { name: "Chloe Kelleher", zone: ZONES[0], score: 91, dueDays: 20, action: "book", narrative: "WTMD/HHMD recurrent expiring in 20 days." },
+    { name: "Kwame Boateng", zone: ZONES[1], score: 87, dueDays: null, action: "note", narrative: "Returning from planned leave on 2 Sep — recurrent training resumes." },
+    { name: "Erin Gallagher", zone: ZONES[2], score: 85, dueDays: 16, action: "book", narrative: "ETD recurrent expiring in 16 days." },
+  ];
+
+  function buildRoster() {
+    const named = new Set([...RED_FLAGS, ...AMBER_FLAGS].map((p) => p.name));
+    const green = [];
+    let fi = 0, li = 0;
+    while (green.length < 49) {
+      const name = `${ROSTER_FIRST[fi % ROSTER_FIRST.length]} ${ROSTER_LAST[li % ROSTER_LAST.length]}`;
+      fi++; li += 3;
+      if (named.has(name) || green.some((g) => g.name === name)) continue;
+      green.push({ name, zone: ZONES[green.length % ZONES.length], score: 90 + (green.length * 7) % 11, status: "green" });
+    }
+    const reds = RED_FLAGS.map((p) => ({ ...p, status: "red" }));
+    const ambers = AMBER_FLAGS.map((p) => ({ ...p, status: "amber" }));
+    return [...reds, ...ambers, ...green].map((p, i) => ({ ...p, id: i, initials: p.name.split(" ").map((n) => n[0]).join("") }));
+  }
+  const ROSTER = buildRoster();
+  const ROSTER_AVATAR_COLORS = ["#3b7dd8", "#c07d0f", "#8a5cf6", "#0f9c8f", "#d13b2c", "#344054", "#1a9c5f", "#8a5cf6"];
+  function rosterColor(id) { return ROSTER_AVATAR_COLORS[id % ROSTER_AVATAR_COLORS.length]; }
+  function rosterMember(id) { return ROSTER.find((p) => p.id === Number(id)); }
+
+  const ACTION_LABELS = {
+    restriction: "Review restriction", coaching: "Log a 1:1", observation: "Start observation",
+    review: "Review suspension", book: "Book recurrent", note: "Acknowledge",
+  };
+
+  let selectedMemberId = null;
+  const teamUi = { query: "", statusFilter: "all", zoneFilter: "all", sort: "priority", showGreen: false, oq3Mode: "activity", showAllCompetencies: false };
+
+  function selectMemberAndNavigate(id) { selectedMemberId = Number(id); navigate(1, 3); }
+
+  function computeFilteredRoster() {
+    const q = teamUi.query.trim().toLowerCase();
+    const order = { red: 0, amber: 1, green: 2 };
+    let list = ROSTER.filter((p) => {
+      if (q && !p.name.toLowerCase().includes(q)) return false;
+      if (teamUi.zoneFilter !== "all" && p.zone !== teamUi.zoneFilter) return false;
+      if (teamUi.statusFilter !== "all" && p.status !== teamUi.statusFilter) return false;
+      return true;
+    });
+    if (teamUi.sort === "priority") list = list.slice().sort((a, b) => order[a.status] - order[b.status] || (a.dueDays ?? 999) - (b.dueDays ?? 999) || a.name.localeCompare(b.name));
+    else if (teamUi.sort === "name") list = list.slice().sort((a, b) => a.name.localeCompare(b.name));
+    else if (teamUi.sort === "score") list = list.slice().sort((a, b) => a.score - b.score);
+    return list;
+  }
+
+  function memberRowHtml(p) {
+    return `
+      <div class="task-row" style="align-items:flex-start;padding:14px 18px">
+        <div class="avatar-ring" style="background:${rosterColor(p.id)};margin-top:1px">${esc(p.initials)}</div>
+        <div class="t-body">
+          <div class="t-title">${esc(p.name)} <span class="phase-tag">${esc(p.zone)}</span>${p.postRemediation ? '<span class="under-review-tag" style="color:var(--navy-600);background:var(--blue-100)">Post-remediation</span>' : ""}</div>
+          <div class="t-sub">${esc(p.narrative)}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:0 0 auto">
+          <span class="status-pill status-${p.status === "red" ? "bad" : "warn"}">${esc(p.flagLabel || (p.dueDays != null ? p.dueDays + "d" : "Due soon"))}</span>
+          <div style="display:flex;gap:8px">
+            <span class="inline-link" style="font-size:11.5px" data-view-member="${p.id}">View record</span>
+            <button class="btn btn-primary" style="padding:5px 12px;font-size:11.5px" data-action-member="${p.id}">${esc(ACTION_LABELS[p.action] || "Act")}</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function renderTeamListHtml() {
+    const list = computeFilteredRoster();
+    const actionable = list.filter((p) => p.status !== "green");
+    const greenList = list.filter((p) => p.status === "green");
+    const totalGreenAvailable = ROSTER.filter((p) => p.status === "green").length;
+    const zoneCounts = {};
+    greenList.forEach((p) => { zoneCounts[p.zone] = (zoneCounts[p.zone] || 0) + 1; });
+
+    return `
+      <div class="ph-sub" style="margin-bottom:10px">${list.length} of ${ROSTER.length} shown</div>
+      ${actionable.length ? `<div class="panel"><div class="panel-body">${actionable.map(memberRowHtml).join("")}</div></div>` : `<div class="empty-note">No one needing action or due soon matches this filter.</div>`}
+      ${greenList.length ? `
+        <div class="panel" style="margin-top:14px">
+          <div class="panel-head" style="cursor:pointer" data-toggle-green="1">
+            <div><h3>Fully green (${greenList.length}${greenList.length !== totalGreenAvailable ? ` of ${totalGreenAvailable}` : ""})</h3><div class="ph-sub">${Object.entries(zoneCounts).map(([z, n]) => `${n} ${z}`).join(" · ")}</div></div>
+            <span class="inline-link" data-toggle-green="1">${teamUi.showGreen ? "Collapse" : "View all"} &rarr;</span>
+          </div>
+          ${teamUi.showGreen ? `
+          <div class="table-wrap" style="border:none;box-shadow:none">
+            <table class="data-table">
+              <thead><tr><th>Name</th><th>Zone</th><th>Composite</th></tr></thead>
+              <tbody>${greenList.map((p) => `<tr class="clickable-row" data-view-member="${p.id}"><td class="tc-name">${esc(p.name)}</td><td class="tc-what">${esc(p.zone)}</td><td class="tc-what">${p.score}%</td></tr>`).join("")}</tbody>
+            </table>
+          </div>` : ""}
+        </div>` : ""}
+    `;
+  }
+
+  function refreshTeamList() {
+    const region = document.getElementById("team-list-region");
+    if (region) region.innerHTML = renderTeamListHtml();
+  }
+
+  function openMemberActionModal(p) {
+    const label = ACTION_LABELS[p.action] || "Act";
+    openModal(label, `
+      <p style="margin-top:0;color:var(--ink-500)">For <strong>${esc(p.name)}</strong> (${esc(p.zone)}) — ${esc(p.narrative)}</p>
+      <label>Notes</label>
+      <textarea rows="3" placeholder="Optional notes..."></textarea>
+      <div style="margin-top:12px"><span class="inline-link" data-view-member="${p.id}" style="font-size:12px">Prefer to open ${esc(p.name.split(" ")[0])}'s full record instead? &rarr;</span></div>
+    `, () => toast(`${label} — ${p.name} (prototype — not persisted)`));
+  }
 
   function heroTeamDashboard() {
     const persona = SD.personas[1];
     const screen = persona.screens[1];
     const remainingIds = ["SYS-69", "CMS-101", "CMS-105", "AS-48"];
-    const compliant = TEAM.filter((t) => t.score >= 90).length;
-    const overdue = TEAM.filter((t) => t.risk === "bad").length;
+    const needToday = ROSTER.filter((p) => p.status === "red").length;
+    const dueSoon = ROSTER.filter((p) => p.status === "amber").length;
+    const green = ROSTER.filter((p) => p.status === "green").length;
+    const rollup = SCHEME.competencyRegister.map((c, i) => {
+      const red = Math.max(0, 3 - (i % 4));
+      const amber = 2 + ((i * 3) % 6);
+      return { name: c.name, red, amber, green: ROSTER.length - red - amber };
+    });
     return `<div class="main" id="main">
-      ${screenHeader(persona, screen)}
+      ${screenHeader(persona, screen, `<span class="meta-chip">${ROSTER.length} direct reports across ${ZONES.length} zones</span>`)}
+
+      <div class="empty-note" style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px">
+        <div><strong>Your own compliance — on track.</strong> GSS recertification (course + supervisory DNXCT) is rostered, not something you need to action. It's kept on its own screen so it never competes with your team's alerts.</div>
+        <span class="inline-link" id="goto-own-compliance">View my compliance &rarr;</span>
+      </div>
+
       <div class="action-chip-row">
         ${QUICK_ACTIONS.map((qa, i) => `<div class="action-chip" data-qa="${i}"><span class="ac-icon">${icon(qa.icon)}</span>${esc(qa.label)}</div>`).join("")}
       </div>
+
       <div class="kpi-row">
-        <div class="kpi-card"><div class="kpi-label">Team compliance (CMS-68)</div><div class="kpi-value">${Math.round((compliant / TEAM.length) * 100)}%</div><div class="kpi-sub">${statusPill(thresholdBand(Math.round((compliant / TEAM.length) * 100)).band, "composite score")}</div></div>
-        <div class="kpi-card"><div class="kpi-label">High-risk (SYS-63)</div><div class="kpi-value" style="color:var(--bad-700)">${overdue}</div><div class="kpi-sub kpi-bad">needs action this week</div></div>
-        <div class="kpi-card"><div class="kpi-label">Assessments this month (AS-42)</div><div class="kpi-value">14</div><div class="kpi-sub kpi-good">91% pass rate</div></div>
-        <div class="kpi-card"><div class="kpi-label">Overdue training (SYS-68)</div><div class="kpi-value">3</div><div class="kpi-sub kpi-warn">across 2 team members</div></div>
+        <div class="kpi-card"><div class="kpi-label">Need action today</div><div class="kpi-value" style="color:var(--bad-700)">${needToday}</div><div class="kpi-sub kpi-bad">of ${ROSTER.length} direct reports</div></div>
+        <div class="kpi-card"><div class="kpi-label">Due soon</div><div class="kpi-value" style="color:var(--warn-700)">${dueSoon}</div><div class="kpi-sub kpi-warn">recurrents &amp; TIP bands</div></div>
+        <div class="kpi-card"><div class="kpi-label">Fully green</div><div class="kpi-value" style="color:var(--good-700)">${green}</div><div class="kpi-sub kpi-good">${Math.round((green / ROSTER.length) * 100)}% of team</div></div>
+        <div class="kpi-card"><div class="kpi-label">Assessments this month (AS-42)</div><div class="kpi-value">37</div><div class="kpi-sub kpi-good">89% pass rate</div></div>
       </div>
-      <div class="team-table-wrap" style="margin-bottom:22px">
-        <table class="team-table">
-          <thead><tr><th>Team member</th><th>Composite readiness</th><th>Heatmap</th><th>Flag</th><th></th></tr></thead>
-          <tbody>
-            ${TEAM.map((t, i) => `
-              <tr data-member="${i}">
-                <td><div class="name-cell"><div class="avatar-ring" style="background:${["#3b7dd8", "#c07d0f", "#8a5cf6", "#0f9c8f", "#d13b2c", "#344054"][i % 6]}">${t.name.split(" ").map((n) => n[0]).join("")}</div><div><div class="nc-name">${esc(t.name)}</div><div class="nc-role">${esc(t.role)}</div></div></div></td>
-                <td style="width:220px">${progressBar(t.score)}</td>
-                <td><span class="heat-chip" style="background:var(--${thresholdBand(t.score).band}-500)"></span></td>
-                <td style="font-size:12px;color:var(--ink-500)">${esc(t.flag) || "&mdash;"}</td>
-                <td style="text-align:right"><span class="inline-link" style="font-size:12px">View &rarr;</span></td>
-              </tr>`).join("")}
-          </tbody>
-        </table>
+
+      <div class="empty-note" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px">
+        <div><strong>Testing OQ3</strong> (still open from 27 Aug): clicking a team member's action below can either jump straight into the action, or open their full record first.</div>
+        <div class="pill-tabs" style="margin:0;border:none">
+          <div class="pill-tab ${teamUi.oq3Mode === "activity" ? "active" : ""}" data-oq3-mode="activity" style="margin-right:14px">Jump to action</div>
+          <div class="pill-tab ${teamUi.oq3Mode === "competency" ? "active" : ""}" data-oq3-mode="competency">Open full record</div>
+        </div>
       </div>
+
+      <div class="panel" style="margin-bottom:4px">
+        <div class="panel-body pad" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <input id="team-search-input" type="text" placeholder="Search your team by name&hellip;" value="${esc(teamUi.query)}" style="flex:1;min-width:200px;padding:9px 12px;border:1px solid var(--ink-300);border-radius:8px;font-size:13px;outline:none" />
+          <select id="team-status-filter" style="padding:9px 10px;border:1px solid var(--ink-300);border-radius:8px;font-size:12.5px">
+            <option value="all" ${teamUi.statusFilter === "all" ? "selected" : ""}>All statuses</option>
+            <option value="red" ${teamUi.statusFilter === "red" ? "selected" : ""}>Needs action</option>
+            <option value="amber" ${teamUi.statusFilter === "amber" ? "selected" : ""}>Due soon</option>
+            <option value="green" ${teamUi.statusFilter === "green" ? "selected" : ""}>Fully green</option>
+          </select>
+          <select id="team-zone-filter" style="padding:9px 10px;border:1px solid var(--ink-300);border-radius:8px;font-size:12.5px">
+            <option value="all" ${teamUi.zoneFilter === "all" ? "selected" : ""}>All zones</option>
+            ${ZONES.map((z) => `<option value="${esc(z)}" ${teamUi.zoneFilter === z ? "selected" : ""}>${esc(z)}</option>`).join("")}
+          </select>
+          <select id="team-sort-select" style="padding:9px 10px;border:1px solid var(--ink-300);border-radius:8px;font-size:12.5px">
+            <option value="priority" ${teamUi.sort === "priority" ? "selected" : ""}>Sort: what needs me first</option>
+            <option value="name" ${teamUi.sort === "name" ? "selected" : ""}>Sort: name</option>
+            <option value="score" ${teamUi.sort === "score" ? "selected" : ""}>Sort: composite score</option>
+          </select>
+        </div>
+      </div>
+      <div id="team-list-region" style="margin-bottom:22px">${renderTeamListHtml()}</div>
+
+      <div class="two-col" style="margin-bottom:22px">
+        <div class="panel">
+          <div class="panel-head"><div><h3>Team compliance by competency</h3><div class="ph-sub">All ${ROSTER.length} officers rolled up per competency — not ${ROSTER.length * 16} individual cells (CMS-68)</div></div></div>
+          <div class="panel-body pad" style="display:flex;flex-direction:column;gap:10px">
+            ${rollup.slice(0, teamUi.showAllCompetencies ? rollup.length : 4).map((r) => `
+              <div style="display:flex;align-items:center;gap:12px">
+                <div style="width:150px;font-size:12px;font-weight:600">${esc(r.name)}</div>
+                <div style="flex:1;display:flex;height:9px;border-radius:999px;overflow:hidden;background:var(--ink-100)">
+                  <div style="width:${(r.green / ROSTER.length) * 100}%;background:var(--good-500)"></div>
+                  <div style="width:${(r.amber / ROSTER.length) * 100}%;background:var(--warn-500)"></div>
+                  <div style="width:${(r.red / ROSTER.length) * 100}%;background:var(--bad-500)"></div>
+                </div>
+                <div style="font-size:11px;color:var(--ink-500);width:70px;text-align:right">${r.green}·${r.amber}·${r.red}</div>
+              </div>`).join("")}
+            <div style="font-size:11.5px;color:var(--ink-500)">
+              ${teamUi.showAllCompetencies ? "" : `${SCHEME.competencyRegister.length - 4} more competencies — `}
+              <span class="inline-link" data-toggle-competencies="1">${teamUi.showAllCompetencies ? "Show fewer" : "Show all 16"} &rarr;</span>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Coaching activity</h3><div class="ph-sub">You, versus other Ground Security Supervisors this quarter</div></div>
+          <div class="panel-body pad" style="display:flex;flex-direction:column;gap:12px">
+            <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>You</span><span style="font-weight:700">11</span></div>${progressBar(100)}</div>
+            <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Division average</span><span style="font-weight:700">8</span></div><div class="progress-track"><div class="progress-fill" style="width:${(8 / 11) * 100}%;background:var(--ink-300)"></div></div></div>
+            <div style="font-size:11.5px;color:var(--ink-500)">A steady coaching rhythm keeps the whole team ahead of recurrent expiry, not just compliant on paper.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <h2>Patterns worth knowing</h2>
+        <div class="sb-sub">Surfaced across the team, not per person — what a flat list of ${ROSTER.length} people would bury</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div class="panel"><div class="panel-body pad" style="border-left:3px solid var(--blue-500)">Priya Shah needed remedial coaching on Search Baggage technique twice in the last six months; in the same period her Liquids Testing recurrent lapsed once. Worth checking whether the two are connected before her next observation.</div></div>
+          <div class="panel"><div class="panel-body pad" style="border-left:3px solid var(--blue-500)">Three officers on Lanes 6–7 (Dana Okafor, Marcus Reid, Aaliyah Petrova) have logged TIP capture rates below 75% this month — worth a zone-level toolbox talk rather than three separate coaching conversations.</div></div>
+        </div>
+      </div>
+
       <div class="section-block">
         <h2>Also on this screen</h2>
         <div class="sb-sub">Remaining backlog-traced components not shown in the mock-up above</div>
@@ -1069,67 +1282,111 @@
     document.querySelectorAll(".action-chip[data-qa]").forEach((chip) => {
       chip.addEventListener("click", () => openQuickActionModal(QUICK_ACTIONS[Number(chip.dataset.qa)]));
     });
-    document.querySelectorAll(".team-table tbody tr[data-member]").forEach((row) => {
-      row.addEventListener("click", () => navigate(1, 3));
-    });
+    document.getElementById("goto-own-compliance")?.addEventListener("click", () => navigate(1, 0));
   }
 
   // ---------------------------------------------------------
   // HERO: Manager / Individual Team Member Record  [1-3]
   // ---------------------------------------------------------
+  const ACTION_TASKS = {
+    restriction: ["Review and confirm the restriction terms", "Schedule the re-assessment window"],
+    coaching: ["Attend the 1:1 coaching session you log", "Book their DNXCT re-sit"],
+    observation: ["Complete the verification observation", "Confirm the specific technique flagged is now sound"],
+    review: ["Attend the investigation review meeting", "Confirm return-to-duty conditions once resolved"],
+    book: ["Book their recurrent training slot", "Confirm the deployment gap is covered until then"],
+    note: ["Confirm their return-to-duty date", "Re-check recurrent training booking on return"],
+  };
+
+  function deploymentStatus(p) {
+    if (p.status === "green") return { band: "good", label: "Deployable" };
+    if (p.action === "review") return { band: "bad", label: "Suspended" };
+    if (p.action === "restriction") return { band: "bad", label: "Restricted" };
+    if (p.status === "red" && p.action === "book") return { band: "bad", label: "Not deployable — recurrent expired" };
+    if (p.postRemediation) return { band: "warn", label: "Deployable — post-remediation watch" };
+    if (p.status === "red") return { band: "warn", label: "Deployable — under coaching" };
+    return { band: "warn", label: "Deployable" };
+  }
+
   function heroTeamMemberRecord() {
     const persona = SD.personas[1];
     const screen = persona.screens[3];
-    const member = TEAM[1];
+    const member = rosterMember(selectedMemberId != null ? selectedMemberId : 0) || ROSTER[0];
+    const dep = deploymentStatus(member);
+    const tasks = ACTION_TASKS[member.action] || ["Check in on current status"];
     const statusActionIds = ["CMS-111", "CMS-117", "CMS-70"];
     const devIds = ["CMS-67", "CMS-115", "CMS-114"];
     const assessIds = ["CMS-66", "CMS-69"];
+    const history = [
+      { t: `Field observation logged — ${SCHEME.competencyRegister[member.id % SCHEME.competencyRegister.length].name}`, d: "6 weeks ago" },
+      { t: "1:1 conversation logged", d: "2 months ago" },
+      { t: "Evidence uploaded — First Aid recertification", d: "3 months ago" },
+    ];
     return `<div class="main" id="main">
-      ${screenHeader(persona, screen)}
+      ${screenHeader(persona, screen, `<span class="meta-chip">Viewing ${esc(member.name)} &middot; <span class="inline-link" id="back-to-team">back to team &rarr;</span></span>`)}
       <div class="panel" style="margin-bottom:18px">
         <div class="panel-body pad" style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
-          <div class="avatar-ring" style="width:56px;height:56px;font-size:16px;background:#c07d0f">MR</div>
+          <div class="avatar-ring" style="width:56px;height:56px;font-size:16px;background:${rosterColor(member.id)}">${esc(member.initials)}</div>
           <div style="flex:1;min-width:200px">
             <div style="font-weight:700;font-size:15px">${esc(member.name)}</div>
-            <div style="font-size:12.5px;color:var(--ink-500)">${esc(member.role)} &middot; Employee ID 40218</div>
+            <div style="font-size:12.5px;color:var(--ink-500)">Security Officer &middot; ${esc(member.zone)} &middot; Employee ID SO-${String(10000 + member.id)}</div>
           </div>
-          <div class="gauge-row">${gaugeRing(member.score)}<div><div style="font-size:11.5px;color:var(--ink-500)">Composite readiness</div>${statusPill(thresholdBand(member.score).band, thresholdBand(member.score).label)}</div></div>
+          <div class="gauge-row">${gaugeRing(member.score)}<div><div style="font-size:11.5px;color:var(--ink-500)">Composite readiness</div>${statusPill(dep.band, dep.label)}</div></div>
+          <button class="btn btn-primary" data-action-member="${member.id}">${esc(ACTION_LABELS[member.action] || "Start observation")}</button>
         </div>
       </div>
+
+      ${member.postRemediation ? `
+      <div class="empty-note" style="margin-bottom:18px;border-color:#c7dcf7">
+        <strong>Post-remediation flag.</strong> ${esc(member.narrative)} This stays visible here until specifically cleared at the next observation — not buried back into a flat competency list.
+      </div>` : member.status !== "green" ? `
+      <div class="empty-note" style="margin-bottom:18px">${esc(member.narrative)}</div>` : `
+      <div class="empty-note" style="margin-bottom:18px">Fully green — nothing currently needs your action for ${esc(member.name.split(" ")[0])}.</div>`}
+
+      <div class="section-block">
+        <h2>What ${esc(member.name.split(" ")[0])} needs — and what you need to do</h2>
+        <div class="sb-sub">Framed as activities, not the raw requirements underneath them</div>
+        <div class="panel">
+          <div class="panel-body">
+            ${tasks.map((t) => `<div class="task-row"><div class="task-check"></div><div class="t-body"><div class="t-title">${esc(t)}</div></div></div>`).join("")}
+          </div>
+        </div>
+      </div>
+
       <div class="section-block">
         <h2>Status &amp; actions</h2>
         <div class="sb-sub">Suspension / restriction / exemption / override — every transaction is audited (CMS-111)</div>
         <div class="kpi-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:14px">
-          <div class="kpi-card"><div class="kpi-label">Restrictions</div><div class="kpi-value" style="color:var(--bad-700)">1</div></div>
-          <div class="kpi-card"><div class="kpi-label">Suspensions</div><div class="kpi-value" style="color:var(--warn-700)">0</div></div>
+          <div class="kpi-card"><div class="kpi-label">Restrictions</div><div class="kpi-value" style="color:var(--bad-700)">${member.action === "restriction" ? 1 : 0}</div></div>
+          <div class="kpi-card"><div class="kpi-label">Suspensions</div><div class="kpi-value" style="color:var(--warn-700)">${member.action === "review" ? 1 : 0}</div></div>
           <div class="kpi-card"><div class="kpi-label">Exemptions</div><div class="kpi-value">0</div></div>
           <div class="kpi-card"><div class="kpi-label">Overrides</div><div class="kpi-value">0</div></div>
-          <div class="kpi-card"><div class="kpi-label">Paused</div><div class="kpi-value">1</div></div>
+          <div class="kpi-card"><div class="kpi-label">Paused</div><div class="kpi-value">${member.postRemediation ? 1 : 0}</div></div>
         </div>
+        ${member.status !== "green" ? `
         <div class="table-wrap" style="margin-bottom:16px">
           <table class="data-table">
-            <thead><tr><th>Type</th><th>Scope / competency</th><th>Reason</th><th>Applied</th><th>Status</th></tr></thead>
+            <thead><tr><th>Type</th><th>Reason</th><th>Status</th></tr></thead>
             <tbody>
               <tr>
-                <td><span class="moscow-badge moscow-must">Restriction</span></td>
-                <td class="tc-name">X-Ray Screening — screen &amp; bag searching only</td>
-                <td class="tc-what">TIP score 58% — falls in the 25–69.9% tier of the competency's own failure &amp; consequence rules</td>
-                <td class="tc-what">12 Mar 2026</td>
-                <td>${statusPill("bad", "Active")}</td>
-              </tr>
-              <tr>
-                <td><span class="moscow-badge moscow-could">Paused</span></td>
-                <td class="tc-name">All competencies</td>
-                <td class="tc-what">Absence — Return-to-Duty requirements pending (CMS-117)</td>
-                <td class="tc-what">3 Mar 2026</td>
-                <td>${statusPill("warn", "Pending RTD")}</td>
+                <td><span class="moscow-badge ${member.status === "red" ? "moscow-must" : "moscow-should"}">${esc(member.flagLabel || "Due soon")}</span></td>
+                <td class="tc-what">${esc(member.narrative)}</td>
+                <td>${statusPill(dep.band, dep.label)}</td>
               </tr>
             </tbody>
           </table>
-        </div>
-        <div class="empty-note" style="margin-bottom:16px">The restriction above follows the tiered consequence rule specified for X-Ray Screening: 70–74.9% draws 1:1 coaching and a DNXCT re-sit; 25–69.9% draws restricted duties, as applied here. <span class="inline-link" data-competency="X-Ray Screening">View the X-Ray Screening specification &rarr;</span></div>
+        </div>` : `<div class="empty-note" style="margin-bottom:16px">No active restrictions, suspensions, exemptions or overrides.</div>`}
         <div class="card-grid">${statusActionIds.map((id) => componentCard(findComp(id))).join("")}</div>
       </div>
+
+      <div class="section-block">
+        <h2>Recent activity</h2>
+        <div class="panel">
+          <div class="panel-body">
+            ${history.map((h) => `<div class="task-row"><div class="t-body"><div class="t-title">${esc(h.t)}</div></div><div class="t-due" style="color:var(--ink-500)">${esc(h.d)}</div></div>`).join("")}
+          </div>
+        </div>
+      </div>
+
       <div class="section-block">
         <h2>Development &amp; track</h2>
         <div class="card-grid">${devIds.map((id) => componentCard(findComp(id))).join("")}</div>
@@ -1140,6 +1397,10 @@
       </div>
       ${footerNote()}
     </div>`;
+  }
+
+  function wireTeamMemberRecord() {
+    document.getElementById("back-to-team")?.addEventListener("click", () => navigate(1, 1));
   }
 
   // ---------------------------------------------------------
@@ -1365,7 +1626,7 @@
     "0-2": { render: heroColleagueCalendar },
     "0-3": { render: heroCompetencyRecord, wire: wireCompetencyRecord },
     "1-1": { render: heroTeamDashboard, wire: wireTeamDashboard },
-    "1-3": { render: heroTeamMemberRecord },
+    "1-3": { render: heroTeamMemberRecord, wire: wireTeamMemberRecord },
     "1-7": { render: heroDashboardConfig, wire: wireDashboardConfig },
     "2-1": { render: heroConductObservation, wire: wireConductObservation },
     "6-0": { render: heroExecDashboard },
@@ -1488,11 +1749,25 @@
     }
   }
 
-  window.addEventListener("hashchange", () => { parseHash(); render(); });
+  window.addEventListener("hashchange", () => { closeAllPanels(); closeDrawer(); parseHash(); render(); });
 
   function wireGlobalDelegatedClicks() {
-    document.getElementById("app").addEventListener("click", (e) => {
-      if (e.target.closest(".drawer-backdrop") || e.target.closest(".modal-backdrop") || e.target.closest(".dropdown-panel")) return;
+    const app = document.getElementById("app");
+    app.addEventListener("click", (e) => {
+      const actionMember = e.target.closest("[data-action-member]");
+      if (actionMember) {
+        const p = rosterMember(actionMember.dataset.actionMember);
+        if (p) { if (teamUi.oq3Mode === "competency") selectMemberAndNavigate(p.id); else openMemberActionModal(p); }
+        return;
+      }
+      const viewMember = e.target.closest("[data-view-member]");
+      if (viewMember) { selectMemberAndNavigate(viewMember.dataset.viewMember); return; }
+      const toggleGreen = e.target.closest("[data-toggle-green]");
+      if (toggleGreen) { teamUi.showGreen = !teamUi.showGreen; refreshTeamList(); return; }
+      const oq3 = e.target.closest("[data-oq3-mode]");
+      if (oq3) { teamUi.oq3Mode = oq3.dataset.oq3Mode; render(); return; }
+      const toggleComps = e.target.closest("[data-toggle-competencies]");
+      if (toggleComps) { teamUi.showAllCompetencies = !teamUi.showAllCompetencies; render(); return; }
       const amend = e.target.closest("[data-amend]");
       if (amend) { openAmendmentDrawer(amend.dataset.amend); return; }
       const spec = e.target.closest("[data-competency]");
@@ -1500,10 +1775,18 @@
       const story = e.target.closest("[data-story]");
       if (story) { openStoryDrawer(story.dataset.story); return; }
     });
-    document.getElementById("app").addEventListener("keydown", (e) => {
+    app.addEventListener("keydown", (e) => {
       if (e.key !== "Enter") return;
       const story = e.target.closest("[data-story]");
       if (story) openStoryDrawer(story.dataset.story);
+    });
+    app.addEventListener("input", (e) => {
+      if (e.target.id === "team-search-input") { teamUi.query = e.target.value; refreshTeamList(); }
+    });
+    app.addEventListener("change", (e) => {
+      if (e.target.id === "team-status-filter") { teamUi.statusFilter = e.target.value; refreshTeamList(); }
+      if (e.target.id === "team-zone-filter") { teamUi.zoneFilter = e.target.value; refreshTeamList(); }
+      if (e.target.id === "team-sort-select") { teamUi.sort = e.target.value; refreshTeamList(); }
     });
   }
 
