@@ -57,13 +57,13 @@
 
   function componentCard(c) {
     return `
-      <div class="component-card">
+      <div class="component-card clickable" data-story="${esc(c.storyId)}" tabindex="0">
         <div class="cc-top">
           <div class="cc-name">${esc(c.component)}</div>
           <span class="story-chip">${esc(c.storyId)}</span>
         </div>
         <div class="cc-what">${esc(c.what)}</div>
-        <div class="cc-foot">${badge(c.moscow)}</div>
+        <div class="cc-foot">${badge(c.moscow)}<span class="cc-viewmore">Full story &amp; AC &rarr;</span></div>
       </div>`;
   }
 
@@ -221,6 +221,175 @@
     });
     document.body.appendChild(backdrop);
   }
+
+  // ---------------------------------------------------------
+  // Detail drawer — backlog story / amendment / competency spec
+  // ---------------------------------------------------------
+  const BD = window.BACKLOG_DETAIL || {};
+  const AMEND = window.AMENDMENTS || {};
+  const SCHEME = window.COMPETENCY_SCHEME;
+
+  const AMEND_KEYS = Object.keys(AMEND).sort((a, b) => b.length - a.length);
+  const AMEND_RE = AMEND_KEYS.length ? new RegExp(`\\b(${AMEND_KEYS.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})\\b`, "g") : null;
+
+  function linkAmendments(text) {
+    const safe = esc(text);
+    if (!AMEND_RE) return safe;
+    return safe.replace(AMEND_RE, (m) => `<span class="amendment-chip" data-amend="${m}">${m}</span>`);
+  }
+
+  function closeDrawer() {
+    document.querySelectorAll(".drawer-backdrop").forEach((n) => n.remove());
+  }
+
+  function openDrawer(eyebrow, title, bodyHtml) {
+    closeDrawer();
+    closeAllPanels();
+    const backdrop = el(`
+      <div class="drawer-backdrop">
+        <div class="drawer">
+          <div class="drawer-head">
+            <div><div class="dh-eyebrow">${esc(eyebrow)}</div><h2>${esc(title)}</h2></div>
+            <button class="drawer-close">&times;</button>
+          </div>
+          <div class="drawer-body">${bodyHtml}</div>
+        </div>
+      </div>`);
+    backdrop.addEventListener("click", (e) => {
+      if (e.target === backdrop || e.target.closest(".drawer-close")) closeDrawer();
+    });
+    backdrop.addEventListener("click", (e) => {
+      const chip = e.target.closest("[data-amend]");
+      if (chip) openAmendmentDrawer(chip.dataset.amend);
+      const spec = e.target.closest("[data-competency]");
+      if (spec) openCompetencySpecDrawer(spec.dataset.competency);
+    });
+    document.body.appendChild(backdrop);
+  }
+
+  function metaGridItem(label, value) {
+    return `<div class="dmg-item"><div class="dmg-label">${esc(label)}</div><div class="dmg-value">${esc(value) || "&mdash;"}</div></div>`;
+  }
+
+  function openStoryDrawer(storyId) {
+    const d = BD[storyId];
+    if (!d) return;
+    const body = `
+      <div class="drawer-section">
+        <div class="drawer-story-sentence">${d.fullStory ? esc(d.fullStory) : `As a <b>${esc(d.asA) || "user"}</b>, I want to ${esc(d.iWantTo)}, so that ${esc(d.soThat)}`}</div>
+      </div>
+      <div class="drawer-section">
+        <div class="drawer-meta-grid">
+          ${metaGridItem("Module", d.module)}
+          ${metaGridItem("Function", d.function)}
+          ${metaGridItem("MoSCoW", d.moscow)}
+          ${metaGridItem("Phase", d.phase)}
+        </div>
+      </div>
+      ${d.acceptanceCriteria && d.acceptanceCriteria.length ? `
+      <div class="drawer-section">
+        <h4>Acceptance criteria</h4>
+        <ul class="drawer-ac-list">${d.acceptanceCriteria.map((a) => `<li>${esc(a)}</li>`).join("")}</ul>
+      </div>` : ""}
+      ${d.integrationRequirement ? `
+      <div class="drawer-section">
+        <h4>Integration requirement</h4>
+        <div class="drawer-note-box">${esc(d.integrationRequirement)}</div>
+      </div>` : ""}
+      ${d.changeStatus || d.changeRef ? `
+      <div class="drawer-section">
+        <h4>Change status</h4>
+        <div class="drawer-note-box">${esc(d.changeStatus)}${d.changeRef ? ` — ${linkAmendments(d.changeRef)}` : ""}</div>
+      </div>` : ""}
+      ${d.notes ? `
+      <div class="drawer-section">
+        <h4>Notes</h4>
+        <div class="drawer-note-box">${linkAmendments(d.notes)}</div>
+      </div>` : ""}
+      <div class="footer-note">Transcribed verbatim from the backlog workbook (${esc(d.buildCluster) || "unclustered"}). Click any <span class="amendment-chip" style="pointer-events:none">A00</span>-style reference to see the amendment it came from.</div>
+    `;
+    openDrawer(storyId, d.function || d.iWantTo || storyId, body);
+  }
+
+  function openAmendmentDrawer(code) {
+    const a = AMEND[code];
+    if (!a) return;
+    const body = `
+      <div class="drawer-section">
+        <div class="drawer-meta-grid">
+          ${metaGridItem("Type", a.type)}
+          ${metaGridItem("Status", a.status)}
+        </div>
+      </div>
+      <div class="drawer-section">
+        <div class="drawer-note-box" style="white-space:pre-line">${linkAmendments(a.full || a.short)}</div>
+      </div>
+    `;
+    openDrawer(`Amendment ${code}`, a.short || code, body);
+  }
+
+  function openCompetencySpecDrawer(name) {
+    if (!SCHEME) return;
+    const spec = SCHEME.specifications[name];
+    if (!spec) {
+      const reg = SCHEME.competencyRegister.find((c) => c.name === name);
+      openDrawer("Competency Register — Security", name, `
+        <div class="empty-note">Not yet specified in the source manual — listed in the Competency Register as ${esc(reg ? reg.status : "Draft")}, owned by ${esc(reg ? reg.owner : "Security L&C")}. The manual carries this forward as a placeholder for Security SMEs to populate, in the same pattern as X-Ray Screening.</div>
+      `);
+      return;
+    }
+    const body = `
+      <div class="drawer-section">
+        <div class="drawer-meta-grid">
+          ${metaGridItem("Category", spec.category)}
+          ${metaGridItem("Type", spec.type)}
+          ${metaGridItem("Validity", spec.validity)}
+          ${metaGridItem("Deployment threshold", spec.deploymentThreshold)}
+        </div>
+      </div>
+      <div class="drawer-section">
+        <h4>Purpose &amp; scope</h4>
+        <div class="drawer-note-box">${esc(spec.purpose)}</div>
+      </div>
+      <div class="drawer-section">
+        <h4>Stage structure</h4>
+        ${spec.stages.map((s) => `
+          <div class="spec-drawer-stage-row ${s.deployable ? "" : "not-deployable"}">
+            <div class="spec-drawer-stage-num">${s.n}</div>
+            <div style="flex:1"><div style="font-size:12.5px;font-weight:700">${esc(s.name)}</div><div style="font-size:11.5px;color:var(--ink-500)">${esc(s.meaning)}</div></div>
+            ${s.deployable ? statusPill("good", "Deployable") : `<span class="phase-tag">Not deployable</span>`}
+          </div>`).join("")}
+      </div>
+      ${spec.requirementsByStage.map((g) => `
+        <div class="drawer-section">
+          <h4>Requirements — ${esc(g.stage)}</h4>
+          <table class="mini-table"><thead><tr><th>Ref</th><th>Requirement</th><th>Type</th><th>Standard</th><th>Expiry</th></tr></thead>
+          <tbody>${g.rows.map((r) => `<tr><td>${esc(r.ref)}</td><td>${esc(r.requirement)}</td><td>${esc(r.type)}</td><td>${esc(r.standard)}</td><td>${esc(r.expiry)}</td></tr>`).join("")}</tbody></table>
+        </div>`).join("")}
+      <div class="drawer-section">
+        <h4>Maintaining competence</h4>
+        <table class="mini-table"><thead><tr><th>Requirement</th><th>Standard</th><th>Frequency</th></tr></thead>
+        <tbody>${spec.maintaining.map((r) => `<tr><td>${esc(r.requirement)}</td><td>${esc(r.standard)}</td><td>${esc(r.frequency)}</td></tr>`).join("")}</tbody></table>
+      </div>
+      <div class="drawer-section">
+        <h4>Failure &amp; consequence rules</h4>
+        <table class="mini-table"><thead><tr><th>Event</th><th>Consequence</th></tr></thead>
+        <tbody>${spec.failureConsequence.map((r) => `<tr><td style="font-weight:600;color:var(--ink-900)">${esc(r.event)}</td><td>${esc(r.consequence)}</td></tr>`).join("")}</tbody></table>
+      </div>
+      <div class="drawer-section">
+        <h4>Overlay applicability</h4>
+        ${spec.overlays.map((o) => `
+          <div class="overlay-row">
+            <div class="ov-name">${esc(o.name)}${o.underReview ? '<span class="under-review-tag">Under review</span>' : ""}</div>
+            <div class="ov-text">${esc(o.applicability)}</div>
+          </div>`).join("")}
+      </div>
+      <div class="footer-note">Reference: ${esc(spec.reference)} · Owning department: ${esc(spec.owningDepartment)} · Status: ${esc(spec.status)}. Some standards are drafted as "XX pass mark" pending SME sign-off — transcribed as-is from the source manual.</div>
+    `;
+    openDrawer("Competency Specification — Security", spec.name, body);
+  }
+
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeDrawer(); closeAllPanels(); } });
 
   function openQuickActionModal(qa) {
     openModal(qa.label, `
@@ -400,6 +569,8 @@
           <div class="nav-item" data-anchor="personas">Persona model</div>
           <div class="nav-item" data-anchor="stages">Journey stages</div>
           <div class="nav-item" data-anchor="systemwide">System-wide components</div>
+          <div class="nav-item" data-anchor="sources">Grounded in</div>
+          <div class="nav-item" data-anchor="amendments">Amendments log</div>
           <div class="nav-footer-link" id="back-to-app">${icon("grid")} Back to the prototype</div>
         </div>`;
     }
@@ -419,10 +590,16 @@
           <div class="sp-avatar" style="background:${meta.color}">${meta.code}</div>
           <div><div class="sp-name">${esc(persona.name)}</div><div class="sp-tag">${persona.screens.length} screens</div></div>
         </div>
+        <div class="nav-footer-link" id="persona-intro-link">${icon("user")} About this persona</div>
         <div class="nav-section-label">Screens</div>
         ${items}
         <div class="nav-footer-link" id="about-link">${icon("info")} About this prototype</div>
       </div>`;
+  }
+
+  function openPersonaIntroDrawer(personaIdx) {
+    const persona = SD.personas[personaIdx];
+    openDrawer("Persona", persona.name, `<div class="drawer-section"><div class="drawer-note-box">${linkAmendments(persona.intro)}</div></div>`);
   }
 
   function wireSidebar() {
@@ -441,6 +618,7 @@
       n.addEventListener("click", () => navigate(state.personaIdx, Number(n.dataset.si)));
     });
     document.getElementById("about-link").addEventListener("click", navigateAbout);
+    document.getElementById("persona-intro-link").addEventListener("click", () => openPersonaIntroDrawer(state.personaIdx));
   }
 
   // ---------------------------------------------------------
@@ -455,7 +633,7 @@
         <div class="screen-title-row">
           <h1 class="screen-title">${esc(screen.name)}<span class="screen-stage-pill">${icon("calendar")} ${esc(screen.stage)}</span></h1>
         </div>
-        <div class="screen-intro">${esc(screen.intro)}</div>
+        <div class="screen-intro">${linkAmendments(screen.intro)}</div>
         <div class="screen-meta-row">
           <span class="meta-chip">${screen.components.length} component${screen.components.length === 1 ? "" : "s"} traced to backlog</span>
           ${counts.Must ? `<span class="meta-chip"><span class="status-dot dot-bad"></span>${counts.Must} Must</span>` : ""}
@@ -477,7 +655,7 @@
             <thead><tr><th>Story</th><th>Component</th><th>What it does</th><th>MoSCoW / Phase</th></tr></thead>
             <tbody>
               ${screen.components.map((c) => `
-                <tr>
+                <tr class="clickable-row" data-story="${esc(c.storyId)}">
                   <td class="tc-id"><span class="story-chip">${esc(c.storyId)}</span></td>
                   <td class="tc-name">${esc(c.component)}</td>
                   <td class="tc-what">${esc(c.what)}</td>
@@ -736,14 +914,21 @@
   // ---------------------------------------------------------
   // HERO: Colleague / My Competency Record  [0-3]  (progressive disclosure)
   // ---------------------------------------------------------
-  const COMPETENCIES = [
-    { name: "Confined Space Entry", level: "Authorised", pct: 92, expiry: "3 Sep 2026" },
-    { name: "Manual Handling", level: "Authorised", pct: 88, expiry: "12 Dec 2026" },
-    { name: "Airside Driving Permit", level: "Provisional", pct: 64, expiry: "22 Sep 2026" },
-    { name: "First Aid at Work", level: "Authorised", pct: 95, expiry: "4 Mar 2027" },
-    { name: "Working at Height", level: "Training", pct: 40, expiry: "—" },
-    { name: "Lone Working", level: "Authorised", pct: 100, expiry: "1 Jun 2027" },
-  ];
+  // Grounded in the real Security Officer role profile (16 required competencies, all
+  // Regulatory/Standard, deployment-linked at Stage 3 — Authorised) from the Security
+  // Training & Competence Scheme Manual. Per-person level/pct/expiry are illustrative —
+  // the manual specifies the scheme, not individual employee records.
+  const COMPETENCY_LEVEL_BY_STAGE = ["Training", "Provisional", "Authorised"];
+  const COMPETENCIES = (SD_SCHEME_PROFILE_COMPS()).map((name, i) => {
+    const pattern = [92, 88, 64, 95, 40, 100, 84, 71, 97, 58, 90, 100, 76, 96, 82, 45];
+    const expiries = ["3 Sep 2026", "12 Dec 2026", "22 Sep 2026", "4 Mar 2027", "—", "1 Jun 2027", "9 Oct 2026", "30 Sep 2026", "14 Jan 2027", "2 Sep 2026", "19 Nov 2026", "1 Aug 2027", "27 Sep 2026", "15 Feb 2027", "6 Dec 2026", "—"];
+    const pct = pattern[i % pattern.length];
+    const level = pct < 50 ? "Training" : pct < 75 ? "Provisional" : "Authorised";
+    return { name, level, pct, expiry: expiries[i % expiries.length], specified: name === "X-Ray Screening" };
+  });
+  function SD_SCHEME_PROFILE_COMPS() {
+    return (window.COMPETENCY_SCHEME && window.COMPETENCY_SCHEME.securityOfficerProfile.competencies) || [];
+  }
 
   function heroCompetencyRecord() {
     const persona = SD.personas[0];
@@ -759,12 +944,12 @@
     const tabBody = {
       overview: `
         <div class="panel" style="margin-bottom:18px">
-          <div class="panel-head"><div><h3>My 6 competencies</h3><div class="ph-sub">Detail view — one click down from the dashboard (progressive disclosure)</div></div></div>
+          <div class="panel-head"><div><h3>My 16 competencies</h3><div class="ph-sub">Security Officer role profile — Security T&amp;C Scheme Manual. Click any row for its full specification.</div></div></div>
           <div class="panel-body pad">
             <div style="display:flex;flex-direction:column;gap:14px">
               ${COMPETENCIES.map((c) => `
-                <div style="display:flex;align-items:center;gap:16px">
-                  <div style="width:170px;font-size:12.5px;font-weight:600">${esc(c.name)}</div>
+                <div class="clickable-row" data-competency="${esc(c.name)}" style="display:flex;align-items:center;gap:16px;cursor:pointer">
+                  <div style="width:200px;font-size:12.5px;font-weight:600;line-height:1.35">${esc(c.name)}${c.specified ? '<span class="status-pill status-good" style="margin-left:6px;transform:scale(0.85);display:inline-flex">Specified</span>' : ""}</div>
                   <div style="width:90px"><span class="status-pill status-${thresholdBand(c.pct).band}">${esc(c.level)}</span></div>
                   <div style="flex:1">${progressBar(c.pct)}</div>
                   <div style="width:36px;font-size:11.5px;color:var(--ink-500);text-align:right">${c.pct}%</div>
@@ -807,12 +992,12 @@
     if (key === "overview") {
       return `
         <div class="panel" style="margin-bottom:18px">
-          <div class="panel-head"><div><h3>My 6 competencies</h3><div class="ph-sub">Detail view — one click down from the dashboard (progressive disclosure)</div></div></div>
+          <div class="panel-head"><div><h3>My 16 competencies</h3><div class="ph-sub">Security Officer role profile — Security T&amp;C Scheme Manual. Click any row for its full specification.</div></div></div>
           <div class="panel-body pad">
             <div style="display:flex;flex-direction:column;gap:14px">
               ${COMPETENCIES.map((c) => `
-                <div style="display:flex;align-items:center;gap:16px">
-                  <div style="width:170px;font-size:12.5px;font-weight:600">${esc(c.name)}</div>
+                <div class="clickable-row" data-competency="${esc(c.name)}" style="display:flex;align-items:center;gap:16px;cursor:pointer">
+                  <div style="width:200px;font-size:12.5px;font-weight:600;line-height:1.35">${esc(c.name)}${c.specified ? '<span class="status-pill status-good" style="margin-left:6px;transform:scale(0.85);display:inline-flex">Specified</span>' : ""}</div>
                   <div style="width:90px"><span class="status-pill status-${thresholdBand(c.pct).band}">${esc(c.level)}</span></div>
                   <div style="flex:1">${progressBar(c.pct)}</div>
                   <div style="width:36px;font-size:11.5px;color:var(--ink-500);text-align:right">${c.pct}%</div>
@@ -914,6 +1099,35 @@
       <div class="section-block">
         <h2>Status &amp; actions</h2>
         <div class="sb-sub">Suspension / restriction / exemption / override — every transaction is audited (CMS-111)</div>
+        <div class="kpi-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:14px">
+          <div class="kpi-card"><div class="kpi-label">Restrictions</div><div class="kpi-value" style="color:var(--bad-700)">1</div></div>
+          <div class="kpi-card"><div class="kpi-label">Suspensions</div><div class="kpi-value" style="color:var(--warn-700)">0</div></div>
+          <div class="kpi-card"><div class="kpi-label">Exemptions</div><div class="kpi-value">0</div></div>
+          <div class="kpi-card"><div class="kpi-label">Overrides</div><div class="kpi-value">0</div></div>
+          <div class="kpi-card"><div class="kpi-label">Paused</div><div class="kpi-value">1</div></div>
+        </div>
+        <div class="table-wrap" style="margin-bottom:16px">
+          <table class="data-table">
+            <thead><tr><th>Type</th><th>Scope / competency</th><th>Reason</th><th>Applied</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="moscow-badge moscow-must">Restriction</span></td>
+                <td class="tc-name">X-Ray Screening — screen &amp; bag searching only</td>
+                <td class="tc-what">TIP score 58% — falls in the 25–69.9% tier of the competency's own failure &amp; consequence rules</td>
+                <td class="tc-what">12 Mar 2026</td>
+                <td>${statusPill("bad", "Active")}</td>
+              </tr>
+              <tr>
+                <td><span class="moscow-badge moscow-could">Paused</span></td>
+                <td class="tc-name">All competencies</td>
+                <td class="tc-what">Absence — Return-to-Duty requirements pending (CMS-117)</td>
+                <td class="tc-what">3 Mar 2026</td>
+                <td>${statusPill("warn", "Pending RTD")}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty-note" style="margin-bottom:16px">The restriction above follows the tiered consequence rule specified for X-Ray Screening: 70–74.9% draws 1:1 coaching and a DNXCT re-sit; 25–69.9% draws restricted duties, as applied here. <span class="inline-link" data-competency="X-Ray Screening">View the X-Ray Screening specification &rarr;</span></div>
         <div class="card-grid">${statusActionIds.map((id) => componentCard(findComp(id))).join("")}</div>
       </div>
       <div class="section-block">
@@ -1082,10 +1296,71 @@
   }
 
   // ---------------------------------------------------------
+  // HERO: Competency Administrator / Competency Framework Builder  [4-0]
+  // ---------------------------------------------------------
+  function heroCompetencyFrameworkBuilder() {
+    const persona = SD.personas[4];
+    const screen = persona.screens[0];
+    const reg = (SCHEME && SCHEME.competencyRegister) || [];
+    const roleReg = (SCHEME && SCHEME.roleRegister) || [];
+    return `<div class="main" id="main">
+      ${screenHeader(persona, screen)}
+      <div class="empty-note" style="margin-bottom:18px">
+        Grounded in the <strong>Security Training &amp; Competence Scheme Manual</strong> (draft, June 2026) — the Competency Register and Role Profile Register below are transcribed from that manual, not fabricated. Only <strong>X-Ray Screening</strong> is specified in full; the rest carry the manual's own "further competencies populated as defined" placeholder.
+      </div>
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-head"><div><h3>Competency Register</h3><div class="ph-sub">Security division · 16 competencies · click a row for its specification</div></div></div>
+          <div class="table-wrap" style="border:none;box-shadow:none">
+            <table class="data-table">
+              <thead><tr><th>Competency</th><th>Category</th><th>Stages</th><th>Status</th><th>Review</th></tr></thead>
+              <tbody>
+                ${reg.map((c) => `
+                  <tr class="clickable-row" data-competency="${esc(c.name)}">
+                    <td class="tc-name">${esc(c.name)}${c.specified ? ' <span class="status-pill status-good" style="margin-left:6px">Specified</span>' : ""}</td>
+                    <td>${esc(c.category)}</td>
+                    <td>${c.stages}</td>
+                    <td><span class="phase-tag">${esc(c.status)}</span></td>
+                    <td class="tc-what">${esc(c.owner)} &middot; ${esc(c.review)}</td>
+                  </tr>`).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <div class="panel" style="margin-bottom:16px">
+            <div class="panel-head"><h3>Role Profile Register</h3></div>
+            <div class="panel-body">
+              ${roleReg.map((r) => `
+                <div class="task-row">
+                  <div class="t-body"><div class="t-title">${esc(r.role)}</div><div class="t-sub">${esc(r.businessUnit)} &middot; owner ${esc(r.owner)}</div></div>
+                  <div class="t-due" style="color:var(--ink-500)">${r.competencyCount != null ? r.competencyCount + " comps" : "TBC"}</div>
+                </div>`).join("")}
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Scheme governance</h3></div>
+            <div class="panel-body pad" style="display:flex;flex-direction:column;gap:10px">
+              ${SCHEME.governance.slice(0, 4).map((g) => `<div><div style="font-size:12px;font-weight:700">${esc(g.role)}</div><div style="font-size:11.5px;color:var(--ink-500)">${esc(g.heldBy)}</div></div>`).join("")}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="section-block" style="margin-top:24px">
+        <h2>Backlog-traced components</h2>
+        <div class="sb-sub">CMS-1 through CMS-126 — the builder capability this register sits within</div>
+        ${genericComponentsBlock(screen)}
+      </div>
+      ${footerNote()}
+    </div>`;
+  }
+
+  // ---------------------------------------------------------
   // Hero registry
   // ---------------------------------------------------------
   const HERO = {
     "0-0": { render: heroColleagueDashboard },
+    "4-0": { render: heroCompetencyFrameworkBuilder },
     "0-1": { render: heroColleagueTasks },
     "0-2": { render: heroColleagueCalendar },
     "0-3": { render: heroCompetencyRecord, wire: wireCompetencyRecord },
@@ -1134,7 +1409,7 @@
           ${SD.personaModel.map((p, i) => `
             <div class="persona-model-row">
               <div class="pmr-name"><span class="persona-avatar" style="background:${PERSONA_META[i] ? PERSONA_META[i].color : "#667085"};display:inline-flex;width:22px;height:22px;font-size:9px;border-radius:6px;vertical-align:middle;margin-right:8px">${PERSONA_META[i] ? PERSONA_META[i].code : ""}</span>${esc(p.name)}</div>
-              <div class="pmr-desc">${esc(p.description)}</div>
+              <div class="pmr-desc">${linkAmendments(p.description)}</div>
             </div>`).join("")}
         </div>
       </div>
@@ -1153,7 +1428,39 @@
         <div class="card-grid">${SD.systemWide.map(componentCard).join("")}</div>
       </div>
 
-      <div class="footer-note">Parsed from the CMS &amp; Assessment System Screen &amp; Component Specification (v01, prepared by DBLX, 27 August 2026). 365 backlog stories reviewed; this prototype renders the persona-facing subset (Sections 5 &amp; 7).</div>
+      <div class="section-block" id="anchor-sources">
+        <h2>What this prototype is grounded in</h2>
+        <div class="sb-sub">Three source documents, each doing a different job</div>
+        <div class="principle-grid">
+          <div class="principle-card"><h4>Screen &amp; Component Specification</h4><p>The persona &rarr; screen &rarr; component structure itself — every card and table row on every screen traces back to Section 7 of this document.</p></div>
+          <div class="principle-card"><h4>Backlog workbook (26 Aug)</h4><p>365 user stories with full acceptance criteria. Click any component anywhere in this prototype to open its real "As a&hellip; I want to&hellip; so that&hellip;" story and acceptance criteria in a drawer.</p></div>
+          <div class="principle-card"><h4>Security Scheme Manual (draft)</h4><p>${esc(SCHEME.meta.provenanceNote)} See the Security Officer's 16 competencies under Colleague &rarr; My Competency Record, and the full X-Ray Screening specification.</p></div>
+        </div>
+      </div>
+
+      <div class="section-block" id="anchor-amendments">
+        <h2>Amendments &amp; placeholders log</h2>
+        <div class="sb-sub">${Object.keys(AMEND).length} entries from the backlog workbook's change register — the same ones linked inline throughout this prototype as <span class="amendment-chip" style="pointer-events:none">A00</span>-style chips</div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th style="width:70px">Ref</th><th>Short description</th><th style="width:110px">Type</th><th style="width:150px">Status</th></tr></thead>
+            <tbody>
+              ${Object.keys(AMEND).sort((a, b) => {
+                const na = parseInt(a.replace(/\D/g, ""), 10), nb = parseInt(b.replace(/\D/g, ""), 10);
+                return (na || 0) - (nb || 0) || a.localeCompare(b);
+              }).map((k) => `
+                <tr class="clickable-row" data-amend="${esc(k)}">
+                  <td><span class="story-chip">${esc(k)}</span></td>
+                  <td class="tc-name">${esc(AMEND[k].short)}</td>
+                  <td class="tc-what">${esc(AMEND[k].type)}</td>
+                  <td class="tc-what">${esc(AMEND[k].status)}</td>
+                </tr>`).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="footer-note">Parsed from the CMS &amp; Assessment System Screen &amp; Component Specification (v01, prepared by DBLX, 27 August 2026), the 26 August backlog workbook, and the Security Training &amp; Competence Scheme Manual (draft). 365 backlog stories reviewed; this prototype renders the persona-facing subset (Sections 5 &amp; 7) with full acceptance-criteria detail behind every component.</div>
     </div>`;
   }
 
@@ -1183,7 +1490,25 @@
 
   window.addEventListener("hashchange", () => { parseHash(); render(); });
 
+  function wireGlobalDelegatedClicks() {
+    document.getElementById("app").addEventListener("click", (e) => {
+      if (e.target.closest(".drawer-backdrop") || e.target.closest(".modal-backdrop") || e.target.closest(".dropdown-panel")) return;
+      const amend = e.target.closest("[data-amend]");
+      if (amend) { openAmendmentDrawer(amend.dataset.amend); return; }
+      const spec = e.target.closest("[data-competency]");
+      if (spec) { openCompetencySpecDrawer(spec.dataset.competency); return; }
+      const story = e.target.closest("[data-story]");
+      if (story) { openStoryDrawer(story.dataset.story); return; }
+    });
+    document.getElementById("app").addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+      const story = e.target.closest("[data-story]");
+      if (story) openStoryDrawer(story.dataset.story);
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
+    wireGlobalDelegatedClicks();
     parseHash();
     render();
   });
